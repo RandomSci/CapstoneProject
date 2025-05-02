@@ -1,0 +1,3 @@
+elasticsearch-*
+Backend/core
+Backend/uploads/exercise_videos/processed_videos/*.mp4

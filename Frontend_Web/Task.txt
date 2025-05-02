@@ -1,0 +1,1136 @@
+Change all the hardcoded data u see in dist/dashboard/index.html i provided with the data you take on the backend. 
+
+YOU CREATE ALL THIS FOR ME WITH PROPER HANDLING AND MAKE SURE IT MATCHES THE BACKEND. note: I already have the patient_directory.html!! 
+
+
+TODO: Execute this! 
+ Additional HTML Templates to Create
+For a complete application, you'll need to create more HTML files similar to the patient list example above. Here's a list of templates you should create:
+dist/dashboard/add_patient.html - Form for adding new patients
+dist/dashboard/patient_detail.html - Detailed view of a patient with tabs for plans, appointments, metrics
+dist/dashboard/appointment_list.html - List of upcoming and past appointments
+dist/dashboard/new_appointment.html - Form for scheduling new appointments
+dist/dashboard/exerciseTODO: Execute this! 
+ Additional HTML Templates to Create
+For a complete application, you'll need to create more HTML files similar to the patient list example above. Here's a list of templates you should create:
+dist/dashboard/add_patient.html - Form for adding new patients
+dist/dashboard/patient_detail.html - Detailed view of a patient with tabs for plans, appointments, metrics
+dist/dashboard/appointment_list.html - List of upcoming and past appointments
+dist/dashboard/new_appointment.html - Form for scheduling new appointments
+dist/dashboard/exercise_list.html - List of exercises with filtering by category
+dist/dashboard/add_exercise.html - Form for adding new exercises
+dist/dashboard/plan_list.html - List of treatment plans
+dist/dashboard/new_plan.html - Form for creating new treatment plans
+dist/dashboard/plan_detail.html - Detailed view of a treatment plan with assigned exercises
+dist/dashboard/index.html - Analytics dashboard with charts and metricsTODO: Execute this! 
+ Additional HTML Templates to Create
+For a complete application, you'll need to create more HTML files similar to the patient list example above. Here's a list of templates you should create:
+dist/dashboard/add_patient.html - Form for adding new patients
+dist/dashboard/patient_detail.html - Detailed view of a patient with tabs for plans, appointments, metrics
+dist/dashboard/appointment_list.html - List of upcoming and past appointments
+dist/dashboard/new_appointment.html - Form for scheduling new appointments
+dist/dashboard/exercises.html - List of exercises with filtering by category
+dist/dashboard/add_exercise.html - Form for adding new exercises
+dist/dashboard/plan_list.html - List of treatment plans
+dist/dashboard/new_plan.html - Form for creating new treatment plans
+dist/dashboard/plan_detail.html - Detailed view of a treatment plan with assigned exercises
+dist/dashboard/index.html - Analytics dashboard with charts and metricsTODO: Execute this! 
+ Additional HTML Templates to Create
+For a complete application, you'll need to create more HTML files similar to the patient list example above. Here's a list of templates you should create:
+dist/dashboard/add_patient.html - Form for adding new patients
+dist/dashboard/patient_detail.html - Detailed view of a patient with tabs for plans, appointments, metrics
+dist/dashboard/appointment_list.html - List of upcoming and past appointments
+dist/dashboard/new_appointment.html - Form for scheduling new appointments
+dist/dashboard/exercise_list.html - List of exercises with filtering by category
+dist/dashboard/add_exercise.html - Form for adding new exercises
+dist/dashboard/plan_list.html - List of treatment plans
+dist/dashboard/new_plan.html - Form for creating new treatment plans
+dist/dashboard/plan_detail.html - Detailed view of a treatment plan with assigned exercises
+dist/dashboard/index.html - Analytics dashboard with charts and metrics_list.html - List of exercises with filtering by category
+dist/dashboard/add_exercise.html - Form for adding new exercises
+dist/dashboard/plan_list.html - List of treatment plans
+dist/dashboard/new_plan.html - Form for creating new treatment plans
+dist/dashboard/plan_detail.html - Detailed view of a treatment plan with assigned exercises
+dist/dashboard/index.html - Analytics dashboard with charts and metrics
+
+This is the current dist/dashboard/index.html
+
+<!DOCTYPE html>
+<html lang="en">
+<!-- [Head] start -->
+
+<head>
+  <title>Home | APR-CV</title>
+  <!-- [Meta] -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0, minimal-ui">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="description" content="Mantis is made using Bootstrap 5 design framework. Download the free admin template & use it for your project.">
+  <meta name="keywords" content="Mantis, Dashboard UI Kit, Bootstrap 5, Admin Template, Admin Dashboard, CRM, CMS, Bootstrap Admin Template">
+  <meta name="author" content="CodedThemes">
+
+  <!-- [Favicon] icon -->
+  <link rel="icon" href="../static/assets/images/favicon.svg" type="image/x-icon"> <!-- [Google Font] Family -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700&display=swap" id="main-font-link">
+<!-- [Tabler Icons] https://tablericons.com -->
+<link rel="stylesheet" href="../static/assets/fonts/tabler-icons.min.css" >
+<!-- [Feather Icons] https://feathericons.com -->
+<link rel="stylesheet" href="../static/assets/fonts/feather.css" >
+<!-- [Font Awesome Icons] https://fontawesome.com/icons -->
+<link rel="stylesheet" href="../static/assets/fonts/fontawesome.css" >
+<!-- [Material Icons] https://fonts.google.com/icons -->
+<link rel="stylesheet" href="../static/assets/fonts/material.css" >
+<!-- [Template CSS Files] -->
+<link rel="stylesheet" href="../static/assets/css/style.css" id="main-style-link" >
+<link rel="stylesheet" href="../static/assets/css/style-preset.css" >
+
+</head>
+<!-- [Head] end -->
+<!-- [Body] Start -->
+
+<body data-pc-preset="preset-1" data-pc-direction="ltr" data-pc-theme="light">
+  <!-- [ Pre-loader ] start -->
+<div class="loader-bg">
+  <div class="loader-track">
+    <div class="loader-fill"></div>
+  </div>
+</div>
+<!-- [ Pre-loader ] End -->
+ <!-- [ Sidebar Menu ] start -->
+<nav class="pc-sidebar">
+  <div class="navbar-wrapper">
+    <div class="m-header">
+      <a href="/front-page" class="b-brand text-primary">
+        <i class="ti ti-medical-cross fs-4"></i>
+        <span class="ms-2 fw-bold">APR-CV</span>
+      </a>
+    </div>
+    <div class="navbar-content">
+      <ul class="pc-navbar">
+        <li class="pc-item">
+          <a href="/front-page" class="pc-link">
+            <span class="pc-micon"><i class="ti ti-dashboard"></i></span>
+            <span class="pc-mtext">Dashboard</span>
+          </a>
+        </li>
+      
+        <li class="pc-item pc-hasmenu">
+          <a href="#!" class="pc-link">
+            <span class="pc-micon"><i class="ti ti-users"></i></span>
+            <span class="pc-mtext">Patients</span>
+            <span class="pc-arrow"><i data-feather="chevron-right"></i></span>
+          </a>
+          <ul class="pc-submenu">
+            <li class="pc-item"><a class="pc-link" href="/patients">Patient Directory</a></li>
+            <li class="pc-item"><a class="pc-link" href="/patients/add">Add New Patient</a></li>
+            <li class="pc-item"><a class="pc-link" href="#!">Patient Reports</a></li>
+          </ul>
+        </li>
+      
+        <li class="pc-item pc-hasmenu">
+          <a href="#!" class="pc-link">
+            <span class="pc-micon"><i class="ti ti-calendar"></i></span>
+            <span class="pc-mtext">Appointments</span>
+            <span class="pc-arrow"><i data-feather="chevron-right"></i></span>
+          </a>
+          <ul class="pc-submenu">
+            <li class="pc-item"><a class="pc-link" href="#!">Schedule</a></li>
+            <li class="pc-item"><a class="pc-link" href="#!">New Appointment</a></li>
+          </ul>
+        </li>
+      
+        <li class="pc-item pc-hasmenu">
+          <a href="#!" class="pc-link">
+            <span class="pc-micon"><i class="ti ti-activity"></i></span>
+            <span class="pc-mtext">Exercise Library</span>
+            <span class="pc-arrow"><i data-feather="chevron-right"></i></span>
+          </a>
+          <ul class="pc-submenu">
+            <li class="pc-item"><a class="pc-link" href="/exercises">Browse Exercises</a></li>
+            <li class="pc-item"><a class="pc-link" href="#!">Upload New Exercise</a></li>
+            <li class="pc-item"><a class="pc-link" href="#!">Exercise Categories</a></li>
+          </ul>
+        </li>
+      
+        <li class="pc-item pc-hasmenu">
+          <a href="#!" class="pc-link">
+            <span class="pc-micon"><i class="ti ti-report"></i></span>
+            <span class="pc-mtext">Treatment Plans</span>
+            <span class="pc-arrow"><i data-feather="chevron-right"></i></span>
+          </a>
+          <ul class="pc-submenu">
+            <li class="pc-item"><a class="pc-link" href="#!">Create Plan</a></li>
+            <li class="pc-item"><a class="pc-link" href="#!">Manage Plans</a></li>
+            <li class="pc-item"><a class="pc-link" href="#!">Templates</a></li>
+          </ul>
+        </li>
+      
+        <li class="pc-item">
+          <a href="#!" class="pc-link">
+            <span class="pc-micon"><i class="ti ti-chart-bar"></i></span>
+            <span class="pc-mtext">Analytics</span>
+          </a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+<!-- [ Sidebar Menu ] end --> <!-- [ Header Topbar ] start -->
+<header class="pc-header">
+  <div class="header-wrapper"> <!-- [Mobile Media Block] start -->
+<div class="me-auto pc-mob-drp">
+  <ul class="list-unstyled">
+    <!-- ======= Menu collapse Icon ===== -->
+    <li class="pc-h-item pc-sidebar-collapse">
+      <a href="#" class="pc-head-link ms-0" id="sidebar-hide">
+        <i class="ti ti-menu-2"></i>
+      </a>
+    </li>
+    <li class="pc-h-item pc-sidebar-popup">
+      <a href="#" class="pc-head-link ms-0" id="mobile-collapse">
+        <i class="ti ti-menu-2"></i>
+      </a>
+    </li>
+    <li class="dropdown pc-h-item d-inline-flex d-md-none">
+      <a
+        class="pc-head-link dropdown-toggle arrow-none m-0"
+        data-bs-toggle="dropdown"
+        href="#"
+        role="button"
+        aria-haspopup="false"
+        aria-expanded="false"
+      >
+        <i class="ti ti-search"></i>
+      </a>
+      <div class="dropdown-menu pc-h-dropdown drp-search">
+        <form class="px-3">
+          <div class="form-group mb-0 d-flex align-items-center">
+            <i data-feather="search"></i>
+            <input type="search" class="form-control border-0 shadow-none" placeholder="Search here. . .">
+          </div>
+        </form>
+      </div>
+    </li>
+    <li class="pc-h-item d-none d-md-inline-flex">
+      <form class="header-search">
+        <i data-feather="search" class="icon-search"></i>
+        <input type="search" class="form-control" placeholder="Search here. . .">
+      </form>
+    </li>
+  </ul>
+</div>
+<!-- [Mobile Media Block end] -->
+<div class="ms-auto">
+  <ul class="list-unstyled">
+    <li class="dropdown pc-h-item">
+      <a
+        class="pc-head-link dropdown-toggle arrow-none me-0"
+        data-bs-toggle="dropdown"
+        href="#"
+        role="button"
+        aria-haspopup="false"
+        aria-expanded="false"
+      >
+        <i class="ti ti-mail"></i>
+      </a>
+      <div class="dropdown-menu dropdown-notification dropdown-menu-end pc-h-dropdown">
+        <div class="dropdown-header d-flex align-items-center justify-content-between">
+          <h5 class="m-0">Message</h5>
+          <a href="#!" class="pc-head-link bg-transparent"><i class="ti ti-x text-danger"></i></a>
+        </div>
+        <div class="dropdown-divider"></div>
+        <div class="dropdown-header px-0 text-wrap header-notification-scroll position-relative" style="max-height: calc(100vh - 215px)">
+          <div class="list-group list-group-flush w-100">
+            <a class="list-group-item list-group-item-action">
+              <div class="d-flex">
+                <div class="flex-shrink-0">
+                  <img src="../static/assets/images/user/avatar-2.jpg" alt="user-image" class="user-avtar">
+                </div>
+                <div class="flex-grow-1 ms-1">
+                  <span class="float-end text-muted">3:00 AM</span>
+                  <p class="text-body mb-1">It's <b>Cristina danny's</b> birthday today.</p>
+                  <span class="text-muted">2 min ago</span>
+                </div>
+              </div>
+            </a>
+            <a class="list-group-item list-group-item-action">
+              <div class="d-flex">
+                <div class="flex-shrink-0">
+                  <img src="../static/assets/images/user/avatar-1.jpg" alt="user-image" class="user-avtar">
+                </div>
+                <div class="flex-grow-1 ms-1">
+                  <span class="float-end text-muted">6:00 PM</span>
+                  <p class="text-body mb-1"><b>Aida Burg</b> commented your post.</p>
+                  <span class="text-muted">5 August</span>
+                </div>
+              </div>
+            </a>
+            <a class="list-group-item list-group-item-action">
+              <div class="d-flex">
+                <div class="flex-shrink-0">
+                  <img src="../static/assets/images/user/avatar-3.jpg" alt="user-image" class="user-avtar">
+                </div>
+                <div class="flex-grow-1 ms-1">
+                  <span class="float-end text-muted">2:45 PM</span>
+                  <p class="text-body mb-1"><b>There was a failure to your setup.</b></p>
+                  <span class="text-muted">7 hours ago</span>
+                </div>
+              </div>
+            </a>
+            <a class="list-group-item list-group-item-action">
+              <div class="d-flex">
+                <div class="flex-shrink-0">
+                  <img src="../static/assets/images/user/avatar-4.jpg" alt="user-image" class="user-avtar">
+                </div>
+                <div class="flex-grow-1 ms-1">
+                  <span class="float-end text-muted">9:10 PM</span>
+                  <p class="text-body mb-1"><b>Cristina Danny </b> invited to join <b> Meeting.</b></p>
+                  <span class="text-muted">Daily scrum meeting time</span>
+                </div>
+              </div>
+            </a>
+          </div>
+        </div>
+        <div class="dropdown-divider"></div>
+        <div class="text-center py-2">
+          <a href="#!" class="link-primary">View all</a>
+        </div>
+      </div>
+    </li>
+    <li class="dropdown pc-h-item header-user-profile">
+      <a
+        class="pc-head-link dropdown-toggle arrow-none me-0"
+        data-bs-toggle="dropdown"
+        href="#"
+        role="button"
+        aria-haspopup="false"
+        data-bs-auto-close="outside"
+        aria-expanded="false"
+      >
+        <img src="../static/assets/images/user/avatar-2.jpg" alt="user-image" class="user-avtar">
+      <span>{{ first_name }} {{ last_name }}</span>
+      </a>
+      <div class="dropdown-menu dropdown-user-profile dropdown-menu-end pc-h-dropdown">
+        <div class="dropdown-header">
+          <div class="d-flex mb-1">
+            <div class="flex-shrink-0">
+              <img src="../static/assets/images/user/avatar-2.jpg" alt="user-image" class="user-avtar wid-35">
+            </div>
+            <div class="flex-grow-1 ms-3">
+              <h6 class="mb-1">{{ first_name }} {{ last_name }}</h6>
+              <span>Physical Therapist</span>
+            </div>
+            <a href="/logout" class="pc-head-link bg-transparent"><i class="ti ti-power text-danger"></i></a>
+          </div>
+        </div>
+        <ul class="nav drp-tabs nav-fill nav-tabs" id="mydrpTab" role="tablist">
+          <li class="nav-item" role="presentation">
+            <button
+              class="nav-link active"
+              id="drp-t1"
+              data-bs-toggle="tab"
+              data-bs-target="#drp-tab-1"
+              type="button"
+              role="tab"
+              aria-controls="drp-tab-1"
+              aria-selected="true"
+              ><i class="ti ti-user"></i> Profile</button
+            >
+          </li>
+          <li class="nav-item" role="presentation">
+            <button
+              class="nav-link"
+              id="drp-t2"
+              data-bs-toggle="tab"
+              data-bs-target="#drp-tab-2"
+              type="button"
+              role="tab"
+              aria-controls="drp-tab-2"
+              aria-selected="false"
+              ><i class="ti ti-settings"></i> Setting</button
+            >
+          </li>
+        </ul>
+        <div class="tab-content" id="mysrpTabContent">
+          <div class="tab-pane fade show active" id="drp-tab-1" role="tabpanel" aria-labelledby="drp-t1" tabindex="0">
+            <a href="#!" class="dropdown-item">
+              <i class="ti ti-edit-circle"></i>
+              <span>Edit Profile</span>
+            </a>
+            <a href="#!" class="dropdown-item">
+              <i class="ti ti-user"></i>
+              <span>View Profile</span>
+            </a>
+            <a href="#!" class="dropdown-item">
+              <i class="ti ti-clipboard-list"></i>
+              <span>Social Profile</span>
+            </a>
+            <a href="#!" class="dropdown-item">
+              <i class="ti ti-wallet"></i>
+              <span>Billing</span>
+            </a>
+            <a href="/logout" class="dropdown-item">
+              <i class="ti ti-power"></i>
+              <span>Logout</span>
+            </a>
+          </div>
+          <div class="tab-pane fade" id="drp-tab-2" role="tabpanel" aria-labelledby="drp-t2" tabindex="0">
+            <a href="#!" class="dropdown-item">
+              <i class="ti ti-help"></i>
+              <span>Support</span>
+            </a>
+            <a href="#!" class="dropdown-item">
+              <i class="ti ti-user"></i>
+              <span>Account Settings</span>
+            </a>
+            <a href="#!" class="dropdown-item">
+              <i class="ti ti-lock"></i>
+              <span>Privacy Center</span>
+            </a>
+            <a href="#!" class="dropdown-item">
+              <i class="ti ti-messages"></i>
+              <span>Feedback</span>
+            </a>
+            <a href="#!" class="dropdown-item">
+              <i class="ti ti-list"></i>
+              <span>History</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </li>
+  </ul>
+</div>
+ </div>
+</header>
+<!-- [ Header ] end -->
+
+
+
+  <!-- [ Main Content ] start -->
+  <div class="pc-container">
+    <div class="pc-content">
+      <!-- [ breadcrumb ] start -->
+      <div class="page-header">
+        <div class="page-block">
+          <div class="row align-items-center">
+            <div class="col-md-12">
+              <div class="page-header-title">
+                <h5 class="m-b-10">Home</h5>
+              </div>
+              <ul class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/front-page">Home</a></li>
+                <li class="breadcrumb-item"><a href="javascript: void(0)">Dashboard</a></li>
+                <li class="breadcrumb-item" aria-current="page">Home</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- [ breadcrumb ] end -->
+      <!-- [ Main Content ] start -->
+      <div class="row">
+        <!-- [ sample-page ] start -->
+        <!-- Top Cards Section -->
+        <div class="col-md-6 col-xl-3">
+          <div class="card">
+            <div class="card-body">
+              <h6 class="mb-2 f-w-400 text-muted">Total Appointments</h6>
+              <h4 class="mb-3">1,254 <span class="badge bg-light-primary border border-primary"><i
+                    class="ti ti-trending-up"></i> 12.5%</span></h4>
+              <p class="mb-0 text-muted text-sm">Up by <span class="text-primary">154</span> from last month
+              </p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6 col-xl-3">
+          <div class="card">
+            <div class="card-body">
+              <h6 class="mb-2 f-w-400 text-muted">Active Patients</h6>
+              <h4 class="mb-3">427 <span class="badge bg-light-success border border-success"><i
+                    class="ti ti-trending-up"></i> 8.3%</span></h4>
+              <p class="mb-0 text-muted text-sm">New patients <span class="text-success">38</span> this month</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6 col-xl-3">
+          <div class="card">
+            <div class="card-body">
+              <h6 class="mb-2 f-w-400 text-muted">Exercise Plans</h6>
+              <h4 class="mb-3">842 <span class="badge bg-light-success border border-success"><i
+                    class="ti ti-trending-up"></i> 15.2%</span></h4>
+              <p class="mb-0 text-muted text-sm">Created <span class="text-success">72</span> new this month</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6 col-xl-3">
+          <div class="card">
+            <div class="card-body">
+              <h6 class="mb-2 f-w-400 text-muted">Patient Adherence</h6>
+              <h4 class="mb-3">78.5% <span class="badge bg-light-warning border border-warning"><i
+                    class="ti ti-trending-down"></i> 3.2%</span></h4>
+              <p class="mb-0 text-muted text-sm">Down <span class="text-warning">2.1%</span> from last month
+              </p>
+            </div>
+          </div>
+        </div>
+
+
+        <div class="col-md-12 col-xl-8">
+          <div class="d-flex align-items-center justify-content-between mb-3">
+            <h5 class="mb-0">Unique Visitor</h5>
+            <ul class="nav nav-pills justify-content-end mb-0" id="chart-tab-tab" role="tablist">
+              <li class="nav-item" role="presentation">
+                <button class="nav-link" id="chart-tab-home-tab" data-bs-toggle="pill" data-bs-target="#chart-tab-home"
+                  type="button" role="tab" aria-controls="chart-tab-home" aria-selected="true">Month</button>
+              </li>
+              <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="chart-tab-profile-tab" data-bs-toggle="pill"
+                  data-bs-target="#chart-tab-profile" type="button" role="tab" aria-controls="chart-tab-profile"
+                  aria-selected="false">Week</button>
+              </li>
+            </ul>
+          </div>
+          <div class="card">
+            <div class="card-body">
+              <div class="tab-content" id="chart-tab-tabContent">
+                <div class="tab-pane" id="chart-tab-home" role="tabpanel" aria-labelledby="chart-tab-home-tab"
+                  tabindex="0">
+                  <div id="visitor-chart-1"></div>
+                </div>
+                <div class="tab-pane show active" id="chart-tab-profile" role="tabpanel"
+                  aria-labelledby="chart-tab-profile-tab" tabindex="0">
+                  <div id="visitor-chart"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-12 col-xl-4">
+          <h5 class="mb-3">Exercise Completion Overview</h5>
+          <div class="card">
+            <div class="card-body">
+              <h6 class="mb-2 f-w-400 text-muted">This Week's Statistics</h6>
+              <h3 class="mb-3">78% Completion</h3>
+              <div id="income-overview-chart"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-12 col-xl-8">
+          <h5 class="mb-3">Recent Patients</h5>
+          <div class="card tbl-card">
+            <div class="card-body">
+              <div class="table-responsive">
+                <table class="table table-hover table-borderless mb-0">
+                  <thead>
+                    <tr>
+                      <th>PATIENT ID</th>
+                      <th>PATIENT NAME</th>
+                      <th>DIAGNOSIS</th>
+                      <th>STATUS</th>
+                      <th class="text-end">COMPLIANCE RATE</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td><a href="#" class="text-muted">PT-4821</a></td>
+                      <td>Sarah Johnson</td>
+                      <td>Rotator Cuff</td>
+                      <td><span class="d-flex align-items-center gap-2"><i
+                            class="fas fa-circle text-success f-10 m-r-5"></i>Active</span>
+                      </td>
+                      <td class="text-end">92%</td>
+                    </tr>
+                    <tr>
+                      <td><a href="#" class="text-muted">PT-4567</a></td>
+                      <td>Michael Davis</td>
+                      <td>ACL Rehab</td>
+                      <td><span class="d-flex align-items-center gap-2"><i
+                            class="fas fa-circle text-warning f-10 m-r-5"></i>At Risk</span>
+                      </td>
+                      <td class="text-end">68%</td>
+                    </tr>
+                    <tr>
+                      <td><a href="#" class="text-muted">PT-3982</a></td>
+                      <td>Emma Wilson</td>
+                      <td>Lower Back Pain</td>
+                      <td><span class="d-flex align-items-center gap-2"><i
+                            class="fas fa-circle text-success f-10 m-r-5"></i>Active</span></td>
+                      <td class="text-end">87%</td>
+                    </tr>
+                    <tr>
+                      <td><a href="#" class="text-muted">PT-5471</a></td>
+                      <td>James Taylor</td>
+                      <td>Knee Replacement</td>
+                      <td><span class="d-flex align-items-center gap-2"><i
+                            class="fas fa-circle text-danger f-10 m-r-5"></i>Inactive</span>
+                      </td>
+                      <td class="text-end">42%</td>
+                    </tr>
+                    <tr>
+                      <td><a href="#" class="text-muted">PT-4290</a></td>
+                      <td>Olivia Brown</td>
+                      <td>Tennis Elbow</td>
+                      <td><span class="d-flex align-items-center gap-2"><i
+                            class="fas fa-circle text-success f-10 m-r-5"></i>Active</span>
+                      </td>
+                      <td class="text-end">95%</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-12 col-xl-4">
+          <h5 class="mb-3">Therapy Metrics</h5>
+          <div class="card">
+            <div class="list-group list-group-flush">
+              <a href="#"
+                class="list-group-item list-group-item-action d-flex align-items-center justify-content-between">Average Recovery Rate<span class="h5 mb-0">+23.8%</span></a>
+              <a href="#"
+                class="list-group-item list-group-item-action d-flex align-items-center justify-content-between">Exercise Completion Rate<span class="h5 mb-0">76.2%</span></a>
+              <a href="#"
+                class="list-group-item list-group-item-action d-flex align-items-center justify-content-between">Patient Satisfaction<span class="h5 mb-0">High</span></a>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-12 col-xl-8">
+          <div class="d-flex align-items-center justify-content-between mb-3">
+          <h5 class="mb-0">Patient Activity</h5>
+          </div>
+          <div class="card">
+            <div class="card-body">
+              <h6 class="mb-2 f-w-400 text-muted">This Week Statistics</h6>
+              <h3 class="mb-0">$7,650</h3>
+              <div id="sales-report-chart"></div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-12 col-xl-4">
+          <h5 class="mb-3">Recent Activities</h5>
+          <div class="card">
+            <div class="list-group list-group-flush">
+              <a href="#" class="list-group-item list-group-item-action">
+                <div class="d-flex">
+                  <div class="flex-shrink-0">
+                    <div class="avtar avtar-s rounded-circle text-success bg-light-success">
+                      <i class="ti ti-video f-18"></i>
+                    </div>
+                  </div>
+                  <div class="flex-grow-1 ms-3">
+                    <h6 class="mb-1">New Exercise Uploaded</h6>
+                    <p class="mb-0 text-muted">Today, 10:30 AM</p>
+                  </div>
+                  <div class="flex-shrink-0 text-end">
+                    <h6 class="mb-1">Shoulder Series</h6>
+                    <p class="mb-0 text-muted">12 min</p>
+                  </div>
+                </div>
+              </a>
+              <a href="#" class="list-group-item list-group-item-action">
+                <div class="d-flex">
+                  <div class="flex-shrink-0">
+                    <div class="avtar avtar-s rounded-circle text-primary bg-light-primary">
+                      <i class="ti ti-user-plus f-18"></i>
+                    </div>
+                  </div>
+                  <div class="flex-grow-1 ms-3">
+                    <h6 class="mb-1">New Patient Added</h6>
+                    <p class="mb-0 text-muted">Yesterday, 2:45 PM</p>
+                  </div>
+                  <div class="flex-shrink-0 text-end">
+                    <h6 class="mb-1">Robert Chen</h6>
+                    <p class="mb-0 text-muted">ACL Rehab</p>
+                  </div>
+                </div>
+              </a>
+              <a href="#" class="list-group-item list-group-item-action">
+                <div class="d-flex">
+                  <div class="flex-shrink-0">
+                    <div class="avtar avtar-s rounded-circle text-warning bg-light-warning">
+                      <i class="ti ti-report-medical f-18"></i>
+                    </div>
+                  </div>
+                  <div class="flex-grow-1 ms-3">
+                    <h6 class="mb-1">Progress Report Updated</h6>
+                    <p class="mb-0 text-muted">2 days ago</p>
+                  </div>
+                  <div class="flex-shrink-0 text-end">
+                    <h6 class="mb-1">Emma Wilson</h6>
+                    <p class="mb-0 text-muted">+15% improvement</p>
+                  </div>
+                </div>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- [ Main Content ] end -->
+  <footer class="pc-footer">
+    <div class="footer-wrapper container-fluid">
+      <div class="row">
+        
+        <div class="col-auto my-1">
+          <ul class="list-inline footer-link mb-0">
+          </ul>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- [Page Specific JS] start -->
+  <script src="../static/assets/js/plugins/apexcharts.min.js"></script>
+  <script src="../static/assets/js/pages/dashboard-default.js"></script>
+  <!-- [Page Specific JS] end -->
+  <!-- Required Js -->
+  <script src="../static/assets/js/plugins/popper.min.js"></script>
+  <script src="../static/assets/js/plugins/simplebar.min.js"></script>
+  <script src="../static/assets/js/plugins/bootstrap.min.js"></script>
+  <script src="../static/assets/js/fonts/custom-font.js"></script>
+  <script src="../static/assets/js/pcoded.js"></script>
+  <script src="../static/assets/js/plugins/feather.min.js"></script>
+
+  
+  
+  
+  
+  <script>layout_change('light');</script>
+  
+  
+  
+  
+  <script>change_box_container('false');</script>
+  
+  
+  
+  <script>layout_rtl_change('false');</script>
+  
+  
+  <script>preset_change("preset-1");</script>
+  
+  
+  <script>font_change("Public-Sans");</script>
+  
+    
+
+</body>
+<!-- [Body] end -->
+
+</html>
+
+routes:
+
+
+
+@app.get("/patients")
+    async def get_patients_page(request: Request, user=Depends(get_current_user)):
+        db = get_Mysql_db()
+        cursor = db.cursor(dictionary=True)
+
+        try:
+            cursor.execute(
+                "SELECT * FROM Patients WHERE therapist_id = %s ORDER BY last_name", 
+                (user["user_id"],)
+            )
+            patients = cursor.fetchall()
+
+            therapist_data = await get_therapist_data(user["user_id"])
+
+            return templates.TemplateResponse(
+                "dist/dashboard/patient_directory.html", 
+                {
+                    "request": request,
+                    "patients": patients,
+                    "first_name": therapist_data["first_name"],
+                    "last_name": therapist_data["last_name"]
+                }
+            )
+        finally:
+            cursor.close()
+            db.close()
+
+    @app.get("/patients/add")
+    async def add_patient_page(request: Request, user=Depends(get_current_user)):
+        therapist_data = await get_therapist_data(user["user_id"])
+
+        return templates.TemplateResponse(
+            "dist/patients/add_patient.html", 
+            {
+                "request": request,
+                "first_name": therapist_data["first_name"],
+                "last_name": therapist_data["last_name"]
+            }
+        )
+
+    @app.post("/patients/add")
+    async def add_patient(
+        request: Request,
+        first_name: str = Form(...),
+        last_name: str = Form(...),
+        email: str = Form(None),
+        phone: str = Form(None),
+        date_of_birth: str = Form(None),
+        address: str = Form(None),
+        diagnosis: str = Form(None),
+        notes: str = Form(None),
+        user=Depends(get_current_user)
+    ):
+        db = get_Mysql_db()
+        cursor = db.cursor()
+
+        try:
+            cursor.execute(
+                """INSERT INTO Patients 
+                (therapist_id, first_name, last_name, email, phone, date_of_birth, 
+                address, diagnosis, notes) 
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)""",
+                (user["user_id"], first_name, last_name, email, phone, 
+                date_of_birth, address, diagnosis, notes)
+            )
+            db.commit()
+            return RedirectResponse(url="/patients", status_code=303)
+        except Exception as e:
+            print(f"Error adding patient: {e}")
+            therapist_data = await get_therapist_data(user["user_id"])
+            return templates.TemplateResponse(
+                "dist/patients/add_patient.html", 
+                {
+                    "request": request,
+                    "error": f"Error adding patient: {str(e)}",
+                    "first_name": therapist_data["first_name"],
+                    "last_name": therapist_data["last_name"]
+                }
+            )
+        finally:
+            cursor.close()
+            db.close()
+
+    @app.get("/patients/{patient_id}")
+    async def patient_detail(request: Request, patient_id: int, user=Depends(get_current_user)):
+        db = get_Mysql_db()
+        cursor = db.cursor(dictionary=True)
+
+        try:
+            cursor.execute(
+                "SELECT * FROM Patients WHERE patient_id = %s AND therapist_id = %s", 
+                (patient_id, user["user_id"])
+            )
+            patient = cursor.fetchone()
+
+            if not patient:
+                return RedirectResponse(url="/patients")
+
+            cursor.execute(
+                "SELECT * FROM TreatmentPlans WHERE patient_id = %s ORDER BY created_at DESC", 
+                (patient_id,)
+            )
+            treatment_plans = cursor.fetchall()
+
+            cursor.execute(
+                """SELECT * FROM Appointments 
+                WHERE patient_id = %s 
+                ORDER BY appointment_date DESC, appointment_time DESC 
+                LIMIT 5""", 
+                (patient_id,)
+            )
+            appointments = cursor.fetchall()
+
+            cursor.execute(
+                """SELECT * FROM PatientMetrics 
+                WHERE patient_id = %s 
+                ORDER BY measurement_date DESC 
+                LIMIT 10""", 
+                (patient_id,)
+            )
+            metrics = cursor.fetchall()
+
+            therapist_data = await get_therapist_data(user["user_id"])
+
+            return templates.TemplateResponse(
+                "dist/patients/patient_detail.html", 
+                {
+                    "request": request,
+                    "patient": patient,
+                    "treatment_plans": treatment_plans,
+                    "appointments": appointments,
+                    "metrics": metrics,
+                    "first_name": therapist_data["first_name"],
+                    "last_name": therapist_data["last_name"]
+                }
+            )
+        finally:
+            cursor.close()
+            db.close()
+
+    @app.get("/appointments")
+    async def appointments_page(request: Request, user=Depends(get_current_user)):
+        db = get_Mysql_db()
+        cursor = db.cursor(dictionary=True)
+
+        try:
+            cursor.execute(
+                """SELECT a.*, p.first_name as patient_first_name, p.last_name as patient_last_name 
+                FROM Appointments a
+                JOIN Patients p ON a.patient_id = p.patient_id
+                WHERE a.therapist_id = %s AND a.appointment_date >= CURDATE()
+                ORDER BY a.appointment_date, a.appointment_time""", 
+                (user["user_id"],)
+            )
+            upcoming_appointments = cursor.fetchall()
+
+            cursor.execute(
+                """SELECT a.*, p.first_name as patient_first_name, p.last_name as patient_last_name 
+                FROM Appointments a
+                JOIN Patients p ON a.patient_id = p.patient_id
+                WHERE a.therapist_id = %s AND a.appointment_date < CURDATE()
+                ORDER BY a.appointment_date DESC, a.appointment_time DESC
+                LIMIT 10""", 
+                (user["user_id"],)
+            )
+            past_appointments = cursor.fetchall()
+
+            therapist_data = await get_therapist_data(user["user_id"])
+
+            return templates.TemplateResponse(
+                "dist/appointments/appointment_list.html", 
+                {
+                    "request": request,
+                    "upcoming_appointments": upcoming_appointments,
+                    "past_appointments": past_appointments,
+                    "first_name": therapist_data["first_name"],
+                    "last_name": therapist_data["last_name"]
+                }
+            )
+        finally:
+            cursor.close()
+            db.close()
+
+    @app.get("/appointments/new")
+    async def new_appointment_page(request: Request, user=Depends(get_current_user)):
+        db = get_Mysql_db()
+        cursor = db.cursor(dictionary=True)
+
+        try:
+            cursor.execute(
+                "SELECT patient_id, first_name, last_name FROM Patients WHERE therapist_id = %s", 
+                (user["user_id"],)
+            )
+            patients = cursor.fetchall()
+
+            therapist_data = await get_therapist_data(user["user_id"])
+
+            return templates.TemplateResponse(
+                "dist/appointments/new_appointment.html", 
+                {
+                    "request": request,
+                    "patients": patients,
+                    "first_name": therapist_data["first_name"],
+                    "last_name": therapist_data["last_name"]
+                }
+            )
+        finally:
+            cursor.close()
+            db.close()
+
+    @app.post("/appointments/new")
+    async def create_appointment(
+        request: Request,
+        patient_id: int = Form(...),
+        appointment_date: str = Form(...),
+        appointment_time: str = Form(...),
+        duration: int = Form(60),
+        notes: str = Form(None),
+        user=Depends(get_current_user)
+    ):
+        db = get_Mysql_db()
+        cursor = db.cursor()
+
+        try:
+            cursor.execute(
+                """INSERT INTO Appointments 
+                (patient_id, therapist_id, appointment_date, appointment_time, duration, notes) 
+                VALUES (%s, %s, %s, %s, %s, %s)""",
+                (patient_id, user["user_id"], appointment_date, appointment_time, duration, notes)
+            )
+            db.commit()
+            return RedirectResponse(url="/appointments", status_code=303)
+        except Exception as e:
+            print(f"Error creating appointment: {e}")
+            return RedirectResponse(url="/appointments/new", status_code=303)
+        finally:
+            cursor.close()
+            db.close()
+
+    @app.get("/exercises")
+    async def exercises_page(request: Request, user=Depends(get_current_user)):
+        db = get_Mysql_db()
+        cursor = db.cursor(dictionary=True)
+
+        try:
+            cursor.execute(
+                """SELECT e.*, c.name as category_name 
+                FROM Exercises e
+                LEFT JOIN ExerciseCategories c ON e.category_id = c.category_id
+                WHERE e.therapist_id = %s
+                ORDER BY e.name""", 
+                (user["user_id"],)
+            )
+            exercises = cursor.fetchall()
+
+            cursor.execute("SELECT * FROM ExerciseCategories")
+            categories = cursor.fetchall()
+
+            therapist_data = await get_therapist_data(user["user_id"])
+
+            return templates.TemplateResponse(
+                "dist/exercises/exercise_list.html", 
+                {
+                    "request": request,
+                    "exercises": exercises,
+                    "categories": categories,
+                    "first_name": therapist_data["first_name"],
+                    "last_name": therapist_data["last_name"]
+                }
+            )
+        finally:
+            cursor.close()
+            db.close()
+
+    @app.get("/exercises/add")
+    async def add_exercise_page(request: Request, user=Depends(get_current_user)):
+        db = get_Mysql_db()
+        cursor = db.cursor(dictionary=True)
+
+        try:
+            cursor.execute("SELECT * FROM ExerciseCategories")
+            categories = cursor.fetchall()
+
+            therapist_data = await get_therapist_data(user["user_id"])
+
+            return templates.TemplateResponse(
+                "dist/exercises/add_exercise.html", 
+                {
+                    "request": request,
+                    "categories": categories,
+                    "first_name": therapist_data["first_name"],
+                    "last_name": therapist_data["last_name"]
+                }
+            )
+        finally:
+            cursor.close()
+            db.close()
+
+    @app.post("/exercises/add")
+    async def add_exercise(
+        request: Request,
+        name: str = Form(...),
+        category_id: int = Form(...),
+        description: str = Form(None),
+        video_url: str = Form(None),
+        duration: int = Form(None),
+        difficulty: str = Form(None),
+        instructions: str = Form(None),
+        user=Depends(get_current_user)
+    ):
+        db = get_Mysql_db()
+        cursor = db.cursor()
+
+        try:
+            cursor.execute(
+                """INSERT INTO Exercises 
+                (therapist_id, category_id, name, description, video_url, duration, difficulty, instructions) 
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)""",
+                (user["user_id"], category_id, name, description, video_url, duration, difficulty, instructions)
+            )
+            db.commit()
+            return RedirectResponse(url="/exercises", status_code=303)
+        except Exception as e:
+            print(f"Error adding exercise: {e}")
+            return RedirectResponse(url="/exercises/add", status_code=303)
+        finally:
+            cursor.close()
+            db.close()
+
+    @app.get("/treatment-plans")
+    async def treatment_plans_page(request: Request, user=Depends(get_current_user)):
+        db = get_Mysql_db()
+        cursor = db.cursor(dictionary=True)
+
+        try:
+            cursor.execute(
+                """SELECT tp.*, p.first_name, p.last_name 
+                FROM TreatmentPlans tp
+                JOIN Patients p ON tp.patient_id = p.patient_id
+                WHERE tp.therapist_id = %s
+                ORDER BY tp.created_at DESC""", 
+                (user["user_id"],)
+            )
+            treatment_plans = cursor.fetchall()
+
+            therapist_data = await get_therapist_data(user["user_id"])
+
+            return templates.TemplateResponse(
+                "dist/treatment_plans/plan_list.html", 
+                {
+                    "request": request,
+                    "treatment_plans": treatment_plans,
+                    "first_name": therapist_data["first_name"],
+                    "last_name": therapist_data["last_name"]
+                }
+            )
+        finally:
+            cursor.close()
+            db.close()
+
+    @app.get("/treatment-plans/new")
+    async def new_treatment_plan_page(request: Request, user=Depends(get_current_user)):
+        db = get_Mysql_db()
+        cursor = db.cursor(dictionary=True)
+
+        try:
+            cursor.execute(
+                "SELECT patient_id, first_name, last_name FROM Patients WHERE therapist_id = %s", 
+                (user["user_id"],)
+            )
+            patients = cursor.fetchall()
+
+            cursor.execute(
+                "SELECT * FROM Exercises WHERE therapist_id = %s", 
+                (user["user_id"],)
+            )
+            exercises = cursor.fetchall()
+
+            therapist_data = await get_therapist_data(user["user_id"])
+
+            return templates.TemplateResponse(
+                "dist/treatment_plans/new_plan.html", 
+                {
+                    "request": request,
+                    "patients": patients,
+                    "exercises": exercises,
+                    "first_name": therapist_data["first_name"],
+                    "last_name": therapist_data["last_name"]
+                }
+            )
+        finally:
+            cursor.close()
+            db.close()
+
+    async def get_therapist_data(therapist_id):
+        db = get_Mysql_db()
+        cursor = db.cursor(dictionary=True)
+
+        try:
+            cursor.execute(
+                "SELECT first_name, last_name FROM Therapists WHERE id = %s", 
+                (therapist_id,)
+            )
+            return cursor.fetchone()
+        finally:
+            cursor.close()
+            db.close()

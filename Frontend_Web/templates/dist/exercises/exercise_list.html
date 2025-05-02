@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Exercise Library | APR-CV</title>
+  
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0, minimal-ui">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="description" content="APR-CV Patient Management System">
+  <meta name="keywords" content="physical therapy, rehab, cardiovascular therapy, patient management">
+  <meta name="author" content="APR-CV">
+  
+  
+  <link rel="icon" href="../static/assets/images/favicon.svg" type="image/x-icon">
+  
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700&display=swap" id="main-font-link">
+  
+  <link rel="stylesheet" href="../static/assets/fonts/tabler-icons.min.css" >
+  
+  <link rel="stylesheet" href="../static/assets/fonts/feather.css" >
+  
+  <link rel="stylesheet" href="../static/assets/fonts/fontawesome.css" >
+  
+  <link rel="stylesheet" href="../static/assets/fonts/material.css" >
+  
+  <link rel="stylesheet" href="../static/assets/css/style.css" id="main-style-link" >
+  <link rel="stylesheet" href="../static/assets/css/style-preset.css" >
+</head>
+
+<body data-pc-preset="preset-1" data-pc-direction="ltr" data-pc-theme="light">
+  
+  <div class="loader-bg">
+    <div class="loader-track">
+      <div class="loader-fill"></div>
+    </div>
+  </div>
+  
+  
+  
+  <nav class="pc-sidebar">
+    <div class="navbar-wrapper">
+      <div class="m-header">
+        <a href="/front-page" class="b-brand text-primary">
+          <i class="ti ti-medical-cross fs-4"></i>
+          <span class="ms-2 fw-bold">APR-CV</span>
+        </a>
+      </div>
+      <div class="navbar-content">
+        <ul class="pc-navbar">
+          <li class="pc-item">
+            <a href="/front-page" class="pc-link">
+              <span class="pc-micon"><i class="ti ti-dashboard"></i></span>
+              <span class="pc-mtext">Dashboard</span>
+            </a>
+          </li>
+        
+          <li class="pc-item pc-hasmenu">
+            <a href="#!" class="pc-link">
+              <span class="pc-micon"><i class="ti ti-users"></i></span>
+              <span class="pc-mtext">Patients</span>
+              <span class="pc-arrow"><i data-feather="chevron-right"></i></span>
+            </a>
+            <ul class="pc-submenu">
+              <li class="pc-item"><a class="pc-link" href="/patients">Patient Directory</a></li>
+              <li class="pc-item"><a class="pc-link" href="/reports/patients">Patient Reports</a></li>
+            </ul>
+          </li>
+        
+          <li class="pc-item pc-hasmenu">
+            <a href="#!" class="pc-link">
+              <span class="pc-micon"><i class="ti ti-calendar"></i></span>
+              <span class="pc-mtext">Appointments</span>
+              <span class="pc-arrow"><i data-feather="chevron-right"></i></span>
+            </a>
+            <ul class="pc-submenu">
+              <li class="pc-item"><a class="pc-link" href="/appointments">Schedule</a></li>
+              <li class="pc-item"><a class="pc-link" href="/appointments/new">New Appointment</a></li>
+            </ul>
+          </li>
+        
+          <li class="pc-item pc-hasmenu active">
+            <a href="#!" class="pc-link">
+              <span class="pc-micon"><i class="ti ti-activity"></i></span>
+              <span class="pc-mtext">Exercise Library</span>
+              <span class="pc-arrow"><i data-feather="chevron-right"></i></span>
+            </a>
+            <ul class="pc-submenu">
+              <li class="pc-item active"><a class="pc-link" href="/exercises">Browse Exercises</a></li>
+              <li class="pc-item"><a class="pc-link" href="/exercises/add">Upload New Exercise</a></li>
+            </ul>
+          </li>
+        
+          <li class="pc-item pc-hasmenu">
+            <a href="#!" class="pc-link">
+              <span class="pc-micon"><i class="ti ti-report"></i></span>
+              <span class="pc-mtext">Treatment Plans</span>
+              <span class="pc-arrow"><i data-feather="chevron-right"></i></span>
+            </a>
+            <ul class="pc-submenu">
+              <li class="pc-item"><a class="pc-link" href="/treatment-plans/new">Create Plan</a></li>
+              <li class="pc-item"><a class="pc-link" href="/treatment-plans">Manage Plans</a></li>
+            </ul>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+  
+  
+  
+  <header class="pc-header">
+    <div class="header-wrapper">
+      
+      <div class="me-auto pc-mob-drp">
+        <ul class="list-unstyled">
+          <li class="pc-h-item pc-sidebar-collapse">
+            <a href="#" class="pc-head-link ms-0" id="sidebar-hide">
+              <i class="ti ti-menu-2"></i>
+            </a>
+          </li>
+          <li class="pc-h-item pc-sidebar-popup">
+            <a href="#" class="pc-head-link ms-0" id="mobile-collapse">
+              <i class="ti ti-menu-2"></i>
+            </a>
+          </li>
+          <li class="pc-h-item d-none d-md-inline-flex">
+            <form class="header-search">
+              <i data-feather="search" class="icon-search"></i>
+              <input type="search" class="form-control" placeholder="Search...">
+            </form>
+          </li>
+        </ul>
+      </div>
+      
+      
+      <div class="ms-auto">
+        <ul class="list-unstyled">
+          <li class="dropdown pc-h-item header-user-profile">
+            <a class="pc-head-link dropdown-toggle arrow-none me-0" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="false" data-bs-auto-close="outside" aria-expanded="false">
+              <img src="/static/assets/images/user/{{ therapist.profile_image }}" alt="user-image" class="user-avtar">
+              <span>{{ first_name }} {{ last_name }}</span>
+            </a>
+            <div class="dropdown-menu dropdown-user-profile dropdown-menu-end pc-h-dropdown">
+              <div class="dropdown-header">
+                <div class="d-flex mb-1">
+                  <div class="flex-shrink-0">
+                    <img src="/static/assets/images/user/{{ therapist.profile_image }}" alt="user-image" class="user-avtar">
+                  </div>
+                  <div class="flex-grow-1 ms-3">
+                    <h6 class="mb-1">{{ first_name }} {{ last_name }}</h6>
+                    <span>Physical Therapist</span>
+                  </div>
+                  <a href="/logout" class="pc-head-link bg-transparent"><i class="ti ti-power text-danger"></i></a>
+                </div>
+              </div>
+              
+              <a href="/logout" class="dropdown-item">
+                <i class="ti ti-power"></i>
+                <span>Logout</span>
+              </a>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </header>
+  
+
+  
+  <div class="pc-container">
+    <div class="pc-content">
+      
+      <div class="page-header">
+        <div class="page-block">
+          <div class="row align-items-center">
+            <div class="col-md-12">
+              <div class="page-header-title">
+                <h5 class="mb-0">Exercise Library</h5>
+              </div>
+              <ul class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/front-page">Home</a></li>
+                <li class="breadcrumb-item active">Exercise Library</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+
+      <div class="row">
+        <div class="col-12">
+          <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+              <h5>Browse Exercises</h5>
+              <a href="/exercises/add" class="btn btn-primary">
+                <i class="ti ti-plus me-1"></i> Add New Exercise
+              </a>
+            </div>
+            <div class="card-body">
+              <div class="row mb-3">
+                <div class="col-md-6">
+                  <div class="input-group">
+                    <input type="text" class="form-control" id="search-exercise" placeholder="Search exercises...">
+                    <button class="btn btn-outline-secondary" type="button">
+                      <i class="ti ti-search"></i>
+                    </button>
+                  </div>
+                </div>
+                <div class="col-md-6 text-md-end mt-3 mt-md-0">
+                  <select class="form-select w-auto d-inline-block" id="category-filter">
+                    <option value="all">All Categories</option>
+                    {% for category in categories %}
+                    <option value="{{ category.category_id }}">{{ category.name }}</option>
+                    {% endfor %}
+                  </select>
+                  <select class="form-select w-auto d-inline-block ms-2" id="difficulty-filter">
+                    <option value="all">All Difficulties</option>
+                    <option value="Beginner">Beginner</option>
+                    <option value="Intermediate">Intermediate</option>
+                    <option value="Advanced">Advanced</option>
+                  </select>
+                </div>
+              </div>
+              
+              {% if exercises %}
+              <div class="row" id="exercise-grid">
+                {% for exercise in exercises %}
+                <div class="col-md-6 col-lg-4 mb-4 exercise-card" 
+                     data-category="{{ exercise.category_id }}" 
+                     data-difficulty="{{ exercise.difficulty }}"
+                     data-name="{{ exercise.name|lower }}">
+                  <div class="card h-100">
+                    <div class="card-header bg-transparent p-0">
+                      {% if exercise.video_url %}
+                      <div class="position-relative">
+                        <div class="ratio ratio-16x9 overflow-hidden rounded-top">
+                          {% if 'youtube.com' in exercise.video_url or 'youtu.be' in exercise.video_url %}
+                          <iframe src="{{ exercise.video_url|replace('watch?v=', 'embed/') }}" title="{{ exercise.name }}" allowfullscreen></iframe>
+                          {% else %}
+                          <video class="video-thumbnail" controls poster="../static/assets/images/exercise-placeholder.jpg">
+                            <source src="{{ exercise.video_url }}" type="video/mp4">
+                            Your browser does not support the video tag.
+                          </video>
+                          {% endif %}
+                        </div>
+                        <div class="position-absolute bottom-0 end-0 p-2">
+                          {% if exercise.difficulty == 'Beginner' %}
+                          <span class="badge bg-success">Beginner</span>
+                          {% elif exercise.difficulty == 'Intermediate' %}
+                          <span class="badge bg-warning">Intermediate</span>
+                          {% elif exercise.difficulty == 'Advanced' %}
+                          <span class="badge bg-danger">Advanced</span>
+                          {% endif %}
+                        </div>
+                      </div>
+                      {% else %}
+                      <div class="position-relative">
+                        <div class="ratio ratio-16x9 overflow-hidden rounded-top bg-light d-flex align-items-center justify-content-center">
+                          <i class="ti ti-activity text-muted" style="font-size: 3rem;"></i>
+                        </div>
+                        <div class="position-absolute bottom-0 end-0 p-2">
+                          {% if exercise.difficulty == 'Beginner' %}
+                          <span class="badge bg-success">Beginner</span>
+                          {% elif exercise.difficulty == 'Intermediate' %}
+                          <span class="badge bg-warning">Intermediate</span>
+                          {% elif exercise.difficulty == 'Advanced' %}
+                          <span class="badge bg-danger">Advanced</span>
+                          {% endif %}
+                        </div>
+                      </div>
+                      {% endif %}
+                    </div>
+                    <div class="card-body">
+                      <div class="d-flex justify-content-between align-items-start">
+                        <h5 class="card-title mb-1">{{ exercise.name }}</h5>
+                        <div class="dropdown">
+                          <button class="btn btn-sm btn-ghost-secondary" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="ti ti-dots-vertical"></i>
+                          </button>
+                          <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="/exercises/{{ exercise.exercise_id }}"><i class="ti ti-eye me-1"></i> View Details</a></li>
+                            <li><a class="dropdown-item" href="/exercises/{{ exercise.exercise_id }}/edit"><i class="ti ti-edit me-1"></i> Edit</a></li>
+                            <li>
+                              <a class="dropdown-item text-danger" href="#" data-bs-toggle="modal" data-bs-target="#deleteExerciseModal" data-exercise-id="{{ exercise.exercise_id }}" data-exercise-name="{{ exercise.name }}">
+                                <i class="ti ti-trash me-1"></i> Delete
+                              </a>
+                            </li>
+                        </ul>
+                        </div>
+                      </div>
+                      <p class="text-muted small mb-2">
+                        {% if exercise.category_name %}
+                        <span class="badge bg-light-primary">{{ exercise.category_name }}</span>
+                        {% endif %}
+                        {% if exercise.duration %}
+                        <span class="ms-2"><i class="ti ti-clock me-1"></i>{{ exercise.duration }} min</span>
+                        {% endif %}
+                      </p>
+                      <p class="card-text small">{{ exercise.description|truncate(100) }}</p>
+                    </div>
+                    <div class="card-footer bg-transparent">
+                      <a href="/exercises/{{ exercise.exercise_id }}/edit" class="btn btn-sm btn-outline-secondary ms-2">
+                        <i class="ti ti-edit me-1"></i> Edit
+                      </a>
+                      <button class="btn btn-sm btn-outline-success ms-2 add-to-plan-btn" data-exercise-id="{{ exercise.exercise_id }}" data-exercise-name="{{ exercise.name }}">
+                        <i class="ti ti-plus me-1"></i> Add to Plan
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                {% endfor %}
+              </div>
+              {% else %}
+              <div class="text-center py-5">
+                <i class="ti ti-activity f-48 mb-3 text-muted"></i>
+                <h5 class="mb-3">No Exercises Found</h5>
+                <p class="mb-4">You haven't added any exercises to your library yet.</p>
+                <a href="/exercises/add" class="btn btn-primary">
+                  <i class="ti ti-plus me-1"></i> Add Your First Exercise
+                </a>
+              </div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      
+      <div class="row mt-4">
+        <div class="col-12">
+          <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+              <h5>Exercise Categories</h5>
+              <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#addCategoryModal">
+                <i class="ti ti-plus me-1"></i> Add Category
+              </button>
+            </div>
+            <div class="card-body">
+              <div class="row">
+                {% for category in categories %}
+                <div class="col-sm-6 col-md-4 col-lg-3 mb-3">
+                  <div class="card">
+                    <div class="card-body">
+                      <h6 class="card-title">{{ category.name }}</h6>
+                      <p class="card-text small text-muted">{{ category.description|truncate(60) }}</p>
+                      <div class="d-flex justify-content-between align-items-center">
+                        <span class="badge bg-light-primary">{{ exercises|selectattr('category_id', 'equalto', category.category_id)|list|length }} exercises</span>
+                        <div class="btn-group">
+                          <button class="btn btn-sm btn-ghost-primary" data-bs-toggle="modal" data-bs-target="#editCategoryModal" data-category-id="{{ category.category_id }}" data-category-name="{{ category.name }}" data-category-description="{{ category.description }}">
+                            <i class="ti ti-edit"></i>
+                          </button>
+                          <button class="btn btn-sm btn-ghost-danger" data-bs-toggle="modal" data-bs-target="#deleteCategoryModal" data-category-id="{{ category.category_id }}" data-category-name="{{ category.name }}">
+                            <i class="ti ti-trash"></i>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                {% endfor %}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+
+  
+  
+<div class="modal fade" id="deleteExerciseModal" tabindex="-1" aria-labelledby="deleteExerciseModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="deleteExerciseModalLabel">Confirm Deletion</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p>Are you sure you want to delete the exercise "<span id="exercise-name-placeholder"></span>"?</p>
+        <p class="text-danger">This action cannot be undone.</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <form id="delete-exercise-form" action="/exercises/delete" method="POST">
+          <input type="hidden" id="exercise-id-input" name="exercise_id" value="">
+          <button type="submit" class="btn btn-danger">Delete Exercise</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+  
+  
+  <div class="modal fade" id="addCategoryModal" tabindex="-1" aria-labelledby="addCategoryModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="addCategoryModalLabel">Add New Category</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <form action="/exercises/categories/add" method="POST">
+          <div class="modal-body">
+            <div class="mb-3">
+              <label for="category-name" class="form-label">Category Name <span class="text-danger">*</span></label>
+              <input type="text" class="form-control" id="category-name" name="name" required>
+            </div>
+            <div class="mb-3">
+              <label for="category-description" class="form-label">Description</label>
+              <textarea class="form-control" id="category-description" name="description" rows="3"></textarea>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-primary">Add Category</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  
+  
+  <div class="modal fade" id="editCategoryModal" tabindex="-1" aria-labelledby="editCategoryModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="editCategoryModalLabel">Edit Category</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <form action="/exercises/categories/edit" method="POST">
+          <input type="hidden" id="edit-category-id" name="category_id" value="">
+          <div class="modal-body">
+            <div class="mb-3">
+              <label for="edit-category-name" class="form-label">Category Name <span class="text-danger">*</span></label>
+              <input type="text" class="form-control" id="edit-category-name" name="name" required>
+            </div>
+            <div class="mb-3">
+              <label for="edit-category-description" class="form-label">Description</label>
+              <textarea class="form-control" id="edit-category-description" name="description" rows="3"></textarea>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-primary">Save Changes</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  
+  
+  <div class="modal fade" id="deleteCategoryModal" tabindex="-1" aria-labelledby="deleteCategoryModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="deleteCategoryModalLabel">Confirm Category Deletion</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p>Are you sure you want to delete the category "<span id="category-name-placeholder"></span>"?</p>
+          <p class="text-warning">Note: This will not delete the exercises in this category, but they will no longer be categorized.</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <form id="delete-category-form" action="/exercises/categories/delete" method="POST">
+            <input type="hidden" id="category-id-input" name="category_id" value="">
+            <button type="submit" class="btn btn-danger">Delete Category</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  
+  <div class="modal fade" id="addToPlanModal" tabindex="-1" aria-labelledby="addToPlanModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="addToPlanModalLabel">Add to Treatment Plan</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <form action="/treatment-plans/add-exercise" method="POST">
+          <input type="hidden" id="modal-exercise-id" name="exercise_id" value="">
+          <div class="modal-body">
+            <div class="mb-3">
+              <p>Adding exercise: <strong id="modal-exercise-name"></strong></p>
+            </div>
+            <div class="mb-3">
+              <label for="plan-select" class="form-label">Select Treatment Plan <span class="text-danger">*</span></label>
+              <select class="form-select" id="plan-select" name="plan_id" required>
+                <option value="" selected disabled>Choose a treatment plan</option>
+                {% for i in treatment_plans %}
+                  <option value="{{ i }}">{{ i.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="row mb-3">
+              <div class="col-6">
+                <label for="sets" class="form-label">Sets</label>
+                <input type="number" class="form-control" id="sets" name="sets" min="1" value="3">
+              </div>
+              <div class="col-6">
+                <label for="repetitions" class="form-label">Repetitions</label>
+                <input type="number" class="form-control" id="repetitions" name="repetitions" min="1" value="10">
+              </div>
+            </div>
+            <div class="mb-3">
+              <label for="frequency" class="form-label">Frequency</label>
+              <select class="form-select" id="frequency" name="frequency">
+                <option value="Daily">Daily</option>
+                <option value="Every other day" selected>Every other day</option>
+                <option value="Twice a week">Twice a week</option>
+                <option value="Weekly">Weekly</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label for="notes" class="form-label">Notes</label>
+              <textarea class="form-control" id="notes" name="notes" rows="2"></textarea>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-primary">Add to Plan</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <footer class="pc-footer">
+    <div class="footer-wrapper container-fluid">
+      <div class="row">
+        <div class="col-auto my-1">
+          <span>&copy; 2025 APR-CV Physical Therapy</span>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+<script src="../static/assets/js/plugins/popper.min.js"></script>
+<script src="../static/assets/js/plugins/perfect-scrollbar.min.js"></script>
+<script src="../static/assets/js/plugins/bootstrap.min.js"></script>
+<script src="../static/assets/js/pcoded.js"></script>
+<script src="../static/assets/js/plugins/feather.min.js"></script>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    var deleteExerciseModal = document.getElementById('deleteExerciseModal');
+    if (deleteExerciseModal) {
+      deleteExerciseModal.addEventListener('show.bs.modal', function(event) {
+        var button = event.relatedTarget;
+        var exerciseId = button.getAttribute('data-exercise-id');
+        var exerciseName = button.getAttribute('data-exercise-name');
+        
+        var exerciseNamePlaceholder = document.getElementById('exercise-name-placeholder');
+        var exerciseIdInput = document.getElementById('exercise-id-input');
+        
+        exerciseNamePlaceholder.textContent = exerciseName;
+        exerciseIdInput.value = exerciseId;
+        
+        console.log("Setting exercise ID for deletion:", exerciseId);
+      });
+    }
+    
+    document.querySelectorAll('[data-bs-target="#deleteExerciseModal"]').forEach(function(btn) {
+      console.log("Delete button:", btn.getAttribute('data-exercise-id'));
+    });
+    
+    var deleteForm = document.getElementById('delete-exercise-form');
+    if (deleteForm) {
+      deleteForm.addEventListener('submit', function(e) {
+        var idInput = document.getElementById('exercise-id-input');
+        console.log("Form submitting with exercise ID:", idInput ? idInput.value : 'none');
+        
+        if (!idInput || !idInput.value) {
+          console.error("No exercise ID set for deletion!");
+          e.preventDefault();
+          alert("Error: No exercise ID specified for deletion. Please try again.");
+          return false;
+        }
+      });
+    }
+    
+    var editCategoryModal = document.getElementById('editCategoryModal');
+    if (editCategoryModal) {
+      editCategoryModal.addEventListener('show.bs.modal', function(event) {
+        var button = event.relatedTarget;
+        var categoryId = button.getAttribute('data-category-id');
+        var categoryName = button.getAttribute('data-category-name');
+        var categoryDescription = button.getAttribute('data-category-description');
+        
+        document.getElementById('edit-category-id').value = categoryId;
+        document.getElementById('edit-category-name').value = categoryName;
+        document.getElementById('edit-category-description').value = categoryDescription;
+      });
+    }
+    
+    var deleteCategoryModal = document.getElementById('deleteCategoryModal');
+    if (deleteCategoryModal) {
+      deleteCategoryModal.addEventListener('show.bs.modal', function(event) {
+        var button = event.relatedTarget;
+        var categoryId = button.getAttribute('data-category-id');
+        var categoryName = button.getAttribute('data-category-name');
+        
+        document.getElementById('category-name-placeholder').textContent = categoryName;
+        document.getElementById('category-id-input').value = categoryId;
+      });
+    }
+    
+
+    var addToPlanModal = document.getElementById('addToPlanModal');
+    if (addToPlanModal) {
+      addToPlanModal.addEventListener('show.bs.modal', function(event) {
+        var button = event.relatedTarget;
+        var exerciseId = button.getAttribute('data-exercise-id');
+        var exerciseName = button.getAttribute('data-exercise-name');
+        
+        document.getElementById('modal-exercise-id').value = exerciseId;
+        document.getElementById('modal-exercise-name').textContent = exerciseName;
+        
+
+        var planSelect = document.getElementById('plan-select');
+        planSelect.innerHTML = '<option value="" selected disabled>Choose a treatment plan</option>';
+        
+        fetch('/api/treatment-plans/active')
+          .then(response => response.json())
+          .then(data => {
+            data.forEach(plan => {
+              var option = document.createElement('option');
+              option.value = plan.plan_id;
+              option.textContent = plan.name + ' (' + plan.patient_name + ')';
+              planSelect.appendChild(option);
+            });
+          })
+          .catch(error => {
+            console.error('Error fetching treatment plans:', error);
+          });
+      });
+    }
+    
+    document.querySelectorAll('.add-to-plan-btn').forEach(function(button) {
+      button.addEventListener('click', function() {
+        var exerciseId = this.getAttribute('data-exercise-id');
+        var exerciseName = this.getAttribute('data-exercise-name');
+        
+        var addToPlanModal = new bootstrap.Modal(document.getElementById('addToPlanModal'));
+        
+        document.getElementById('modal-exercise-id').value = exerciseId;
+        document.getElementById('modal-exercise-name').textContent = exerciseName;
+        
+        addToPlanModal.show();
+      });
+    });
+    
+    var searchInput = document.getElementById('search-exercise');
+    var categoryFilter = document.getElementById('category-filter');
+    var difficultyFilter = document.getElementById('difficulty-filter');
+    
+    if (searchInput) {
+      searchInput.addEventListener('keyup', filterExercises);
+    }
+    
+    if (categoryFilter) {
+      categoryFilter.addEventListener('change', filterExercises);
+    }
+    
+    if (difficultyFilter) {
+      difficultyFilter.addEventListener('change', filterExercises);
+    }
+    
+    function filterExercises() {
+      var searchText = (searchInput ? searchInput.value : '').toLowerCase();
+      var categoryValue = categoryFilter ? categoryFilter.value : 'all';
+      var difficultyValue = difficultyFilter ? difficultyFilter.value : 'all';
+      
+      document.querySelectorAll('.exercise-card').forEach(function(card) {
+        var name = card.getAttribute('data-name');
+        var category = card.getAttribute('data-category');
+        var difficulty = card.getAttribute('data-difficulty');
+        
+        var nameMatch = name.includes(searchText);
+        var categoryMatch = categoryValue === 'all' || category === categoryValue;
+        var difficultyMatch = difficultyValue === 'all' || difficulty === difficultyValue;
+        
+        if (nameMatch && categoryMatch && difficultyMatch) {
+          card.style.display = '';
+        } else {
+          card.style.display = 'none';
+        }
+      });
+    }
+  });
+</script>
+</body>
+</html>

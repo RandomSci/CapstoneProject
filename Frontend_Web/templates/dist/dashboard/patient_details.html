@@ -1,0 +1,1012 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Patient Details | APR-CV</title>
+  
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0, minimal-ui">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="description" content="APR-CV Patient Management System">
+  <meta name="keywords" content="physical therapy, rehab, cardiovascular therapy, patient management">
+  <meta name="author" content="APR-CV">
+  
+  
+  <link rel="icon" href="../static/assets/images/favicon.svg" type="image/x-icon">
+  
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700&display=swap" id="main-font-link">
+  
+  <link rel="stylesheet" href="../static/assets/fonts/tabler-icons.min.css" >
+  
+  <link rel="stylesheet" href="../static/assets/fonts/feather.css" >
+  
+  <link rel="stylesheet" href="../static/assets/fonts/fontawesome.css" >
+  
+  <link rel="stylesheet" href="../static/assets/fonts/material.css" >
+  
+  <link rel="stylesheet" href="../static/assets/css/style.css" id="main-style-link" >
+  <link rel="stylesheet" href="../static/assets/css/style-preset.css" >
+</head>
+
+<body data-pc-preset="preset-1" data-pc-direction="ltr" data-pc-theme="light">
+  
+  <div class="loader-bg">
+    <div class="loader-track">
+      <div class="loader-fill"></div>
+    </div>
+  </div>
+  
+  
+  
+  <nav class="pc-sidebar">
+    <div class="navbar-wrapper">
+      <div class="m-header">
+        <a href="/front-page" class="b-brand text-primary">
+          <i class="ti ti-medical-cross fs-4"></i>
+          <span class="ms-2 fw-bold">APR-CV</span>
+        </a>
+      </div>
+      <div class="navbar-content">
+        <ul class="pc-navbar">
+          <li class="pc-item">
+            <a href="/front-page" class="pc-link">
+              <span class="pc-micon"><i class="ti ti-dashboard"></i></span>
+              <span class="pc-mtext">Dashboard</span>
+            </a>
+          </li>
+        
+          <li class="pc-item pc-hasmenu active">
+            <a href="#!" class="pc-link">
+              <span class="pc-micon"><i class="ti ti-users"></i></span>
+              <span class="pc-mtext">Patients</span>
+              <span class="pc-arrow"><i data-feather="chevron-right"></i></span>
+            </a>
+            <ul class="pc-submenu">
+              <li class="pc-item"><a class="pc-link" href="/patients">Patient Directory</a></li>
+              <li class="pc-item"><a class="pc-link" href="/reports/patients">Patient Reports</a></li>
+            </ul>
+          </li>
+        
+          <li class="pc-item pc-hasmenu">
+            <a href="#!" class="pc-link">
+              <span class="pc-micon"><i class="ti ti-calendar"></i></span>
+              <span class="pc-mtext">Appointments</span>
+              <span class="pc-arrow"><i data-feather="chevron-right"></i></span>
+            </a>
+            <ul class="pc-submenu">
+              <li class="pc-item"><a class="pc-link" href="/appointments">Schedule</a></li>
+              <li class="pc-item"><a class="pc-link" href="/appointments/new">New Appointment</a></li>
+            </ul>
+          </li>
+        
+          <li class="pc-item pc-hasmenu">
+            <a href="#!" class="pc-link">
+              <span class="pc-micon"><i class="ti ti-activity"></i></span>
+              <span class="pc-mtext">Exercise Library</span>
+              <span class="pc-arrow"><i data-feather="chevron-right"></i></span>
+            </a>
+            <ul class="pc-submenu">
+              <li class="pc-item"><a class="pc-link" href="/exercises">Browse Exercises</a></li>
+              <li class="pc-item"><a class="pc-link" href="/exercises/add">Upload New Exercise</a></li>
+            </ul>
+          </li>
+        
+          <li class="pc-item pc-hasmenu">
+            <a href="#!" class="pc-link">
+              <span class="pc-micon"><i class="ti ti-report"></i></span>
+              <span class="pc-mtext">Treatment Plans</span>
+              <span class="pc-arrow"><i data-feather="chevron-right"></i></span>
+            </a>
+            <ul class="pc-submenu">
+              <li class="pc-item"><a class="pc-link" href="/treatment-plans/new">Create Plan</a></li>
+              <li class="pc-item"><a class="pc-link" href="/treatment-plans">Manage Plans</a></li>
+            </ul>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+  
+  
+  
+  <header class="pc-header">
+    <div class="header-wrapper">
+      
+      <div class="me-auto pc-mob-drp">
+        <ul class="list-unstyled">
+          
+          <li class="pc-h-item pc-sidebar-collapse">
+            <a href="#" class="pc-head-link ms-0" id="sidebar-hide">
+              <i class="ti ti-menu-2"></i>
+            </a>
+          </li>
+          <li class="pc-h-item pc-sidebar-popup">
+            <a href="#" class="pc-head-link ms-0" id="mobile-collapse">
+              <i class="ti ti-menu-2"></i>
+            </a>
+          </li>
+          <li class="dropdown pc-h-item d-inline-flex d-md-none">
+            <a class="pc-head-link dropdown-toggle arrow-none m-0" data-bs-toggle="dropdown" href="#" role="button"
+              aria-haspopup="false" aria-expanded="false">
+              <i class="ti ti-search"></i>
+            </a>
+            <div class="dropdown-menu pc-h-dropdown drp-search">
+              <form class="px-3">
+                <div class="form-group mb-0 d-flex align-items-center">
+                  <i data-feather="search"></i>
+                  <input type="search" class="form-control border-0 shadow-none" placeholder="Search here. . .">
+                </div>
+              </form>
+            </div>
+          </li>
+          <li class="pc-h-item d-none d-md-inline-flex">
+            <form class="header-search">
+              <i data-feather="search" class="icon-search"></i>
+              <input type="search" class="form-control" placeholder="Search here. . .">
+            </form>
+          </li>
+        </ul>
+      </div>
+      
+      <div class="ms-auto">
+        <ul class="list-unstyled">
+          <li class="dropdown pc-h-item">
+            <a class="pc-head-link dropdown-toggle arrow-none me-0" data-bs-toggle="dropdown" href="#" role="button"
+              aria-haspopup="false" aria-expanded="false">
+              <i class="ti ti-mail"></i>
+              {% if unread_messages_count > 0 %}
+              <span class="badge bg-danger pc-h-badge dots"><span class="sr-only">{{ unread_messages_count }} unread
+                  messages</span></span>
+              {% endif %}
+            </a>
+            <div class="dropdown-menu dropdown-notification dropdown-menu-end pc-h-dropdown">
+              <div class="dropdown-header d-flex align-items-center justify-content-between">
+                <h5 class="m-0">Messages{% if unread_messages_count > 0 %} <span
+                    class="badge bg-light-danger text-danger">{{ unread_messages_count }} New</span>{% endif %}</h5>
+                <a href="#!" class="pc-head-link bg-transparent"><i class="ti ti-x text-danger"></i></a>
+              </div>
+              <div class="dropdown-divider"></div>
+              <div class="dropdown-header px-0 text-wrap header-notification-scroll position-relative"
+                style="max-height: calc(100vh - 215px)">
+                <div class="list-group list-group-flush w-100">
+                  
+                </div>
+              </div>
+              <div class="dropdown-divider"></div>
+              <div class="text-center py-2">
+                <a href="/messages" class="link-primary">View all messages</a>
+              </div>
+            </div>
+          </li>
+          <li class="dropdown pc-h-item header-user-profile">
+            <a class="pc-head-link dropdown-toggle arrow-none me-0" data-bs-toggle="dropdown" href="#" role="button"
+              aria-haspopup="false" data-bs-auto-close="outside" aria-expanded="false">
+              <img src="/static/assets/images/user/{{ therapist.profile_image }}" alt="user-image" class="user-avtar">
+              <span>{{ first_name }} {{ last_name }}</span>
+            </a>
+            <div class="dropdown-menu dropdown-user-profile dropdown-menu-end pc-h-dropdown">
+              <div class="dropdown-header">
+                <div class="d-flex mb-1">
+                  <div class="flex-shrink-0">
+                    <img src="/static/assets/images/user/{{ therapist.profile_image }}" alt="user-image" class="user-avtar wid-35">
+                  </div>
+                  <div class="flex-grow-1 ms-3">
+                    <h6 class="mb-1">{{ first_name }} {{ last_name }}</h6>
+                    <span>Physical Therapist</span>
+                  </div>
+                  <a href="/logout" class="pc-head-link bg-transparent"><i class="ti ti-power text-danger"></i></a>
+                </div>
+              </div>
+              <ul class="nav drp-tabs nav-fill nav-tabs" id="mydrpTab" role="tablist">
+                <li class="nav-item" role="presentation">
+                  <button class="nav-link active" id="drp-t1" data-bs-toggle="tab" data-bs-target="#drp-tab-1"
+                    type="button" role="tab" aria-controls="drp-tab-1" aria-selected="true"><i class="ti ti-user"></i>
+                    Profile</button>
+                </li>
+              </ul>
+              <div class="tab-content" id="mysrpTabContent">
+                <div class="tab-pane fade show active" id="drp-tab-1" role="tabpanel" aria-labelledby="drp-t1"
+                  tabindex="0">
+                  <a href="/profile/edit" class="dropdown-item">
+                    <i class="ti ti-edit-circle"></i>
+                    <span>Edit Profile</span>
+                  </a>
+                  <a href="/profile" class="dropdown-item">
+                    <i class="ti ti-user"></i>
+                    <span>View Profile</span>
+                  </a>
+                  <a href="/logout" class="dropdown-item">
+                    <i class="ti ti-power"></i>
+                    <span>Logout</span>
+                  </a>
+                </div>
+                <div class="tab-pane fade" id="drp-tab-2" role="tabpanel" aria-labelledby="drp-t2" tabindex="0">
+                  <a href="/support" class="dropdown-item">
+                    <i class="ti ti-help"></i>
+                    <span>Support</span>
+                  </a>
+                  <a href="/settings" class="dropdown-item">
+                    <i class="ti ti-user"></i>
+                    <span>Account Settings</span>
+                  </a>
+                  <a href="/privacy" class="dropdown-item">
+                    <i class="ti ti-lock"></i>
+                    <span>Privacy Center</span>
+                  </a>
+                  <a href="/feedback" class="dropdown-item">
+                    <i class="ti ti-messages"></i>
+                    <span>Feedback</span>
+                  </a>
+                  <a href="/activity" class="dropdown-item">
+                    <i class="ti ti-list"></i>
+                    <span>History</span>
+                  </a>
+                </div>
+              </div>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </header>
+  
+
+  
+  <div class="pc-container">
+    <div class="pc-content">
+      
+      <div class="page-header">
+        <div class="page-block">
+          <div class="row align-items-center">
+            <div class="col-md-12">
+              <div class="page-header-title">
+                <h5 class="mb-0">{{ patient.first_name }} {{ patient.last_name }}</h5>
+              </div>
+              <ul class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/front-page">Home</a></li>
+                <li class="breadcrumb-item"><a href="/patients">Patients</a></li>
+                <li class="breadcrumb-item active">Patient Details</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+
+      <div class="row">
+        
+        <div class="col-md-4">
+          <div class="card">
+            <div class="card-header">
+              <h5>Patient Information</h5>
+            </div>
+            <div class="card-body">
+              <div class="d-flex align-items-center mb-3">
+                <div class="avatar">
+                  <div class="avatar-initial rounded bg-primary">
+                    <i class="ti ti-user f-24"></i>
+                  </div>
+                </div>
+                <div class="ms-3">
+                  <h5 class="mb-0">{{ patient.first_name }} {{ patient.last_name }}</h5>
+                  <p class="text-muted mb-0">Patient ID: PT-{{ patient.patient_id }}</p>
+                </div>
+              </div>
+              <div class="mb-3">
+                <span class="badge bg-light-primary mb-1">
+                  <i class="ti ti-stethoscope"></i> {{ patient.diagnosis if patient.diagnosis else 'No diagnosis' }}
+                </span>
+              </div>
+              <hr>
+              <div class="row">
+                <div class="col-12 mb-3">
+                  <p class="mb-1"><i class="ti ti-mail me-2 text-muted"></i> {{ patient.email if patient.email else 'No email' }}</p>
+                  <p class="mb-1"><i class="ti ti-phone me-2 text-muted"></i> {{ patient.phone if patient.phone else 'No phone' }}</p>
+                  <p class="mb-1"><i class="ti ti-calendar me-2 text-muted"></i> DOB: {{ patient.date_of_birth if patient.date_of_birth else 'Not provided' }}</p>
+                  <p class="mb-1"><i class="ti ti-map-pin me-2 text-muted"></i> {{ patient.address if patient.address else 'No address' }}</p>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-12">
+                  <a href="/patients/{{ patient.patient_id }}/edit" class="btn btn-primary">
+                    <i class="ti ti-edit me-1"></i> Edit Profile
+                  </a>
+                  <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#addMetricsModal">
+                    <i class="ti ti-plus me-1"></i> Add Metrics
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          
+          <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+              <div>
+                <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#addStructuredNoteModal">
+                  <i class="ti ti-plus"></i> Add Clinical Note
+                </button>
+                <button class="btn btn-sm btn-outline-secondary ms-1" data-bs-toggle="modal" data-bs-target="#addGeneralNoteModal">
+                  <i class="ti ti-pencil"></i> General Note
+                </button>
+              </div>
+            </div>
+            <div class="card-body">
+              <ul class="nav nav-tabs nav-tabs-line" role="tablist">
+                <li class="nav-item">
+                  <a class="nav-link active" id="general-notes-tab" data-bs-toggle="tab" href="#general-notes" role="tab">
+                    <i class="ti ti-notes me-1"></i>General Notes
+                  </a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" id="clinical-notes-tab" data-bs-toggle="tab" href="#clinical-notes" role="tab">
+                    <i class="ti ti-clipboard-text me-1"></i>Clinical Notes
+                    {% if patient_notes|length > 0 %}
+                    <span class="badge bg-primary">{{ patient_notes|length }}</span>
+                    {% endif %}
+                  </a>
+                </li>
+              </ul>
+              
+              <div class="tab-content mt-3">
+                <div class="tab-pane fade show active" id="general-notes" role="tabpanel">
+                  <div class="note-box p-3 mb-2 bg-light rounded">
+                    {% if patient.notes %}
+                      <p class="mb-1">{{ patient.notes }}</p>
+                    {% else %}
+                      <p class="text-muted mb-1">No general notes available for this patient.</p>
+                    {% endif %}
+                  </div>
+                </div>
+                
+                <div class="tab-pane fade" id="clinical-notes" role="tabpanel">
+                  {% if patient_notes|length > 0 %}
+                    {% for note in patient_notes[:3] %}
+                      <div class="note-item p-3 mb-2 border-start border-3 border-primary rounded bg-light">
+                        <div class="d-flex justify-content-between">
+                          <small class="text-muted">
+                            {% if note.appointment_date %}
+                              <i class="ti ti-calendar me-1"></i> {{ note.appointment_date }}
+                              {% if note.appointment_time %}
+                                at {{ note.appointment_time }}
+                              {% endif %}
+                            {% else %}
+                              <i class="ti ti-clock me-1"></i> {{ note.created_at }}
+                            {% endif %}
+                          </small>
+                          <small class="text-muted">
+                            <i class="ti ti-user me-1"></i> {{ note.first_name }} {{ note.last_name }}
+                          </small>
+                        </div>
+                        <p class="mb-1 mt-2">{{ note.note_text }}</p>
+                      </div>
+                    {% endfor %}
+                    {% if patient_notes|length > 3 %}
+                      <div class="text-center mt-2">
+                        <a href="/patients/{{ patient.patient_id }}/notes" class="btn btn-sm btn-outline-primary">
+                          View All {{ patient_notes|length }} Notes
+                        </a>
+                      </div>
+                    {% endif %}
+                  {% else %}
+                    <div class="text-center py-3">
+                      <i class="ti ti-notes-off f-30 text-muted"></i>
+                      <p class="mt-2 mb-0">No clinical notes recorded yet.</p>
+                    </div>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        
+        <div class="col-md-8">
+          <div class="card">
+            <div class="card-header pb-0">
+              <ul class="nav nav-tabs nav-tabs-line" id="patientTab" role="tablist">
+                <li class="nav-item">
+                  <a class="nav-link active" id="treatment-tab" data-bs-toggle="tab" href="#treatment" role="tab" aria-controls="treatment" aria-selected="true">
+                    <i class="ti ti-report me-2"></i>Treatment Plans
+                  </a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" id="appointments-tab" data-bs-toggle="tab" href="#appointments" role="tab" aria-controls="appointments" aria-selected="false">
+                    <i class="ti ti-calendar me-2"></i>Appointments
+                  </a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" id="metrics-tab" data-bs-toggle="tab" href="#metrics" role="tab" aria-controls="metrics" aria-selected="false">
+                    <i class="ti ti-chart-line me-2"></i>Metrics
+                  </a>
+                </li>
+              </ul>
+            </div>
+            <div class="card-body">
+              <div class="tab-content" id="patientTabContent">
+                
+                <div class="tab-pane fade show active" id="treatment" role="tabpanel" aria-labelledby="treatment-tab">
+                  <div class="d-flex justify-content-between mb-3">
+                    <h5 class="mb-0">Current Treatment Plans</h5>
+                    <a href="/treatment-plans/new?patient_id={{ patient.patient_id }}" class="btn btn-primary">
+                      <i class="ti ti-plus me-1"></i> New Plan
+                    </a>
+                  </div>
+                  
+                  {% if treatment_plans %}
+                  <div class="table-responsive">
+                    <table class="table table-hover">
+                      <thead>
+                        <tr>
+                          <th>Plan Name</th>
+                          <th>Start Date</th>
+                          <th>Status</th>
+                          <th>Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {% for plan in treatment_plans %}
+                        <tr>
+                          <td>{{ plan.name }}</td>
+                          <td>{{ plan.created_at.strftime('%Y-%m-%d') }}</td>
+                          <td>
+                            {% if plan.status == 'active' %}
+                            <span class="badge bg-success">Active</span>
+                            {% elif plan.status == 'completed' %}
+                            <span class="badge bg-info">Completed</span>
+                            {% else %}
+                            <span class="badge bg-warning">{{ plan.status }}</span>
+                            {% endif %}
+                          </td>
+                          <td>
+                            <div class="btn-group" role="group">
+                              <a href="/treatment-plans" class="btn btn-sm btn-outline-primary">View</a>
+                              <a href="/treatment-plans/{{ plan.plan_id }}/edit" class="btn btn-sm btn-outline-secondary">Edit</a>
+                            </div>
+                          </td>
+                        </tr>
+                        {% endfor %}
+                      </tbody>
+                    </table>
+                  </div>
+                  {% else %}
+                  <div class="text-center py-4">
+                    <i class="ti ti-report-off f-40 text-muted"></i>
+                    <h5 class="mt-3">No Treatment Plans</h5>
+                    <p>This patient doesn't have any treatment plans yet.</p>
+                    <a href="/treatment-plans/new?patient_id={{ patient.patient_id }}" class="btn btn-primary">
+                      Create First Plan
+                    </a>
+                  </div>
+                  {% endif %}
+                </div>
+                
+                
+                <div class="tab-pane fade" id="appointments" role="tabpanel" aria-labelledby="appointments-tab">
+                  <div class="d-flex justify-content-between mb-3">
+                    <h5 class="mb-0">Appointment History</h5>
+                    <a href="/appointments/new?patient_id={{ patient.patient_id }}" class="btn btn-primary">
+                      <i class="ti ti-plus me-1"></i> Schedule
+                    </a>
+                  </div>
+                  
+                  {% if appointments %}
+                  <div class="table-responsive">
+                    <table class="table table-hover">
+                      <thead>
+                        <tr>
+                          <th>Date</th>
+                          <th>Time</th>
+                          <th>Duration</th>
+                          <th>Status</th>
+                          <th>Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {% for appointment in appointments %}
+                        <tr>
+                          <td>{{ appointment.appointment_date.strftime('%Y-%m-%d') }}</td>
+                          <td>{{ appointment.appointment_time }}</td>
+                          <td>{{ appointment.duration }} min</td>
+                          <td>
+                            {% if appointment.appointment_date < today %}
+                            <span class="badge bg-secondary">Past</span>
+                            {% else %}
+                            <span class="badge bg-primary">Upcoming</span>
+                            {% endif %}
+                          </td>
+                          <td>
+                            <div class="btn-group" role="group">
+                              <button data-appointment-id="" class="btn btn-sm btn-outline-primary view-appointment"><a href="/appointments">Details</a></button>
+                              {% if appointment.appointment_date >= today %}
+                              <a href="/appointments/{{ appointment.appointment_id }}/edit" class="btn btn-sm btn-outline-secondary">Edit</a>
+                              {% endif %}
+                            </div>
+                          </td>
+                        </tr>
+                        {% endfor %}
+                      </tbody>
+                    </table>
+                  </div>
+                  {% else %}
+                  <div class="text-center py-4">
+                    <i class="ti ti-calendar-off f-40 text-muted"></i>
+                    <h5 class="mt-3">No Appointments</h5>
+                    <p>This patient doesn't have any appointments scheduled.</p>
+                    <a href="/appointments/new?patient_id={{ patient.patient_id }}" class="btn btn-primary">
+                      Schedule First Appointment
+                    </a>
+                  </div>
+                  {% endif %}
+                </div>
+                
+                <div class="tab-pane fade" id="metrics" role="tabpanel" aria-labelledby="metrics-tab">
+                  <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="mb-0">Patient Metrics</h5>
+                    <div>
+                      <a href="/reports/patients/{{ patient.patient_id }}" class="btn btn-outline-primary me-2">                        <i class="ti ti-chart-bar me-1"></i> Detailed Analytics
+                      </a>
+                      <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addMetricsModal">
+                        <i class="ti ti-plus me-1"></i> Add Metrics
+                      </button>
+                    </div>
+                  </div>
+                  
+                  {% if metrics %}
+                  <div class="card mb-3">
+                    <div class="card-body">
+                      <div class="row mb-3">
+                        <div class="col-md-8">
+                          <select class="form-select" id="metricTypeFilter">
+                            <option value="all">All Metrics</option>
+                            <option value="pain">Pain Level</option>
+                            <option value="functionality">Functionality Score</option>
+                            <option value="adherence">Adherence Rate</option>
+                            <option value="recovery">Recovery Progress</option>
+                          </select>
+                        </div>
+                        <div class="col-md-4 text-end">
+                          <button class="btn btn-sm btn-outline-primary" id="refreshChartBtn">
+                            <i class="ti ti-refresh"></i> Refresh
+                          </button>
+                        </div>
+                      </div>
+                      <div class="chart-container" style="position: relative; height:300px;">
+                        <canvas id="metricsChart"></canvas>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div class="table-responsive">
+                    <table class="table table-hover">
+                      <thead>
+                        <tr>
+                          <th>Date</th>
+                          <th>Pain Level</th>
+                          <th>Functionality</th>
+                          <th>Adherence</th>
+                          <th>Recovery</th>
+                          <th>Notes</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {% for metric in metrics %}
+                        <tr>
+                          <td>{{ metric.measurement_date.strftime('%Y-%m-%d') }}</td>
+                          <td>{% if metric.pain_level is not none %}{{ metric.pain_level }}/10{% else %}-{% endif %}</td>
+                          <td>{% if metric.functionality_score is not none %}{{ metric.functionality_score }}%{% else %}-{% endif %}</td>
+                          <td>{% if metric.adherence_rate is not none %}{{ metric.adherence_rate }}%{% else %}-{% endif %}</td>
+                          <td>{% if metric.recovery_progress is not none %}{{ metric.recovery_progress }}%{% else %}-{% endif %}</td>
+                          <td class="text-truncate" style="max-width: 150px;">{{ metric.notes if metric.notes else '-' }}</td>
+                        </tr>
+                        {% endfor %}
+                      </tbody>
+                    </table>
+                  </div>
+                  {% else %}
+                  <div class="text-center py-4">
+                    <i class="ti ti-chart-bar-off f-40 text-muted"></i>
+                    <h5 class="mt-3">No Metrics Recorded</h5>
+                    <p>Start tracking patient progress by adding metrics.</p>
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addMetricsModal">
+                      Record First Metrics
+                    </button>
+                  </div>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="modal fade" id="addGeneralNoteModal" tabindex="-1" role="dialog" aria-labelledby="addGeneralNoteModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="addGeneralNoteModalLabel">Add General Note</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <form action="/patients/{{ patient.patient_id }}/general-note" method="post">
+          <div class="modal-body">
+            <div class="form-group">
+              <label for="general-note-content">General notes about the patient</label>
+              <textarea class="form-control" id="general-note-content" name="notes" rows="4" required>{{ patient.notes }}</textarea>
+              <small class="text-muted">These notes are general observations about the patient that don't relate to specific appointments or treatments.</small>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-primary">Save Note</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="addStructuredNoteModal" tabindex="-1" role="dialog" aria-labelledby="addStructuredNoteModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="addStructuredNoteModalLabel">Add Clinical Note</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <form action="/patients/{{ patient.patient_id }}/notes" method="post">
+          <div class="modal-body">
+            <div class="form-group mb-3">
+              <label for="note-content">Clinical Note</label>
+              <textarea class="form-control" id="note-content" name="note_text" rows="4" required></textarea>
+            </div>
+            <div class="form-group">
+              <label for="appointment-select">Related Appointment (Optional)</label>
+              <select class="form-select" id="appointment-select" name="appointment_id">
+                <option value="">None</option>
+                {% for appointment in appointments %}
+                  <option value="{{ appointment.appointment_id }}">
+                    {{ appointment.appointment_date.strftime('%Y-%m-%d') if appointment.appointment_date else '' }} at {{ appointment.appointment_time }}
+                  </option>
+                {% endfor %}
+              </select>
+              <small class="text-muted">Link this note to a specific appointment if applicable.</small>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-primary">Save Clinical Note</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  
+  <div class="modal fade" id="addMetricsModal" tabindex="-1" role="dialog" aria-labelledby="addMetricsModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="addMetricsModalLabel">Record Patient Metrics</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <form action="/patients/{{ patient.patient_id }}/metrics/add" method="post">
+          <div class="modal-body">
+            <div class="mb-3">
+              <label for="measurement-date" class="form-label">Measurement Date</label>
+              <input type="date" class="form-control" id="measurement_date" name="measurement_date" value="{{ now.strftime('%Y-%m-%d') }}" required>
+            </div>
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label for="pain-level" class="form-label">Pain Level (0-10)</label>
+                <input type="number" class="form-control" id="pain-level" name="pain_level" min="0" max="10" required placeholder="Scale of 0-10">
+              </div>
+              <div class="col-md-6 mb-3">
+                <label for="functionality-score" class="form-label">Functionality Score (%)</label>
+                <input type="number" class="form-control" id="functionality-score" name="functionality_score" min="0" max="100" required placeholder="0-100%">
+              </div>
+            </div>
+            
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label for="recovery-progress" class="form-label">Recovery Progress (%)</label>
+                <input type="number" class="form-control" id="recovery-progress" name="recovery_progress" min="0" max="100" step="0.01" required placeholder="0-100%">
+              </div>
+              <div class="col-md-6 mb-3">
+                <label for="adherence-rate" class="form-label">Adherence Rate (%)</label>
+                <input type="number" class="form-control" id="adherence-rate" name="adherence_rate" min="0" max="100" step="0.01" required placeholder="0-100%">
+              </div>
+            </div>
+            
+            <div class="mb-3">
+              <label for="metric-notes" class="form-label">Notes</label>
+              <textarea class="form-control" id="metric-notes" name="notes" rows="2" placeholder="Any additional observations"></textarea>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-primary">Save Metrics</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  
+  <div class="modal fade" id="viewAppointmentModal" tabindex="-1" role="dialog" aria-labelledby="viewAppointmentModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="viewAppointmentModalLabel">Appointment Details</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <h6>Date & Time</h6>
+            <p id="appointment-datetime"></p>
+          </div>
+          <div class="mb-3">
+            <h6>Duration</h6>
+            <p id="appointment-duration"></p>
+          </div>
+          <div class="mb-3">
+            <h6>Notes</h6>
+            <p id="appointment-notes">No notes available</p>
+          </div>
+          <div class="mb-3">
+            <h6>Status</h6>
+            <p id="appointment-status"></p>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <a href="#" id="edit-appointment-link" class="btn btn-primary">Edit</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="pc-footer">
+    <div class="footer-wrapper container-fluid">
+      <div class="row">
+        <div class="col-auto my-1">
+          <span>&copy; 2025 APR-CV Physical Therapy</span>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+
+<script src="../static/assets/js/plugins/popper.min.js"></script>
+<script src="../static/assets/js/plugins/perfect-scrollbar.min.js"></script>
+<script src="../static/assets/js/plugins/bootstrap.min.js"></script>
+<script src="../static/assets/js/pcoded.js"></script>
+<script src="../static/assets/js/plugins/feather.min.js"></script>
+
+
+<script src="../static/assets/js/plugins/chart.min.js"></script>
+
+<script>
+
+document.addEventListener('DOMContentLoaded', function() {
+  try {
+
+    const metricsCanvas = document.getElementById('metricsChart');
+    if (!metricsCanvas) {
+      console.log('Metrics canvas element not found');
+      return;
+    }
+    
+    {% if metrics %}
+
+    const metricsData = [];
+    {% for metric in metrics %}
+    try {
+      metricsData.push({
+        date: '{{ metric.measurement_date.strftime("%Y-%m-%d") }}',
+        pain_level: {% if metric.pain_level is not none %}{{ metric.pain_level }}{% else %}null{% endif %},
+        functionality_score: {% if metric.functionality_score is not none %}{{ metric.functionality_score }}{% else %}null{% endif %},
+        recovery_progress: {% if metric.recovery_progress is not none %}{{ metric.recovery_progress }}{% else %}null{% endif %},
+        adherence_rate: {% if metric.adherence_rate is not none %}{{ metric.adherence_rate }}{% else %}null{% endif %},
+        notes: {% if metric.notes %}'{{ metric.notes|replace("'", "\\'") }}'{% else %}''{% endif %}
+      });
+    } catch (err) {
+      console.error('Error processing metric:', err);
+    }
+    {% endfor %}
+    
+
+    if (metricsData.length === 0) {
+      console.log('No metrics data available');
+      return;
+    }
+    
+
+    metricsData.sort((a, b) => new Date(a.date) - new Date(b.date));
+    
+
+    const chartDates = metricsData.map(metric => metric.date);
+    
+
+    const painData = metricsData.map(metric => metric.pain_level);
+    const functionalityData = metricsData.map(metric => metric.functionality_score);
+    const adherenceData = metricsData.map(metric => metric.adherence_rate);
+    const recoveryData = metricsData.map(metric => metric.recovery_progress);
+    
+
+    const datasets = [
+      {
+        label: 'Pain Level (0-10)',
+        data: painData,
+        borderColor: 'rgba(255, 99, 132, 1)',
+        backgroundColor: 'rgba(255, 99, 132, 0.2)',
+        borderWidth: 2,
+        tension: 0.2,
+        yAxisID: 'y-pain',
+      },
+      {
+        label: 'Functionality Score (%)',
+        data: functionalityData,
+        borderColor: 'rgba(54, 162, 235, 1)',
+        backgroundColor: 'rgba(54, 162, 235, 0.2)',
+        borderWidth: 2,
+        tension: 0.2,
+        yAxisID: 'y-percent',
+      },
+      {
+        label: 'Adherence Rate (%)',
+        data: adherenceData,
+        borderColor: 'rgba(153, 102, 255, 1)',
+        backgroundColor: 'rgba(153, 102, 255, 0.2)',
+        borderWidth: 2,
+        tension: 0.2,
+        yAxisID: 'y-percent',
+      },
+      {
+        label: 'Recovery Progress (%)',
+        data: recoveryData,
+        borderColor: 'rgba(75, 192, 192, 1)',
+        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+        borderWidth: 2,
+        tension: 0.2,
+        yAxisID: 'y-percent',
+      }
+    ];
+    
+
+    try {
+      const ctx = metricsCanvas.getContext('2d');
+      let metricsChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: chartDates,
+          datasets: datasets
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            x: {
+              title: {
+                display: true,
+                text: 'Date'
+              }
+            },
+            'y-pain': {
+              position: 'left',
+              min: 0,
+              max: 10,
+              title: {
+                display: true,
+                text: 'Pain Level'
+              },
+              grid: {
+                borderDash: [5, 5]
+              }
+            },
+            'y-percent': {
+              position: 'right',
+              min: 0,
+              max: 100,
+              title: {
+                display: true,
+                text: 'Score (%)'
+              }
+            }
+          },
+          plugins: {
+            legend: {
+              position: 'top',
+              labels: {
+                boxWidth: 12
+              }
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  const label = context.dataset.label || '';
+                  const value = context.raw !== null ? context.raw : 'No data';
+                  return `${label}: ${value}`;
+                },
+                afterBody: function(tooltipItems) {
+                  try {
+                    const idx = tooltipItems[0].dataIndex;
+                    const metric = metricsData[idx];
+                    return metric.notes && metric.notes.length > 0 ? `Notes: ${metric.notes}` : '';
+                  } catch (err) {
+                    console.error('Error in tooltip callback:', err);
+                    return '';
+                  }
+                }
+              }
+            }
+          }
+        }
+      });
+      
+
+      const filterSelect = document.getElementById('metricTypeFilter');
+      if (filterSelect) {
+        filterSelect.addEventListener('change', function() {
+          try {
+            const filterValue = this.value;
+            
+
+            const filterMap = {
+              'all': null, // Show all
+              'pain': 0,   // Pain level dataset
+              'functionality': 1, // Functionality dataset
+              'adherence': 2, // Adherence dataset
+              'recovery': 3  // Recovery dataset
+            };
+            
+
+            metricsChart.data.datasets.forEach((dataset, index) => {
+              if (filterValue === 'all') {
+                dataset.hidden = false;
+              } else {
+                dataset.hidden = index !== filterMap[filterValue];
+              }
+            });
+            
+            metricsChart.update();
+          } catch (err) {
+            console.error('Error in filter change handler:', err);
+          }
+        });
+      }
+      
+
+      const refreshBtn = document.getElementById('refreshChartBtn');
+      if (refreshBtn) {
+        refreshBtn.addEventListener('click', function() {
+          try {
+
+            if (filterSelect) filterSelect.value = 'all';
+            
+
+            metricsChart.data.datasets.forEach(dataset => {
+              dataset.hidden = false;
+            });
+            
+            metricsChart.update();
+          } catch (err) {
+            console.error('Error in refresh button handler:', err);
+          }
+        });
+      }
+    } catch (err) {
+      console.error('Error initializing metrics chart:', err);
+    }
+    {% else %}
+    console.log('No metrics data available');
+    {% endif %}
+  } catch (err) {
+    console.error('Global error in metrics chart script:', err);
+  }
+});
+</script>
+<script src="https://cdn.jsdelivr.net/npm/perfect-scrollbar@1.5.5/dist/perfect-scrollbar.min.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+
+</body>
+</html>

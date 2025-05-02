@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Edit Treatment Plan | APR-CV</title>
+  
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0, minimal-ui">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="description" content="APR-CV Patient Management System">
+  <meta name="keywords" content="physical therapy, rehab, cardiovascular therapy, patient management">
+  <meta name="author" content="APR-CV">
+  
+  
+  <link rel="icon" href="../../static/assets/images/favicon.svg" type="image/x-icon">
+  
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700&display=swap" id="main-font-link">
+  
+  <link rel="stylesheet" href="../../static/assets/fonts/tabler-icons.min.css" >
+  
+  <link rel="stylesheet" href="../../static/assets/fonts/feather.css" >
+  
+  <link rel="stylesheet" href="../../static/assets/fonts/fontawesome.css" >
+  
+  <link rel="stylesheet" href="../../static/assets/fonts/material.css" >
+  
+  <link rel="stylesheet" href="../../static/assets/css/style.css" id="main-style-link" >
+  <link rel="stylesheet" href="../../static/assets/css/style-preset.css" >
+</head>
+
+<body data-pc-preset="preset-1" data-pc-direction="ltr" data-pc-theme="light">
+  
+  <div class="loader-bg">
+    <div class="loader-track">
+      <div class="loader-fill"></div>
+    </div>
+  </div>
+  
+  
+  
+  <nav class="pc-sidebar">
+    <div class="navbar-wrapper">
+      <div class="m-header">
+        <a href="/front-page" class="b-brand text-primary">
+          <i class="ti ti-medical-cross fs-4"></i>
+          <span class="ms-2 fw-bold">APR-CV</span>
+        </a>
+      </div>
+      <div class="navbar-content">
+        <ul class="pc-navbar">
+          <li class="pc-item">
+            <a href="/front-page" class="pc-link">
+              <span class="pc-micon"><i class="ti ti-dashboard"></i></span>
+              <span class="pc-mtext">Dashboard</span>
+            </a>
+          </li>
+        
+          <li class="pc-item pc-hasmenu">
+            <a href="#!" class="pc-link">
+              <span class="pc-micon"><i class="ti ti-users"></i></span>
+              <span class="pc-mtext">Patients</span>
+              <span class="pc-arrow"><i data-feather="chevron-right"></i></span>
+            </a>
+            <ul class="pc-submenu">
+              <li class="pc-item"><a class="pc-link" href="/patients">Patient Directory</a></li>
+              <li class="pc-item"><a class="pc-link" href="/reports/patients">Patient Reports</a></li>
+            </ul>
+          </li>
+        
+          <li class="pc-item pc-hasmenu">
+            <a href="#!" class="pc-link">
+              <span class="pc-micon"><i class="ti ti-calendar"></i></span>
+              <span class="pc-mtext">Appointments</span>
+              <span class="pc-arrow"><i data-feather="chevron-right"></i></span>
+            </a>
+            <ul class="pc-submenu">
+              <li class="pc-item"><a class="pc-link" href="/appointments">Schedule</a></li>
+            </ul>
+          </li>
+        
+          <li class="pc-item pc-hasmenu">
+            <a href="#!" class="pc-link">
+              <span class="pc-micon"><i class="ti ti-activity"></i></span>
+              <span class="pc-mtext">Exercise Library</span>
+              <span class="pc-arrow"><i data-feather="chevron-right"></i></span>
+            </a>
+            <ul class="pc-submenu">
+              <li class="pc-item"><a class="pc-link" href="/exercises">Browse Exercises</a></li>
+              <li class="pc-item"><a class="pc-link" href="/exercises/add">Upload New Exercise</a></li>
+            </ul>
+          </li>
+        
+          <li class="pc-item pc-hasmenu active">
+            <a href="#!" class="pc-link">
+              <span class="pc-micon"><i class="ti ti-report"></i></span>
+              <span class="pc-mtext">Treatment Plans</span>
+              <span class="pc-arrow"><i data-feather="chevron-right"></i></span>
+            </a>
+            <ul class="pc-submenu">
+              <li class="pc-item"><a class="pc-link" href="/treatment-plans/new">Create Plan</a></li>
+              <li class="pc-item active"><a class="pc-link" href="/treatment-plans">Manage Plans</a></li>
+            </ul>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+  
+  
+  
+  <header class="pc-header">
+    <div class="header-wrapper">
+      
+      <div class="me-auto pc-mob-drp">
+        <ul class="list-unstyled">
+          <li class="pc-h-item pc-sidebar-collapse">
+            <a href="#" class="pc-head-link ms-0" id="sidebar-hide">
+              <i class="ti ti-menu-2"></i>
+            </a>
+          </li>
+          <li class="pc-h-item pc-sidebar-popup">
+            <a href="#" class="pc-head-link ms-0" id="mobile-collapse">
+              <i class="ti ti-menu-2"></i>
+            </a>
+          </li>
+          <li class="pc-h-item d-none d-md-inline-flex">
+            <form class="header-search">
+              <i data-feather="search" class="icon-search"></i>
+              <input type="search" class="form-control" placeholder="Search...">
+            </form>
+          </li>
+        </ul>
+      </div>
+      
+      
+      <div class="ms-auto">
+        <ul class="list-unstyled">
+          <li class="dropdown pc-h-item header-user-profile">
+            <a class="pc-head-link dropdown-toggle arrow-none me-0" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="false" data-bs-auto-close="outside" aria-expanded="false">
+              <img src="/static/assets/images/user/{{ therapist.profile_image }}" alt="user-image" class="user-avtar">
+              <span>{{ first_name }} {{ last_name }}</span>
+            </a>
+            <div class="dropdown-menu dropdown-user-profile dropdown-menu-end pc-h-dropdown">
+              <div class="dropdown-header">
+                <div class="d-flex mb-1">
+                  <div class="flex-shrink-0">
+                    <img src="/static/assets/images/user/{{ therapist.profile_image }}" alt="user-image" class="user-avtar">
+                  </div>
+                  <div class="flex-grow-1 ms-3">
+                    <h6 class="mb-1">{{ first_name }} {{ last_name }}</h6>
+                    <span>Physical Therapist</span>
+                  </div>
+                  <a href="/logout" class="pc-head-link bg-transparent"><i class="ti ti-power text-danger"></i></a>
+                </div>
+              </div>
+              <ul class="nav drp-tabs nav-fill nav-tabs" id="mydrpTab" role="tablist">
+                <li class="nav-item" role="presentation">
+                  <button
+                    class="nav-link active"
+                    id="drp-t1"
+                    data-bs-toggle="tab"
+                    data-bs-target="#drp-tab-1"
+                    type="button"
+                    role="tab"
+                    aria-controls="drp-tab-1"
+                    aria-selected="true"
+                    ><i class="ti ti-user"></i> Profile</button
+                  >
+                </li>
+              </ul>
+              <div class="tab-content" id="mysrpTabContent">
+                <div class="tab-pane fade show active" id="drp-tab-1" role="tabpanel" aria-labelledby="drp-t1" tabindex="0">
+                  <a href="/profile/edit" class="dropdown-item">
+                    <i class="ti ti-edit-circle"></i>
+                    <span>Edit Profile</span>
+                  </a>
+                  <a href="/profile" class="dropdown-item">
+                    <i class="ti ti-user"></i>
+                    <span>View Profile</span>
+                  </a>
+                  <a href="/profile/reviews" class="dropdown-item">
+                    <i class="ti ti-star"></i>
+                    <span>My Reviews</span>
+                  </a>
+                  <a href="/logout" class="dropdown-item">
+                    <i class="ti ti-power"></i>
+                    <span>Logout</span>
+                  </a>
+                </div>
+                <div class="tab-pane fade" id="drp-tab-2" role="tabpanel" aria-labelledby="drp-t2" tabindex="0">
+                  <a href="/support" class="dropdown-item">
+                    <i class="ti ti-help"></i>
+                    <span>Support</span>
+                  </a>
+                  <a href="/settings" class="dropdown-item">
+                    <i class="ti ti-user"></i>
+                    <span>Account Settings</span>
+                  </a>
+                  <a href="/privacy" class="dropdown-item">
+                    <i class="ti ti-lock"></i>
+                    <span>Privacy Center</span>
+                  </a>
+                  <a href="/feedback" class="dropdown-item">
+                    <i class="ti ti-messages"></i>
+                    <span>Feedback</span>
+                  </a>
+                  <a href="/activity" class="dropdown-item">
+                    <i class="ti ti-list"></i>
+                    <span>History</span>
+                  </a>
+                </div>
+              </div>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </header>
+  
+
+  
+  <div class="pc-container">
+    <div class="pc-content">
+      
+      <div class="page-header">
+        <div class="page-block">
+          <div class="row align-items-center">
+            <div class="col-md-12">
+              <div class="page-header-title">
+                <h5 class="mb-0">Edit Treatment Plan</h5>
+              </div>
+              <ul class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/front-page">Home</a></li>
+                <li class="breadcrumb-item"><a href="/treatment-plans">Treatment Plans</a></li>
+                <li class="breadcrumb-item active">Edit Plan</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+
+      <div class="row">
+        <div class="col-12">
+          <div class="card">
+            <div class="card-header">
+              <h5>Edit Treatment Plan: {{ plan.name }}</h5>
+            </div>
+            <div class="card-body">
+              {% if error %}
+              <div class="alert alert-danger" role="alert">
+                {{ error }}
+              </div>
+              {% endif %}
+              
+              <form id="editTreatmentPlanForm" action="/treatment-plans/{{ plan.plan_id }}/edit" method="POST">
+                <div class="row mb-4">
+                  <div class="col-md-6">
+                    <div class="form-group">
+                      <label for="patient_id" class="form-label">Patient <span class="text-danger">*</span></label>
+                      <select class="form-select" id="patient_id" name="patient_id" required>
+                        <option value="" disabled>Select a patient</option>
+                        {% for patient in patients %}
+                        <option value="{{ patient.patient_id }}" {% if patient.patient_id == plan.patient_id %}selected{% endif %}>
+                          {{ patient.first_name }} {{ patient.last_name }}
+                        </option>
+                        {% endfor %}
+                      </select>
+                    </div>
+                  </div>
+                  
+                  <div class="col-md-6">
+                    <div class="form-group">
+                      <label for="plan_name" class="form-label">Plan Name <span class="text-danger">*</span></label>
+                      <input type="text" class="form-control" id="plan_name" name="plan_name" required value="{{ plan.name }}">
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="row mb-4">
+                  <div class="col-md-6">
+                    <div class="form-group">
+                      <label for="start_date" class="form-label">Start Date</label>
+                      <input type="date" class="form-control" id="start_date" name="start_date" value="{{ plan.start_date }}">
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="form-group">
+                      <label for="end_date" class="form-label">End Date</label>
+                      <input type="date" class="form-control" id="end_date" name="end_date" value="{{ plan.end_date }}">
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="row mb-4">
+                  <div class="col-md-12">
+                    <div class="form-group">
+                      <label for="description" class="form-label">Plan Description</label>
+                      <textarea class="form-control" id="description" name="description" rows="3">{{ plan.description }}</textarea>
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="border p-3 rounded mb-4">
+                  <h5 class="mb-3">Current Exercises</h5>
+                  <div id="existing-exercises-container">
+                    {% for exercise in plan_exercises %}
+                    <div class="exercise-item border-bottom pb-3 mb-3">
+                      <input type="hidden" name="existing_exercise_id" value="{{ exercise.plan_exercise_id }}">
+                      <input type="checkbox" name="keep_exercise" value="{{ exercise.plan_exercise_id }}" checked class="d-none">
+                      
+                      <div class="row">
+                        <div class="col-md-6">
+                          <div class="form-group">
+                            <label class="form-label">Exercise</label>
+                            <div class="form-control bg-light">{{ exercise.exercise_name }}{% if exercise.difficulty %} ({{ exercise.difficulty }}){% endif %}</div>
+                          </div>
+                        </div>
+                        <div class="col-md-3">
+                          <div class="form-group">
+                            <label class="form-label">Sets</label>
+                            <input type="number" class="form-control" name="existing_{{ exercise.plan_exercise_id }}_sets" min="1" value="{{ exercise.sets or 3 }}">
+                          </div>
+                        </div>
+                        <div class="col-md-3">
+                          <div class="form-group">
+                            <label class="form-label">Repetitions</label>
+                            <input type="number" class="form-control" name="existing_{{ exercise.plan_exercise_id }}_repetitions" min="1" value="{{ exercise.repetitions or 10 }}">
+                          </div>
+                        </div>
+                      </div>
+                      <div class="row mt-3">
+                        <div class="col-md-6">
+                          <div class="form-group">
+                            <label class="form-label">Frequency</label>
+                            <select class="form-select" name="existing_{{ exercise.plan_exercise_id }}_frequency">
+                              <option value="Daily" {% if exercise.frequency == 'Daily' %}selected{% endif %}>Daily</option>
+                              <option value="Every other day" {% if exercise.frequency == 'Every other day' or not exercise.frequency %}selected{% endif %}>Every other day</option>
+                              <option value="Twice a week" {% if exercise.frequency == 'Twice a week' %}selected{% endif %}>Twice a week</option>
+                              <option value="Weekly" {% if exercise.frequency == 'Weekly' %}selected{% endif %}>Weekly</option>
+                            </select>
+                          </div>
+                        </div>
+                        <div class="col-md-6">
+                          <div class="form-group">
+                            <label class="form-label">Duration (minutes)</label>
+                            <input type="number" class="form-control" name="existing_{{ exercise.plan_exercise_id }}_duration" min="1" value="{{ exercise.duration or exercise.exercise_duration or 10 }}">
+                          </div>
+                        </div>
+                      </div>
+                      <div class="row mt-3">
+                        <div class="col-md-12">
+                          <div class="form-group">
+                            <label class="form-label">Notes</label>
+                            <textarea class="form-control" name="existing_{{ exercise.plan_exercise_id }}_notes" rows="2">{{ exercise.notes }}</textarea>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="text-end mt-2">
+                        <button type="button" class="btn btn-sm btn-outline-danger remove-existing-exercise">
+                          <i class="ti ti-trash me-1"></i> Remove
+                        </button>
+                      </div>
+                    </div>
+                    {% endfor %}
+                  </div>
+                </div>
+                
+                <div class="border p-3 rounded mb-4">
+                  <h5 class="mb-3">Add New Exercises</h5>
+                  <div id="new-exercises-container">
+                    <div class="exercise-item border-bottom pb-3 mb-3">
+                      <div class="row">
+                        <div class="col-md-6">
+                          <div class="form-group">
+                            <label class="form-label">Exercise</label>
+                            <select class="form-select exercise-select" name="new_exercise_id">
+                              <option value="" selected disabled>Select an exercise</option>
+                              {% for exercise in exercises %}
+                              <option value="{{ exercise.exercise_id }}">{{ exercise.name }}{% if exercise.difficulty %} ({{ exercise.difficulty }}){% endif %}</option>
+                              {% endfor %}
+                            </select>
+                          </div>
+                        </div>
+                        <div class="col-md-3">
+                          <div class="form-group">
+                            <label class="form-label">Sets</label>
+                            <input type="number" class="form-control" name="new_sets" min="1" value="3">
+                          </div>
+                        </div>
+                        <div class="col-md-3">
+                          <div class="form-group">
+                            <label class="form-label">Repetitions</label>
+                            <input type="number" class="form-control" name="new_repetitions" min="1" value="10">
+                          </div>
+                        </div>
+                      </div>
+                      <div class="row mt-3">
+                        <div class="col-md-6">
+                          <div class="form-group">
+                            <label class="form-label">Frequency</label>
+                            <select class="form-select" name="new_frequency">
+                                <option value="Daily">Daily</option>
+                                <option value="Every other day" selected>Every other day</option>
+                                <option value="Twice a week">Twice a week</option>
+                                <option value="Weekly">Weekly</option>
+                              </select>
+                            </div>
+                          </div>
+                          <div class="col-md-6">
+                            <div class="form-group">
+                              <label class="form-label">Duration (minutes)</label>
+                              <input type="number" class="form-control" name="new_duration" min="1" value="10">
+                            </div>
+                          </div>
+                        </div>
+                        <div class="row mt-3">
+                          <div class="col-md-12">
+                            <div class="form-group">
+                              <label class="form-label">Notes</label>
+                              <textarea class="form-control" name="new_notes" rows="2" placeholder="Special instructions or modifications"></textarea>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="text-end mt-2">
+                          <button type="button" class="btn btn-sm btn-outline-danger remove-new-exercise" disabled>
+                            <i class="ti ti-trash me-1"></i> Remove
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="text-center mt-3">
+                      <button type="button" class="btn btn-outline-primary" id="add-new-exercise">
+                        <i class="ti ti-plus me-1"></i> Add Another Exercise
+                      </button>
+                    </div>
+                  </div>
+                  
+                  <div class="border p-3 rounded mb-4">
+                    <h5 class="mb-3">Treatment Plan Settings</h5>
+                    <div class="row">
+                      <div class="col-md-6">
+                        <div class="form-group">
+                          <label for="status" class="form-label">Status</label>
+                          <select class="form-select" id="status" name="status">
+                            <option value="Active" {% if plan.status == 'Active' %}selected{% endif %}>Active</option>
+                            <option value="Completed" {% if plan.status == 'Completed' %}selected{% endif %}>Completed</option>
+                            <option value="Cancelled" {% if plan.status == 'Cancelled' %}selected{% endif %}>Cancelled</option>
+                          </select>
+                        </div>
+                      </div>
+                      <div class="col-md-6 d-flex align-items-center mt-3 mt-md-0">
+                        <div class="form-check form-switch">
+                          <input class="form-check-input" type="checkbox" id="send_notification" name="send_notification">
+                          <label class="form-check-label" for="send_notification">Notify patient about changes</label>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div class="text-end">
+                    <a href="/treatment-plans" class="btn btn-outline-secondary me-2">
+                      <i class="ti ti-x me-1"></i> Cancel
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                      <i class="ti ti-device-floppy me-1"></i> Save Changes
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+  
+    <footer class="pc-footer">
+      <div class="footer-wrapper container-fluid">
+        <div class="row">
+          <div class="col-auto my-1">
+            <span>&copy; 2025 APR-CV Physical Therapy</span>
+          </div>
+        </div>
+      </div>
+    </footer>
+  
+  
+  <script src="../../static/assets/js/plugins/popper.min.js"></script>
+  <script src="../../static/assets/js/plugins/perfect-scrollbar.min.js"></script>
+  <script src="../../static/assets/js/plugins/bootstrap.min.js"></script>
+  <script src="../../static/assets/js/pcoded.js"></script>
+  <script src="../../static/assets/js/plugins/feather.min.js"></script>
+  
+  <script>
+  document.addEventListener('DOMContentLoaded', function() {
+
+    const existingExercisesContainer = document.getElementById('existing-exercises-container');
+    if (existingExercisesContainer) {
+      existingExercisesContainer.addEventListener('click', function(e) {
+        if (e.target.classList.contains('remove-existing-exercise') || e.target.closest('.remove-existing-exercise')) {
+          const removeBtn = e.target.closest('.remove-existing-exercise');
+          const exerciseItem = removeBtn.closest('.exercise-item');
+          const keepCheckbox = exerciseItem.querySelector('input[name="keep_exercise"]');
+          
+
+          keepCheckbox.checked = false;
+          exerciseItem.style.opacity = '0.5';
+          exerciseItem.style.backgroundColor = '#f8f9fa';
+          removeBtn.classList.remove('btn-outline-danger');
+          removeBtn.classList.add('btn-outline-success');
+          removeBtn.innerHTML = '<i class="ti ti-refresh me-1"></i> Restore';
+          removeBtn.classList.remove('remove-existing-exercise');
+          removeBtn.classList.add('restore-existing-exercise');
+        } else if (e.target.classList.contains('restore-existing-exercise') || e.target.closest('.restore-existing-exercise')) {
+          const restoreBtn = e.target.closest('.restore-existing-exercise');
+          const exerciseItem = restoreBtn.closest('.exercise-item');
+          const keepCheckbox = exerciseItem.querySelector('input[name="keep_exercise"]');
+          
+
+          keepCheckbox.checked = true;
+          exerciseItem.style.opacity = '1';
+          exerciseItem.style.backgroundColor = '';
+          restoreBtn.classList.remove('btn-outline-success');
+          restoreBtn.classList.add('btn-outline-danger');
+          restoreBtn.innerHTML = '<i class="ti ti-trash me-1"></i> Remove';
+          restoreBtn.classList.remove('restore-existing-exercise');
+          restoreBtn.classList.add('remove-existing-exercise');
+        }
+      });
+    }
+    
+
+    const addNewExerciseBtn = document.getElementById('add-new-exercise');
+    const newExercisesContainer = document.getElementById('new-exercises-container');
+    
+    if (addNewExerciseBtn && newExercisesContainer) {
+      addNewExerciseBtn.addEventListener('click', function() {
+        const exerciseItems = newExercisesContainer.querySelectorAll('.exercise-item');
+        const lastExercise = exerciseItems[exerciseItems.length - 1];
+        const newExercise = lastExercise.cloneNode(true);
+        
+
+        newExercise.querySelectorAll('input[type="text"], input[type="number"], textarea').forEach(input => {
+          if (input.name === 'new_sets') {
+            input.value = '3';
+          } else if (input.name === 'new_repetitions') {
+            input.value = '10';
+          } else if (input.name === 'new_duration') {
+            input.value = '10';
+          } else {
+            input.value = '';
+          }
+        });
+        
+
+        newExercise.querySelectorAll('select').forEach(select => {
+          if (select.name === 'new_exercise_id') {
+            select.selectedIndex = 0;
+          }
+        });
+        
+
+        const removeBtn = newExercise.querySelector('.remove-new-exercise');
+        removeBtn.disabled = false;
+        
+        newExercisesContainer.appendChild(newExercise);
+        
+
+        if (newExercisesContainer.querySelectorAll('.exercise-item').length > 1) {
+          newExercisesContainer.querySelectorAll('.remove-new-exercise').forEach(btn => {
+            btn.disabled = false;
+          });
+        }
+      });
+      
+
+      newExercisesContainer.addEventListener('click', function(e) {
+        if (e.target.classList.contains('remove-new-exercise') || e.target.closest('.remove-new-exercise')) {
+          const removeBtn = e.target.closest('.remove-new-exercise');
+          const exerciseItem = removeBtn.closest('.exercise-item');
+          
+
+          if (newExercisesContainer.querySelectorAll('.exercise-item').length > 1) {
+            exerciseItem.remove();
+            
+
+            if (newExercisesContainer.querySelectorAll('.exercise-item').length === 1) {
+              newExercisesContainer.querySelector('.remove-new-exercise').disabled = true;
+            }
+          }
+        }
+      });
+    }
+    
+
+    const form = document.getElementById('editTreatmentPlanForm');
+    if (form) {
+      form.addEventListener('submit', function(e) {
+        const patientId = document.getElementById('patient_id').value;
+        const planName = document.getElementById('plan_name').value;
+        
+        let valid = true;
+        
+        if (!patientId) {
+          document.getElementById('patient_id').classList.add('is-invalid');
+          valid = false;
+        } else {
+          document.getElementById('patient_id').classList.remove('is-invalid');
+        }
+        
+        if (!planName) {
+          document.getElementById('plan_name').classList.add('is-invalid');
+          valid = false;
+        } else {
+          document.getElementById('plan_name').classList.remove('is-invalid');
+        }
+        
+        if (!valid) {
+          e.preventDefault();
+          alert('Please fill in all required fields');
+        }
+      });
+    }
+  });
+  </script>
+  </body>
+  </html>

@@ -1,0 +1,873 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Treatment Plan Details | APR-CV</title>
+  
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0, minimal-ui">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="description" content="APR-CV Patient Management System">
+  <meta name="keywords" content="physical therapy, rehab, cardiovascular therapy, patient management">
+  <meta name="author" content="APR-CV">
+  
+  
+  <link rel="icon" href="../static/assets/images/favicon.svg" type="image/x-icon">
+  
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700&display=swap" id="main-font-link">
+  
+  <link rel="stylesheet" href="../static/assets/fonts/tabler-icons.min.css" >
+  
+  <link rel="stylesheet" href="../static/assets/fonts/feather.css" >
+  
+  <link rel="stylesheet" href="../static/assets/fonts/fontawesome.css" >
+  
+  <link rel="stylesheet" href="../static/assets/fonts/material.css" >
+  
+  <link rel="stylesheet" href="../static/assets/css/style.css" id="main-style-link" >
+  <link rel="stylesheet" href="../static/assets/css/style-preset.css" >
+</head>
+
+<body data-pc-preset="preset-1" data-pc-direction="ltr" data-pc-theme="light">
+  
+  <div class="loader-bg">
+    <div class="loader-track">
+      <div class="loader-fill"></div>
+    </div>
+  </div>
+  
+  
+  
+  <nav class="pc-sidebar">
+    <div class="navbar-wrapper">
+      <div class="m-header">
+        <a href="/front-page" class="b-brand text-primary">
+          <i class="ti ti-medical-cross fs-4"></i>
+          <span class="ms-2 fw-bold">APR-CV</span>
+        </a>
+      </div>
+      <div class="navbar-content">
+        <ul class="pc-navbar">
+          <li class="pc-item">
+            <a href="/front-page" class="pc-link">
+              <span class="pc-micon"><i class="ti ti-dashboard"></i></span>
+              <span class="pc-mtext">Dashboard</span>
+            </a>
+          </li>
+        
+          <li class="pc-item pc-hasmenu">
+            <a href="#!" class="pc-link">
+              <span class="pc-micon"><i class="ti ti-users"></i></span>
+              <span class="pc-mtext">Patients</span>
+              <span class="pc-arrow"><i data-feather="chevron-right"></i></span>
+            </a>
+            <ul class="pc-submenu">
+              <li class="pc-item"><a class="pc-link" href="/patients">Patient Directory</a></li>
+              <li class="pc-item"><a class="pc-link" href="/reports/patients">Patient Reports</a></li>
+            </ul>
+          </li>
+        
+          <li class="pc-item pc-hasmenu">
+            <a href="#!" class="pc-link">
+              <span class="pc-micon"><i class="ti ti-calendar"></i></span>
+              <span class="pc-mtext">Appointments</span>
+              <span class="pc-arrow"><i data-feather="chevron-right"></i></span>
+            </a>
+            <ul class="pc-submenu">
+              <li class="pc-item"><a class="pc-link" href="/appointments">Schedule</a></li>
+            </ul>
+          </li>
+        
+          <li class="pc-item pc-hasmenu">
+            <a href="#!" class="pc-link">
+              <span class="pc-micon"><i class="ti ti-activity"></i></span>
+              <span class="pc-mtext">Exercise Library</span>
+              <span class="pc-arrow"><i data-feather="chevron-right"></i></span>
+            </a>
+            <ul class="pc-submenu">
+              <li class="pc-item"><a class="pc-link" href="/exercises">Browse Exercises</a></li>
+              <li class="pc-item"><a class="pc-link" href="/exercises/add">Upload New Exercise</a></li>
+            </ul>
+          </li>
+        
+          <li class="pc-item pc-hasmenu active">
+            <a href="#!" class="pc-link">
+              <span class="pc-micon"><i class="ti ti-report"></i></span>
+              <span class="pc-mtext">Treatment Plans</span>
+              <span class="pc-arrow"><i data-feather="chevron-right"></i></span>
+            </a>
+            <ul class="pc-submenu">
+              <li class="pc-item"><a class="pc-link" href="/treatment-plans/new">Create Plan</a></li>
+              <li class="pc-item active"><a class="pc-link" href="/treatment-plans">Manage Plans</a></li>
+            </ul>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+  
+  
+  
+  <header class="pc-header">
+    <div class="header-wrapper">
+      
+      <div class="me-auto pc-mob-drp">
+        <ul class="list-unstyled">
+          <li class="pc-h-item pc-sidebar-collapse">
+            <a href="#" class="pc-head-link ms-0" id="sidebar-hide">
+              <i class="ti ti-menu-2"></i>
+            </a>
+          </li>
+          <li class="pc-h-item pc-sidebar-popup">
+            <a href="#" class="pc-head-link ms-0" id="mobile-collapse">
+              <i class="ti ti-menu-2"></i>
+            </a>
+          </li>
+          <li class="pc-h-item d-none d-md-inline-flex">
+            <form class="header-search">
+              <i data-feather="search" class="icon-search"></i>
+              <input type="search" class="form-control" placeholder="Search...">
+            </form>
+          </li>
+        </ul>
+      </div>
+      
+      
+      <div class="ms-auto">
+        <ul class="list-unstyled">
+          <li class="dropdown pc-h-item header-user-profile">
+            <a class="pc-head-link dropdown-toggle arrow-none me-0" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="false" data-bs-auto-close="outside" aria-expanded="false">
+              <img src="/static/assets/images/user/{{ therapist.profile_image }}" alt="user-image" class="user-avtar">
+              <span>{{ first_name }} {{ last_name }}</span>
+            </a>
+            <div class="dropdown-menu dropdown-user-profile dropdown-menu-end pc-h-dropdown">
+              <div class="dropdown-header">
+                <div class="d-flex mb-1">
+                  <div class="flex-shrink-0">
+                    <img src="/static/assets/images/user/{{ therapist.profile_image }}" alt="user-image" class="user-avtar">
+                  </div>
+                  <div class="flex-grow-1 ms-3">
+                    <h6 class="mb-1">{{ first_name }} {{ last_name }}</h6>
+                    <span>Physical Therapist</span>
+                  </div>
+                  <a href="/logout" class="pc-head-link bg-transparent"><i class="ti ti-power text-danger"></i></a>
+                </div>
+              </div>
+              <ul class="nav drp-tabs nav-fill nav-tabs" id="mydrpTab" role="tablist">
+                <li class="nav-item" role="presentation">
+                  <button
+                    class="nav-link active"
+                    id="drp-t1"
+                    data-bs-toggle="tab"
+                    data-bs-target="#drp-tab-1"
+                    type="button"
+                    role="tab"
+                    aria-controls="drp-tab-1"
+                    aria-selected="true"
+                    ><i class="ti ti-user"></i> Profile</button
+                  >
+                </li>
+              </ul>
+              <div class="tab-content" id="mysrpTabContent">
+                <div class="tab-pane fade show active" id="drp-tab-1" role="tabpanel" aria-labelledby="drp-t1" tabindex="0">
+                  <a href="/profile/edit" class="dropdown-item">
+                    <i class="ti ti-edit-circle"></i>
+                    <span>Edit Profile</span>
+                  </a>
+                  <a href="/profile" class="dropdown-item">
+                    <i class="ti ti-user"></i>
+                    <span>View Profile</span>
+                  </a>
+                  <a href="/profile/reviews" class="dropdown-item">
+                    <i class="ti ti-star"></i>
+                    <span>My Reviews</span>
+                  </a>
+                  <a href="/logout" class="dropdown-item">
+                    <i class="ti ti-power"></i>
+                    <span>Logout</span>
+                  </a>
+                </div>
+                <div class="tab-pane fade" id="drp-tab-2" role="tabpanel" aria-labelledby="drp-t2" tabindex="0">
+                  <a href="/support" class="dropdown-item">
+                    <i class="ti ti-help"></i>
+                    <span>Support</span>
+                  </a>
+                  <a href="/settings" class="dropdown-item">
+                    <i class="ti ti-user"></i>
+                    <span>Account Settings</span>
+                  </a>
+                  <a href="/privacy" class="dropdown-item">
+                    <i class="ti ti-lock"></i>
+                    <span>Privacy Center</span>
+                  </a>
+                  <a href="/feedback" class="dropdown-item">
+                    <i class="ti ti-messages"></i>
+                    <span>Feedback</span>
+                  </a>
+                  <a href="/activity" class="dropdown-item">
+                    <i class="ti ti-list"></i>
+                    <span>History</span>
+                  </a>
+                </div>
+              </div>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </header>
+  
+
+  
+  <div class="pc-container">
+    <div class="pc-content">
+      
+      <div class="page-header">
+        <div class="page-block">
+          <div class="row align-items-center">
+            <div class="col-md-12">
+              <div class="page-header-title">
+                <h5 class="mb-0">Treatment Plan Details</h5>
+              </div>
+              <ul class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/front-page">Home</a></li>
+                <li class="breadcrumb-item"><a href="/treatment-plans">Treatment Plans</a></li>
+                <li class="breadcrumb-item active">Plan Details</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+
+      <div class="row">
+
+        <div class="col-lg-4">
+          <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+              <h5>Plan Information</h5>
+              <div class="dropdown">
+                <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                  <i class="ti ti-dots-vertical"></i>
+                </button>
+                <ul class="dropdown-menu">
+                  <li><a class="dropdown-item" href="/treatment-plans/{{ plan.plan_id }}/edit"><i class="ti ti-edit me-2"></i>Edit Plan</a></li>
+                  <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#deletePlanModal" data-plan-id="{{ plan.plan_id }}" data-plan-name="{{ plan.name }}"><i class="ti ti-trash me-2"></i>Delete Plan</a></li>
+                  <li><a class="dropdown-item" href="#" onclick="printPlan()"><i class="ti ti-printer me-2"></i>Print Plan</a></li>
+                </ul>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="d-flex align-items-center mb-4">
+                <div class="avatar avatar-lg bg-light-primary">
+                  <span class="f-24 text-primary"><i class="ti ti-clipboard-text"></i></span>
+                </div>
+                <div class="flex-grow-1 ms-3">
+                  <h5 class="mb-1">{{ plan.name }}</h5>
+                  <p class="mb-0">
+                    {% if plan.status == 'Active' %}
+                    <span class="badge bg-success">Active</span>
+                    {% elif plan.status == 'Completed' %}
+                    <span class="badge bg-info">Completed</span>
+                    {% elif plan.status == 'Cancelled' %}
+                    <span class="badge bg-danger">Cancelled</span>
+                    {% else %}
+                    <span class="badge bg-secondary">{{ plan.status }}</span>
+                    {% endif %}
+                  </p>
+                </div>
+              </div>
+              
+              <div class="mb-3">
+                <div class="d-flex mb-1">
+                  <div class="flex-shrink-0">
+                    <i class="ti ti-calendar-event text-muted"></i>
+                  </div>
+                  <div class="flex-grow-1 ms-2">
+                    <span class="text-muted">Start Date:</span>
+                    <span class="fw-medium">{{ plan.start_date.strftime('%B %d, %Y') if plan.start_date else 'Not set' }}</span>
+                  </div>
+                </div>
+                <div class="d-flex mb-1">
+                  <div class="flex-shrink-0">
+                    <i class="ti ti-calendar-off text-muted"></i>
+                  </div>
+                  <div class="flex-grow-1 ms-2">
+                    <span class="text-muted">End Date:</span>
+                    <span class="fw-medium">{{ plan.end_date.strftime('%B %d, %Y') if plan.end_date else 'Not set' }}</span>
+                  </div>
+                </div>
+                <div class="d-flex mb-1">
+                  <div class="flex-shrink-0">
+                    <i class="ti ti-calendar-stats text-muted"></i>
+                  </div>
+                  <div class="flex-grow-1 ms-2">
+                    <span class="text-muted">Created:</span>
+                    <span class="fw-medium">{{ plan.created_at.strftime('%B %d, %Y') if plan.created_at else 'Not available' }}</span>
+                  </div>
+                </div>
+                {% if plan.updated_at %}
+                <div class="d-flex mb-1">
+                  <div class="flex-shrink-0">
+                    <i class="ti ti-refresh text-muted"></i>
+                  </div>
+                  <div class="flex-grow-1 ms-2">
+                    <span class="text-muted">Last Updated:</span>
+                    <span class="fw-medium">{{ plan.updated_at.strftime('%B %d, %Y') }}</span>
+                  </div>
+                </div>
+                {% endif %}
+              </div>
+              
+              <hr>
+              
+              <h6 class="mb-3">Description</h6>
+              <p class="text-muted">
+                {% if plan.description %}
+                {{ plan.description }}
+                {% else %}
+                No description provided.
+                {% endif %}
+              </p>
+
+              <hr>
+              
+              <div class="d-grid gap-2 mt-3">
+                <a href="/treatment-plans/{{ plan.plan_id }}/edit" class="btn btn-primary">
+                  <i class="ti ti-edit me-1"></i> Edit Plan
+                </a>
+                <button class="btn btn-outline-secondary" onclick="printPlan()">
+                  <i class="ti ti-printer me-1"></i> Print Plan
+                </button>
+              </div>
+            </div>
+          </div>
+          
+
+          <div class="card mt-4">
+            <div class="card-header">
+              <h5>Patient Information</h5>
+            </div>
+            <div class="card-body">
+              <div class="d-flex align-items-center mb-3">
+                <div class="avatar avatar-md bg-light-info">
+                  <span class="f-20 text-info"><i class="ti ti-user"></i></span>
+                </div>
+                <div class="flex-grow-1 ms-3">
+                  <h5 class="mb-0">{{ patient.first_name }} {{ patient.last_name }}</h5>
+                  <span class="text-muted">Patient ID: {{ patient.patient_id }}</span>
+                </div>
+              </div>
+              
+              <div class="mb-3">
+                <div class="d-flex mb-1">
+                  <div class="flex-shrink-0">
+                    <i class="ti ti-stethoscope text-muted"></i>
+                  </div>
+                  <div class="flex-grow-1 ms-2">
+                    <span class="text-muted">Diagnosis:</span>
+                    <span class="fw-medium">{{ patient.diagnosis if patient.diagnosis else 'Not specified' }}</span>
+                  </div>
+                </div>
+                <div class="d-flex mb-1">
+                  <div class="flex-shrink-0">
+                    <i class="ti ti-mail text-muted"></i>
+                  </div>
+                  <div class="flex-grow-1 ms-2">
+                    <span class="text-muted">Email:</span>
+                    <span class="fw-medium">{{ patient.email if patient.email else 'Not provided' }}</span>
+                  </div>
+                </div>
+                <div class="d-flex mb-1">
+                  <div class="flex-shrink-0">
+                    <i class="ti ti-phone text-muted"></i>
+                  </div>
+                  <div class="flex-grow-1 ms-2">
+                    <span class="text-muted">Phone:</span>
+                    <span class="fw-medium">{{ patient.phone if patient.phone else 'Not provided' }}</span>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="d-grid">
+                <a href="/patients/{{ patient.patient_id }}" class="btn btn-outline-primary">
+                  <i class="ti ti-user me-1"></i> View Patient Profile
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+
+        <div class="col-lg-8">
+          <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+              <h5>Prescribed Exercises</h5>
+              <a href="/treatment-plans/{{ plan.plan_id }}/edit" class="btn btn-sm btn-outline-primary">
+                <i class="ti ti-edit me-1"></i> Edit Exercises
+              </a>
+            </div>
+            <div class="card-body">
+              {% if plan_exercises %}
+              <div class="table-responsive">
+                <table class="table table-hover">
+                  <thead>
+                    <tr>
+                      <th>Exercise Name</th>
+                      <th class="text-center">Sets</th>
+                      <th class="text-center">Reps</th>
+                      <th class="text-center">Frequency</th>
+                      <th class="text-center">Duration</th>
+                      <th class="text-center">Difficulty</th>
+                      <th class="text-center">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for exercise in plan_exercises %}
+                    <tr>
+                      <td>
+                        <div class="d-flex align-items-center">
+                          <div class="avatar avatar-sm bg-light-primary">
+                            <span class="f-14"><i class="ti ti-activity"></i></span>
+                          </div>
+                          <div class="flex-grow-1 ms-2">
+                            <h6 class="mb-0">{{ exercise.exercise_name }}</h6>
+                          </div>
+                        </div>
+                      </td>
+                      <td class="text-center">{{ exercise.sets if exercise.sets else '-' }}</td>
+                      <td class="text-center">{{ exercise.repetitions if exercise.repetitions else '-' }}</td>
+                      <td class="text-center">{{ exercise.frequency if exercise.frequency else 'Daily' }}</td>
+                      <td class="text-center">{{ exercise.duration if exercise.duration else '-' }} min</td>
+                      <td class="text-center">
+                        {% if exercise.difficulty == 'Easy' %}
+                        <span class="badge bg-success">Easy</span>
+                        {% elif exercise.difficulty == 'Medium' %}
+                        <span class="badge bg-warning">Medium</span>
+                        {% elif exercise.difficulty == 'Hard' %}
+                        <span class="badge bg-danger">Hard</span>
+                        {% else %}
+                        <span class="badge bg-secondary">{{ exercise.difficulty }}</span>
+                        {% endif %}
+                      </td>
+                      <td class="text-center">
+                        <div class="btn-group" role="group">
+                          <div class="btn-group" role="group">
+                            <button type="button" 
+                                    class="btn btn-sm btn-outline-primary" 
+                                    data-bs-toggle="modal" 
+                                    data-bs-target="#viewExerciseModal"
+                                    title="View Exercise Details"
+                                    data-exercise-id="{{ exercise.exercise_id }}" 
+                                    data-exercise-name="{{ exercise.exercise_name }}"
+                                    data-exercise-notes="{{ exercise.notes }}"
+                                    data-exercise-video="{{ exercise.video_url }}">
+                              <i class="ti ti-eye"></i>
+                            </button>
+                          </div>
+                          <a href="/exercises/{{ exercise.exercise_id }}/edit" 
+                             class="btn btn-sm btn-outline-secondary" 
+                             data-bs-toggle="tooltip" 
+                             title="Edit Exercise">
+                            <i class="ti ti-external-link"></i>
+                          </a>
+                        </div>
+                      </td>
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+              {% else %}
+              <div class="text-center py-5">
+                <i class="ti ti-activity f-48 mb-3 text-muted"></i>
+                <h5 class="mb-3">No Exercises Found</h5>
+                <p class="mb-4">There are no exercises added to this treatment plan yet.</p>
+                <a href="/treatment-plans/{{ plan.plan_id }}/edit" class="btn btn-primary">
+                  <i class="ti ti-plus me-1"></i> Add Exercises
+                </a>
+              </div>
+              {% endif %}
+            </div>
+          </div>
+          
+
+          <div class="card mt-4">
+            <div class="card-header">
+              <h5>Progress Tracking</h5>
+            </div>
+            <div class="card-body">
+              {% if patient_progress %}
+              <div class="row">
+
+                <div class="col-md-6">
+                  <div class="card border">
+                    <div class="card-body">
+                      <h6 class="mb-3">Patient Metrics</h6>
+                      <div class="d-flex align-items-center mb-3">
+                        <div class="flex-shrink-0">
+                          <div class="avatar avatar-sm bg-light-success">
+                            <span class="f-14 text-success"><i class="ti ti-trending-up"></i></span>
+                          </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                          <div class="row g-1">
+                            <div class="col">
+                              <h6 class="mb-0">Adherence Rate</h6>
+                              <p class="mb-0 text-muted">{{ patient_progress.adherence_rate }}%</p>
+                            </div>
+                            <div class="col-auto">
+                              <div class="avtar bg-light-success">
+                                <h6 class="mt-1 text-success f-16">{{ patient_progress.adherence_rate }}%</h6>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div class="d-flex align-items-center mb-3">
+                        <div class="flex-shrink-0">
+                          <div class="avatar avatar-sm bg-light-primary">
+                            <span class="f-14 text-primary"><i class="ti ti-chart-arrows"></i></span>
+                          </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                          <div class="row g-1">
+                            <div class="col">
+                              <h6 class="mb-0">Recovery Progress</h6>
+                              <p class="mb-0 text-muted">{{ patient_progress.recovery_progress }}%</p>
+                            </div>
+                            <div class="col-auto">
+                              <div class="avtar bg-light-primary">
+                                <h6 class="mt-1 text-primary f-16">{{ patient_progress.recovery_progress }}%</h6>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                          <div class="avatar avatar-sm bg-light-warning">
+                            <span class="f-14 text-warning"><i class="ti ti-activity-heartbeat"></i></span>
+                          </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                          <div class="row g-1">
+                            <div class="col">
+                              <h6 class="mb-0">Functionality Score</h6>
+                              <p class="mb-0 text-muted">{{ patient_progress.functionality_score }}/10</p>
+                            </div>
+                            <div class="col-auto">
+                              <div class="avtar bg-light-warning">
+                                <h6 class="mt-1 text-warning f-16">{{ patient_progress.functionality_score }}/10</h6>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+
+                <div class="col-md-6">
+                  <div class="card border">
+                    <div class="card-body">
+                      <h6 class="mb-3">Exercise Completion</h6>
+                      <div class="d-flex align-items-center mb-3">
+                        <div class="flex-shrink-0">
+                          <div class="avatar avatar-sm bg-light-success">
+                            <span class="f-14 text-success"><i class="ti ti-check"></i></span>
+                          </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                          <div class="row g-1">
+                            <div class="col">
+                              <h6 class="mb-0">Complete</h6>
+                              <p class="mb-0 text-muted">{{ exercise_completion.complete_count }} exercises</p>
+                            </div>
+                            <div class="col-auto">
+                              <div class="avtar bg-light-success">
+                                <h6 class="mt-1 text-success f-16">{{ exercise_completion.complete_percentage }}%</h6>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div class="d-flex align-items-center mb-3">
+                        <div class="flex-shrink-0">
+                          <div class="avatar avatar-sm bg-light-warning">
+                            <span class="f-14 text-warning"><i class="ti ti-minus"></i></span>
+                          </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                          <div class="row g-1">
+                            <div class="col">
+                              <h6 class="mb-0">Partial</h6>
+                              <p class="mb-0 text-muted">{{ exercise_completion.partial_count }} exercises</p>
+                            </div>
+                            <div class="col-auto">
+                              <div class="avtar bg-light-warning">
+                                <h6 class="mt-1 text-warning f-16">{{ exercise_completion.partial_percentage }}%</h6>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                          <div class="avatar avatar-sm bg-light-danger">
+                            <span class="f-14 text-danger"><i class="ti ti-x"></i></span>
+                          </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                          <div class="row g-1">
+                            <div class="col">
+                              <h6 class="mb-0">Missed</h6>
+                              <p class="mb-0 text-muted">{{ exercise_completion.missed_count }} exercises</p>
+                            </div>
+                            <div class="col-auto">
+                              <div class="avtar bg-light-danger">
+                                <h6 class="mt-1 text-danger f-16">{{ exercise_completion.missed_percentage }}%</h6>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="d-grid mt-3">
+                <a href="/reports/patients/{{ patient.patient_id }}" class="btn btn-outline-primary">
+                  <i class="ti ti-file-analytics me-1"></i> View Detailed Progress Report
+                </a>
+              </div>
+              {% else %}
+              <div class="text-center py-5">
+                <i class="ti ti-chart-line f-48 mb-3 text-muted"></i>
+                <h5 class="mb-3">No Progress Data Available</h5>
+                <p class="mb-4">The patient has not recorded any progress for this treatment plan yet.</p>
+                <a href="/reports/patients/{{ patient.patient_id }}" class="btn btn-primary">
+                  <i class="ti ti-file-analytics me-1"></i> Go to Patient Reports
+                </a>
+              </div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+
+  
+
+  <div class="modal fade" id="viewExerciseModal" tabindex="-1" aria-labelledby="viewExerciseModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="viewExerciseModalLabel">Exercise Details</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="row">
+            <div class="col-md-6">
+              <h6 id="exercise-name"></h6>
+              <div class="mb-3" id="exercise-video-container">
+                <video id="exercise-video" class="w-100" controls>
+                  <source id="exercise-video-source" src="" type="video/mp4">
+                  Your browser does not support the video tag.
+                </video>
+                <div id="youtube-embed" class="ratio ratio-16x9 d-none">
+                  <iframe src="" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <h6 class="mb-2">Instructions</h6>
+              <div id="exercise-notes" class="p-3 bg-light rounded mb-3">
+                <p class="mb-0">Loading exercise instructions...</p>
+              </div>
+              
+              <h6 class="mb-2">Prescribed Details</h6>
+              <div class="mb-3">
+                <table class="table table-sm">
+                  <tbody>
+                    <tr>
+                      <td class="fw-medium">Sets:</td>
+                      <td id="exercise-sets">-</td>
+                    </tr>
+                    <tr>
+                      <td class="fw-medium">Repetitions:</td>
+                      <td id="exercise-reps">-</td>
+                    </tr>
+                    <tr>
+                      <td class="fw-medium">Frequency:</td>
+                      <td id="exercise-frequency">-</td>
+                    </tr>
+                    <tr>
+                      <td class="fw-medium">Duration:</td>
+                      <td id="exercise-duration">-</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <a href="#" id="view-full-exercise" class="btn btn-primary">
+            <i class="ti ti-external-link me-1"></i> View Full Details
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <div class="modal fade" id="deletePlanModal" tabindex="-1" aria-labelledby="deletePlanModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="deletePlanModalLabel">Confirm Deletion</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p>Are you sure you want to delete the treatment plan "<span id="plan-name-placeholder">{{ plan.name }}</span>"?</p>
+          <p class="text-danger">This action cannot be undone. All exercises associated with this plan will be removed.</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <form id="delete-plan-form" action="/treatment-plans/delete" method="POST">
+            <input type="hidden" id="plan-id-input" name="plan_id" value="{{ plan.plan_id }}">
+            <button type="submit" class="btn btn-danger">Delete Plan</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <footer class="pc-footer">
+    <div class="footer-wrapper container-fluid">
+      <div class="row">
+        <div class="col-auto my-1">
+          <span>&copy; 2025 APR-CV Physical Therapy</span>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+
+<script src="../static/assets/js/plugins/popper.min.js"></script>
+<script src="../static/assets/js/plugins/perfect-scrollbar.min.js"></script>
+<script src="../static/assets/js/plugins/bootstrap.min.js"></script>
+<script src="../static/assets/js/pcoded.js"></script>
+<script src="../static/assets/js/plugins/feather.min.js"></script>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[title]'))
+    tooltipTriggerList.forEach(function (tooltipTriggerEl) {
+      new bootstrap.Tooltip(tooltipTriggerEl)
+    })
+  });
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+
+  var viewExerciseModal = document.getElementById('viewExerciseModal');
+  if (viewExerciseModal) {
+    viewExerciseModal.addEventListener('show.bs.modal', function(event) {
+      var button = event.relatedTarget;
+      var exerciseId = button.getAttribute('data-exercise-id');
+      var exerciseName = button.getAttribute('data-exercise-name');
+      var exerciseNotes = button.getAttribute('data-exercise-notes');
+      var videoUrl = button.getAttribute('data-exercise-video');
+      
+
+      var row = button.closest('tr');
+      var sets = row.querySelector('td:nth-child(2)').textContent;
+      var reps = row.querySelector('td:nth-child(3)').textContent;
+      var frequency = row.querySelector('td:nth-child(4)').textContent;
+      var duration = row.querySelector('td:nth-child(5)').textContent;
+      
+
+      document.getElementById('exercise-name').textContent = exerciseName;
+      document.getElementById('exercise-notes').innerHTML = exerciseNotes || '<p class="text-muted">No specific instructions provided.</p>';
+      document.getElementById('exercise-sets').textContent = sets;
+      document.getElementById('exercise-reps').textContent = reps;
+      document.getElementById('exercise-frequency').textContent = frequency;
+      document.getElementById('exercise-duration').textContent = duration;
+      
+
+      document.getElementById('view-full-exercise').href = '/exercises/' + exerciseId;
+      
+
+      var videoContainer = document.getElementById('exercise-video-container');
+      var videoElement = document.getElementById('exercise-video');
+      var videoSource = document.getElementById('exercise-video-source');
+      var youtubeEmbed = document.getElementById('youtube-embed');
+      var youtubeIframe = youtubeEmbed.querySelector('iframe');
+      
+      if (videoUrl) {
+        if (videoUrl.includes('youtube.com') || videoUrl.includes('youtu.be')) {
+
+          videoElement.classList.add('d-none');
+          youtubeEmbed.classList.remove('d-none');
+          
+
+          var youtubeId = extractYoutubeId(videoUrl);
+          youtubeIframe.src = 'https://www.youtube.com/embed/' + youtubeId;
+        } else {
+
+          videoElement.classList.remove('d-none');
+          youtubeEmbed.classList.add('d-none');
+          videoSource.src = videoUrl;
+          videoElement.load();
+        }
+      } else {
+
+        videoElement.classList.add('d-none');
+        youtubeEmbed.classList.add('d-none');
+        videoContainer.innerHTML = '<div class="alert alert-info">No video available for this exercise.</div>';
+      }
+    });
+    
+    viewExerciseModal.addEventListener('hidden.bs.modal', function() {
+
+      var videoElement = document.getElementById('exercise-video');
+      if (videoElement) {
+        videoElement.pause();
+      }
+      
+      var youtubeEmbed = document.getElementById('youtube-embed');
+      if (youtubeEmbed) {
+        var youtubeIframe = youtubeEmbed.querySelector('iframe');
+        youtubeIframe.src = '';
+      }
+    });
+  }
+  
+
+  function extractYoutubeId(url) {
+    var regExp = /^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?))\??v?=?([^#&?]*).*/;
+    var match = url.match(regExp);
+    return (match && match[7].length == 11) ? match[7] : false;
+  }
+  
+
+  window.printPlan = function() {
+    window.print();
+  };
+});
+</script>
+
+</body>
+</html>

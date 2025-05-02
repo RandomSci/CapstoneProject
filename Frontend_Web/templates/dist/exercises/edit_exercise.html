@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Edit Exercise | APR-CV</title>
+  
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0, minimal-ui">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="description" content="APR-CV Patient Management System">
+  <meta name="keywords" content="physical therapy, rehab, cardiovascular therapy, patient management">
+  <meta name="author" content="APR-CV">
+  
+  
+  <link rel="icon" href="../../static/assets/images/favicon.svg" type="image/x-icon">
+  
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700&display=swap" id="main-font-link">
+  
+  <link rel="stylesheet" href="../../static/assets/fonts/tabler-icons.min.css" >
+  
+  <link rel="stylesheet" href="../../static/assets/fonts/feather.css" >
+  
+  <link rel="stylesheet" href="../../static/assets/fonts/fontawesome.css" >
+  
+  <link rel="stylesheet" href="../../static/assets/fonts/material.css" >
+  
+  <link rel="stylesheet" href="../../static/assets/css/style.css" id="main-style-link" >
+  <link rel="stylesheet" href="../../static/assets/css/style-preset.css" >
+</head>
+
+<body data-pc-preset="preset-1" data-pc-direction="ltr" data-pc-theme="light">
+  
+  <div class="loader-bg">
+    <div class="loader-track">
+      <div class="loader-fill"></div>
+    </div>
+  </div>
+  
+  
+  
+  <nav class="pc-sidebar">
+    <div class="navbar-wrapper">
+      <div class="m-header">
+        <a href="/front-page" class="b-brand text-primary">
+          <i class="ti ti-medical-cross fs-4"></i>
+          <span class="ms-2 fw-bold">APR-CV</span>
+        </a>
+      </div>
+      <div class="navbar-content">
+        <ul class="pc-navbar">
+          <li class="pc-item">
+            <a href="/front-page" class="pc-link">
+              <span class="pc-micon"><i class="ti ti-dashboard"></i></span>
+              <span class="pc-mtext">Dashboard</span>
+            </a>
+          </li>
+        
+          <li class="pc-item pc-hasmenu">
+            <a href="#!" class="pc-link">
+              <span class="pc-micon"><i class="ti ti-users"></i></span>
+              <span class="pc-mtext">Patients</span>
+              <span class="pc-arrow"><i data-feather="chevron-right"></i></span>
+            </a>
+            <ul class="pc-submenu">
+              <li class="pc-item"><a class="pc-link" href="/patients">Patient Directory</a></li>
+              <li class="pc-item"><a class="pc-link" href="/reports/patients">Patient Reports</a></li>
+            </ul>
+          </li>
+        
+          <li class="pc-item pc-hasmenu">
+            <a href="#!" class="pc-link">
+              <span class="pc-micon"><i class="ti ti-calendar"></i></span>
+              <span class="pc-mtext">Appointments</span>
+              <span class="pc-arrow"><i data-feather="chevron-right"></i></span>
+            </a>
+            <ul class="pc-submenu">
+              <li class="pc-item"><a class="pc-link" href="/appointments">Schedule</a></li>
+              <li class="pc-item"><a class="pc-link" href="/appointments/new">New Appointment</a></li>
+            </ul>
+          </li>
+        
+          <li class="pc-item pc-hasmenu active">
+            <a href="#!" class="pc-link">
+              <span class="pc-micon"><i class="ti ti-activity"></i></span>
+              <span class="pc-mtext">Exercise Library</span>
+              <span class="pc-arrow"><i data-feather="chevron-right"></i></span>
+            </a>
+            <ul class="pc-submenu">
+              <li class="pc-item"><a class="pc-link" href="/exercises">Browse Exercises</a></li>
+              <li class="pc-item"><a class="pc-link" href="/exercises/add">Upload New Exercise</a></li>
+            </ul>
+          </li>
+        
+          <li class="pc-item pc-hasmenu">
+            <a href="#!" class="pc-link">
+              <span class="pc-micon"><i class="ti ti-report"></i></span>
+              <span class="pc-mtext">Treatment Plans</span>
+              <span class="pc-arrow"><i data-feather="chevron-right"></i></span>
+            </a>
+            <ul class="pc-submenu">
+              <li class="pc-item"><a class="pc-link" href="/treatment-plans/new">Create Plan</a></li>
+              <li class="pc-item"><a class="pc-link" href="/treatment-plans">Manage Plans</a></li>
+            </ul>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+  
+  
+  
+  <header class="pc-header">
+    <div class="header-wrapper">
+      
+      <div class="me-auto pc-mob-drp">
+        <ul class="list-unstyled">
+          <li class="pc-h-item pc-sidebar-collapse">
+            <a href="#" class="pc-head-link ms-0" id="sidebar-hide">
+              <i class="ti ti-menu-2"></i>
+            </a>
+          </li>
+          <li class="pc-h-item pc-sidebar-popup">
+            <a href="#" class="pc-head-link ms-0" id="mobile-collapse">
+              <i class="ti ti-menu-2"></i>
+            </a>
+          </li>
+          <li class="pc-h-item d-none d-md-inline-flex">
+            <form class="header-search">
+              <i data-feather="search" class="icon-search"></i>
+              <input type="search" class="form-control" placeholder="Search...">
+            </form>
+          </li>
+        </ul>
+      </div>
+      
+      
+      <div class="ms-auto">
+        <ul class="list-unstyled">
+          <li class="dropdown pc-h-item header-user-profile">
+            <a class="pc-head-link dropdown-toggle arrow-none me-0" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="false" data-bs-auto-close="outside" aria-expanded="false">
+              <img src="/static/assets/images/user/{{ therapist.profile_image }}" alt="user-image" class="user-avtar">
+              <span>{{ first_name }} {{ last_name }}</span>
+            </a>
+            <div class="dropdown-menu dropdown-user-profile dropdown-menu-end pc-h-dropdown">
+              <div class="dropdown-header">
+                <div class="d-flex mb-1">
+                  <div class="flex-shrink-0">
+                    <img src="/static/assets/images/user/{{ therapist.profile_image }}" alt="user-image" class="user-avtar">
+                  </div>
+                  <div class="flex-grow-1 ms-3">
+                    <h6 class="mb-1">{{ first_name }} {{ last_name }}</h6>
+                    <span>Physical Therapist</span>
+                  </div>
+                  <a href="/logout" class="pc-head-link bg-transparent"><i class="ti ti-power text-danger"></i></a>
+                </div>
+              </div>
+              
+              <a href="/logout" class="dropdown-item">
+                <i class="ti ti-power"></i>
+                <span>Logout</span>
+              </a>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </header>
+  
+
+  
+  <div class="pc-container">
+    <div class="pc-content">
+      
+      <div class="page-header">
+        <div class="page-block">
+          <div class="row align-items-center">
+            <div class="col-md-12">
+              <div class="page-header-title">
+                <h5 class="mb-0">Edit Exercise</h5>
+              </div>
+              <ul class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/front-page">Home</a></li>
+                <li class="breadcrumb-item"><a href="/exercises">Exercise Library</a></li>
+                <li class="breadcrumb-item active">Edit Exercise</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+
+      <div class="row">
+        <div class="col-12">
+          <div class="card">
+            <div class="card-header">
+              <h5>Edit Exercise: {{ exercise.name }}</h5>
+            </div>
+            <div class="card-body">
+              {% if error %}
+              <div class="alert alert-danger" role="alert">
+                {{ error }}
+              </div>
+              {% endif %}
+              
+              <form id="editExerciseForm" action="/exercises/{{ exercise.exercise_id }}/edit" method="POST" enctype="multipart/form-data">
+                <div class="row mb-4">
+                  <div class="col-md-6">
+                    <div class="form-group">
+                      <label for="name" class="form-label">Exercise Name <span class="text-danger">*</span></label>
+                      <input type="text" class="form-control" id="name" name="name" required value="{{ exercise.name }}">
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="form-group">
+                      <label for="category_id" class="form-label">Category</label>
+                      <select class="form-select" id="category_id" name="category_id">
+                        <option value="">Select a category</option>
+                        {% for category in categories %}
+                        <option value="{{ category.category_id }}" {% if exercise.category_id == category.category_id %}selected{% endif %}>{{ category.name }}</option>
+                        {% endfor %}
+                      </select>
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="row mb-4">
+                  <div class="col-md-12">
+                    <div class="form-group">
+                      <label for="description" class="form-label">Description</label>
+                      <textarea class="form-control" id="description" name="description" rows="3">{{ exercise.description }}</textarea>
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="row mb-4">
+                  <div class="col-md-6">
+                    <div class="form-group">
+                      <label for="difficulty" class="form-label">Difficulty Level</label>
+                      <select class="form-select" id="difficulty" name="difficulty">
+                        <option value="">Select difficulty</option>
+                        <option value="Beginner" {% if exercise.difficulty == 'Beginner' %}selected{% endif %}>Beginner</option>
+                        <option value="Intermediate" {% if exercise.difficulty == 'Intermediate' %}selected{% endif %}>Intermediate</option>
+                        <option value="Advanced" {% if exercise.difficulty == 'Advanced' %}selected{% endif %}>Advanced</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="form-group">
+                      <label for="duration" class="form-label">Duration (minutes)</label>
+                      <input type="number" class="form-control" id="duration" name="duration" min="1" value="{{ exercise.duration }}">
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="row mb-4">
+                  <div class="col-md-12">
+                    <div class="form-group">
+                      <label for="instructions" class="form-label">Step-by-Step Instructions</label>
+                      <textarea class="form-control" id="instructions" name="instructions" rows="5">{{ exercise.instructions }}</textarea>
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="row mb-4">
+                  <div class="col-md-12">
+                    <div class="form-group">
+                      <label class="form-label">Current Video</label>
+                      {% if exercise.video_url %}
+                        {% if 'youtube.com' in exercise.video_url or 'youtu.be' in exercise.video_url %}
+                          <div class="ratio ratio-16x9 mb-3" style="max-width: 560px;">
+                            <iframe src="{{ exercise.video_url|replace('watch?v=', 'embed/') }}" title="{{ exercise.name }}" allowfullscreen></iframe>
+                          </div>
+                          <p class="text-muted">Current YouTube URL: <a href="{{ exercise.video_url }}" target="_blank">{{ exercise.video_url }}</a></p>
+                        {% else %}
+                          <div style="max-width: 560px;" class="mb-3">
+                            <video class="w-100" controls>
+                              <source src="{{ exercise.video_url }}" type="video/mp4">
+                              Your browser does not support the video tag.
+                            </video>
+                          </div>
+                          <p class="text-muted">Current uploaded video: {{ exercise.video_url }}</p>
+                        {% endif %}
+                      {% else %}
+                        <p class="text-muted">No video currently associated with this exercise.</p>
+                      {% endif %}
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="row mb-4">
+                  <div class="col-md-12">
+                    <div class="form-group">
+                      <label class="form-label">Update Video</label>
+                      <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" id="keep_current_video" name="keep_current_video" value="1" checked>
+                        <label class="form-check-label" for="keep_current_video">
+                          Keep current video
+                        </label>
+                      </div>
+                      <div id="update-video-options" style="display: none;">
+                        <div class="row">
+                          <div class="col-md-6">
+                            <div class="form-check mb-2">
+                              <input class="form-check-input" type="radio" name="video_source" id="video_source_youtube" value="youtube" checked>
+                              <label class="form-check-label" for="video_source_youtube">
+                                YouTube URL
+                              </label>
+                            </div>
+                            <div class="input-group">
+                              <span class="input-group-text"><i class="ti ti-brand-youtube"></i></span>
+                              <input type="text" class="form-control" id="video_url" name="video_url" placeholder="e.g., https://www.youtube.com/watch?v=...">
+                            </div>
+                            <small class="form-text text-muted">Enter a YouTube video URL for this exercise demonstration</small>
+                          </div>
+                          <div class="col-md-6">
+                            <div class="form-check mb-2">
+                              <input class="form-check-input" type="radio" name="video_source" id="video_source_upload" value="upload">
+                              <label class="form-check-label" for="video_source_upload">
+                                Upload Video
+                              </label>
+                            </div>
+                            <div class="input-group">
+                              <input type="file" class="form-control" id="video_upload" name="video_upload" accept="video/*" disabled>
+                              <label class="input-group-text" for="video_upload"><i class="ti ti-upload"></i></label>
+                            </div>
+                            <small class="form-text text-muted">Upload a video file (MP4, MOV, or WEBM, max 5GB)</small>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="row mb-4" id="youtube-preview-container" style="display: none;">
+                  <div class="col-md-12">
+                    <div class="form-group">
+                      <label class="form-label">Video Preview</label>
+                      <div class="ratio ratio-16x9" style="max-width: 560px;">
+                        <div id="youtube-preview-placeholder" class="bg-light d-flex align-items-center justify-content-center">
+                          <p class="text-muted">Enter a valid YouTube URL to see preview</p>
+                        </div>
+                        <iframe id="youtube-preview" src="" title="YouTube video player" allowfullscreen style="display: none;"></iframe>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="row mb-4" id="video-preview-container" style="display: none;">
+                  <div class="col-md-12">
+                    <div class="form-group">
+                      <label class="form-label">Video Preview</label>
+                      <div style="max-width: 560px;">
+                        <video id="video-preview" class="w-100" controls style="display: none;">
+                          <source src="" type="video/mp4">
+                          Your browser does not support the video tag.
+                        </video>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div id="file-info" style="display: none; margin-top: 10px;"></div>
+                
+                <div id="upload-progress-container" style="display: none; margin-bottom: 20px;">
+                  <label class="form-label">Upload Progress</label>
+                  <div class="progress" style="height: 20px;">
+                    <div id="upload-progress-bar" class="progress-bar bg-primary" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                  </div>
+                  <div id="upload-progress-text" class="text-center mt-2">Preparing upload...</div>
+                </div>
+                
+                <div class="text-end">
+                  <a href="/exercises" class="btn btn-outline-secondary me-2">
+                    <i class="ti ti-x me-1"></i> Cancel
+                  </a>
+                  <button type="submit" class="btn btn-primary">
+                    <i class="ti ti-device-floppy me-1"></i> Save Changes
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+
+  <footer class="pc-footer">
+    <div class="footer-wrapper container-fluid">
+      <div class="row">
+        <div class="col-auto my-1">
+          <span>&copy; 2025 APR-CV Physical Therapy</span>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+
+<script src="../../static/assets/js/plugins/popper.min.js"></script>
+<script src="../../static/assets/js/plugins/perfect-scrollbar.min.js"></script>
+<script src="../../static/assets/js/plugins/bootstrap.min.js"></script>
+<script src="../../static/assets/js/pcoded.js"></script>
+<script src="../../static/assets/js/plugins/feather.min.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+
+  const keepCurrentVideoCheckbox = document.getElementById('keep_current_video');
+  const updateVideoOptions = document.getElementById('update-video-options');
+  
+  keepCurrentVideoCheckbox.addEventListener('change', function() {
+    updateVideoOptions.style.display = this.checked ? 'none' : 'block';
+    
+
+    if (this.checked) {
+      document.getElementById('video_url').value = '';
+      document.getElementById('video_upload').value = '';
+      document.getElementById('youtube-preview-container').style.display = 'none';
+      document.getElementById('video-preview-container').style.display = 'none';
+      document.getElementById('file-info').style.display = 'none';
+    }
+  });
+  
+
+  const youtubeRadio = document.getElementById('video_source_youtube');
+  const uploadRadio = document.getElementById('video_source_upload');
+  const videoUrlInput = document.getElementById('video_url');
+  const videoUploadInput = document.getElementById('video_upload');
+  const progressContainer = document.getElementById('upload-progress-container');
+  const progressBar = document.getElementById('upload-progress-bar');
+  const progressText = document.getElementById('upload-progress-text');
+  
+  youtubeRadio.addEventListener('change', function() {
+    if (this.checked) {
+      videoUrlInput.disabled = false;
+      videoUploadInput.disabled = true;
+      videoUploadInput.value = '';
+      document.getElementById('youtube-preview-container').style.display = videoUrlInput.value ? 'block' : 'none';
+      document.getElementById('video-preview-container').style.display = 'none';
+      document.getElementById('file-info').style.display = 'none';
+    }
+  });
+  
+  uploadRadio.addEventListener('change', function() {
+    if (this.checked) {
+      videoUrlInput.disabled = true;
+      videoUploadInput.disabled = false;
+      videoUrlInput.value = '';
+      document.getElementById('youtube-preview-container').style.display = 'none';
+      document.getElementById('video-preview-container').style.display = videoUploadInput.files.length > 0 ? 'block' : 'none';
+    }
+  });
+  
+
+  videoUrlInput.addEventListener('input', function() {
+    const url = this.value.trim();
+    const youtubeRegex = /^(https?:\/\/)?(www\.)?(youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})(\&.*)?$/;
+    const match = url.match(youtubeRegex);
+    
+    if (match && match[4]) {
+      const videoId = match[4];
+      const embedUrl = `https://www.youtube.com/embed/${videoId}`;
+      const youtubePreview = document.getElementById('youtube-preview');
+      youtubePreview.src = embedUrl;
+      youtubePreview.style.display = 'block';
+      document.getElementById('youtube-preview-placeholder').style.display = 'none';
+      document.getElementById('youtube-preview-container').style.display = 'block';
+    } else {
+      document.getElementById('youtube-preview').style.display = 'none';
+      document.getElementById('youtube-preview-placeholder').style.display = 'flex';
+      if (url) {
+        document.getElementById('youtube-preview-container').style.display = 'block';
+      } else {
+        document.getElementById('youtube-preview-container').style.display = 'none';
+      }
+    }
+  });
+  
+
+  function formatFileSize(bytes) {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  }
+  
+
+  videoUploadInput.addEventListener('change', function() {
+    const file = this.files[0];
+    if (file) {
+      const fileInfo = document.getElementById('file-info');
+      fileInfo.innerHTML = `
+        <div class="alert alert-info">
+          <strong>File:</strong> ${file.name}<br>
+          <strong>Size:</strong> ${formatFileSize(file.size)}
+        </div>
+      `;
+      fileInfo.style.display = 'block';
+      
+      const videoPreview = document.getElementById('video-preview');
+      const fileURL = URL.createObjectURL(file);
+      videoPreview.src = fileURL;
+      videoPreview.style.display = 'block';
+      document.getElementById('video-preview-container').style.display = 'block';
+      
+
+      const maxSize = 5 * 1024 * 1024 * 1024;
+      if (file.size > maxSize) {
+        fileInfo.innerHTML = `
+          <div class="alert alert-danger">
+            <strong>Error:</strong> The video file is too large. Maximum allowed size is 5GB.
+          </div>
+        `;
+        this.value = '';
+        videoPreview.src = '';
+        videoPreview.style.display = 'none';
+        document.getElementById('video-preview-container').style.display = 'none';
+      }
+    } else {
+      document.getElementById('video-preview').style.display = 'none';
+      document.getElementById('video-preview-container').style.display = 'none';
+      document.getElementById('file-info').style.display = 'none';
+    }
+  });
+  
+  const editExerciseForm = document.getElementById('editExerciseForm');
+  editExerciseForm.addEventListener('submit', function(e) {
+    const name = document.getElementById('name').value.trim();
+    
+    if (!name) {
+      e.preventDefault();
+      alert('Please enter an exercise name.');
+      document.getElementById('name').focus();
+      return;
+    }
+    
+    if (!keepCurrentVideoCheckbox.checked && youtubeRadio.checked && videoUrlInput.value.trim()) {
+      const url = videoUrlInput.value.trim();
+      const youtubeRegex = /^(https?:\/\/)?(www\.)?(youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})(\&.*)?$/;
+      
+      if (!youtubeRegex.test(url)) {
+        e.preventDefault();
+        alert('Please enter a valid YouTube URL.');
+        videoUrlInput.focus();
+        return;
+      }
+    }
+    
+    if (!keepCurrentVideoCheckbox.checked && uploadRadio.checked && videoUploadInput.files.length > 0) {
+      const file = videoUploadInput.files[0];
+      
+      if (file.size > 100 * 1024 * 1024) { 
+        e.preventDefault();
+        
+        progressContainer.style.display = 'block';
+        progressBar.style.width = '0%';
+        progressText.textContent = 'Starting upload...';
+        
+        const formData = new FormData(editExerciseForm);
+        const xhr = new XMLHttpRequest();
+        
+        xhr.upload.addEventListener('progress', function(event) {
+          if (event.lengthComputable) {
+            const percentComplete = (event.loaded / event.total) * 100;
+            progressBar.style.width = percentComplete + '%';
+            progressText.textContent = `Uploading: ${Math.round(percentComplete)}%`;
+          }
+        });
+        
+        xhr.addEventListener('load', function() {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            progressText.textContent = 'Upload complete! Redirecting...';
+            window.location.href = '/exercises';
+          } else {
+            progressText.textContent = 'Upload failed. Please try again.';
+          }
+        });
+        
+        xhr.addEventListener('error', function() {
+          progressText.textContent = 'Connection error. Please check your internet.';
+        });
+        
+        xhr.open('POST', editExerciseForm.action);
+        xhr.send(formData);
+      }
+    }
+  });
+});
+</script>
+</body>
+</html>

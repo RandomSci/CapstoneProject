@@ -1,0 +1,2739 @@
+<!DOCTYPE html>
+<html lang="en">
+
+
+<head>
+  <title>Home | APR-CV</title>
+  
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0, minimal-ui">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="description" content="APR-CV Physical Therapy Management System">
+  <meta name="keywords" content="PT, Physical Therapy, Rehab, Patient Management">
+  <meta name="author" content="APR-CV Team">
+
+  
+  <link rel="icon" href="../static/assets/images/favicon.svg" type="image/x-icon"> 
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700&display=swap" id="main-font-link">
+
+<link rel="stylesheet" href="../static/assets/fonts/tabler-icons.min.css" >
+
+<link rel="stylesheet" href="../static/assets/fonts/feather.css" >
+
+<link rel="stylesheet" href="../static/assets/fonts/fontawesome.css" >
+
+<link rel="stylesheet" href="../static/assets/fonts/material.css" >
+
+<link rel="stylesheet" href="../static/assets/css/style.css" id="main-style-link" >
+<link rel="stylesheet" href="../static/assets/css/style-preset.css" >
+
+</head>
+
+
+
+<body data-pc-preset="preset-1" data-pc-direction="ltr" data-pc-theme="light">
+  
+<div class="loader-bg">
+  <div class="loader-track">
+    <div class="loader-fill"></div>
+  </div>
+</div>
+
+ 
+<nav class="pc-sidebar">
+  <div class="navbar-wrapper">
+    <div class="m-header">
+      <a href="/front-page" class="b-brand text-primary">
+        <i class="ti ti-medical-cross fs-4"></i>
+        <span class="ms-2 fw-bold">APR-CV</span>
+      </a>
+    </div>
+    <div class="navbar-content">
+      <ul class="pc-navbar">
+        <li class="pc-item">
+          <a href="/front-page" class="pc-link">
+            <span class="pc-micon"><i class="ti ti-dashboard"></i></span>
+            <span class="pc-mtext">Dashboard</span>
+          </a>
+        </li>
+      
+        <li class="pc-item pc-hasmenu">
+          <a href="#!" class="pc-link">
+            <span class="pc-micon"><i class="ti ti-users"></i></span>
+            <span class="pc-mtext">Patients</span>
+            <span class="pc-arrow"><i data-feather="chevron-right"></i></span>
+          </a>
+          <ul class="pc-submenu">
+            <li class="pc-item"><a class="pc-link" href="/patients">Patient Directory</a></li>
+            <li class="pc-item"><a class="pc-link" href="/reports/patients">Patient Reports</a></li>
+          </ul>
+        </li>
+      
+        <li class="pc-item pc-hasmenu">
+          <a href="#!" class="pc-link">
+            <span class="pc-micon"><i class="ti ti-calendar"></i></span>
+            <span class="pc-mtext">Appointments</span>
+            <span class="pc-arrow"><i data-feather="chevron-right"></i></span>
+          </a>
+          <ul class="pc-submenu">
+            <li class="pc-item"><a class="pc-link" href="/appointments">Schedule</a></li>
+          </ul>
+        </li>
+      
+        <li class="pc-item pc-hasmenu">
+          <a href="#!" class="pc-link">
+            <span class="pc-micon"><i class="ti ti-activity"></i></span>
+            <span class="pc-mtext">Exercise Library</span>
+            <span class="pc-arrow"><i data-feather="chevron-right"></i></span>
+          </a>
+          <ul class="pc-submenu">
+            <li class="pc-item"><a class="pc-link" href="/exercises">Browse Exercises</a></li>
+            <li class="pc-item"><a class="pc-link" href="/exercises/add">Upload New Exercise</a></li>
+          </ul>
+        </li>
+      
+        <li class="pc-item pc-hasmenu">
+          <a href="#!" class="pc-link">
+            <span class="pc-micon"><i class="ti ti-report"></i></span>
+            <span class="pc-mtext">Treatment Plans</span>
+            <span class="pc-arrow"><i data-feather="chevron-right"></i></span>
+          </a>
+          <ul class="pc-submenu">
+            <li class="pc-item"><a class="pc-link" href="treatment-plans/new">Create Plan</a></li>
+            <li class="pc-item"><a class="pc-link" href="/treatment-plans">Manage Plans</a></li>
+          </ul>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+ 
+<header class="pc-header">
+  <div class="header-wrapper"> 
+<div class="me-auto pc-mob-drp">
+  <ul class="list-unstyled">
+    
+    <li class="pc-h-item pc-sidebar-collapse">
+      <a href="#" class="pc-head-link ms-0" id="sidebar-hide">
+        <i class="ti ti-menu-2"></i>
+      </a>
+    </li>
+    <li class="pc-h-item pc-sidebar-popup">
+      <a href="#" class="pc-head-link ms-0" id="mobile-collapse">
+        <i class="ti ti-menu-2"></i>
+      </a>
+    </li>
+    <li class="dropdown pc-h-item d-inline-flex d-md-none">
+      <a class="pc-head-link dropdown-toggle arrow-none m-0"
+        data-bs-toggle="dropdown"
+        href="#"
+        role="button"
+        aria-haspopup="false"
+        aria-expanded="false">
+        <i class="ti ti-search"></i>
+      </a>
+      <div class="dropdown-menu pc-h-dropdown drp-search">
+        <form class="px-3">
+          <div class="form-group mb-0 d-flex align-items-center">
+            <i data-feather="search"></i>
+            <input type="search" class="form-control border-0 shadow-none" placeholder="Search here. . .">
+          </div>
+        </form>
+      </div>
+    </li>
+    <li class="pc-h-item d-none d-md-inline-flex">
+      <form class="header-search">
+        <i data-feather="search" class="icon-search"></i>
+        <input type="search" class="form-control" placeholder="Search here. . .">
+      </form>
+    </li>
+  </ul>
+</div>
+
+<div class="ms-auto">
+  <ul class="list-unstyled">
+    <li class="dropdown pc-h-item">
+      <a class="pc-head-link dropdown-toggle arrow-none me-0"
+         data-bs-toggle="dropdown"
+         href="#"
+         role="button"
+         aria-haspopup="false"
+         aria-expanded="false">
+        <i class="ti ti-mail"></i>
+        {% if unread_messages_count > 0 %}
+        <span class="badge bg-danger pc-h-badge dots"><span class="sr-only">{{ unread_messages_count }} unread messages</span></span>
+        {% endif %}
+      </a>
+      <div class="dropdown-menu dropdown-notification dropdown-menu-end pc-h-dropdown">
+        <div class="dropdown-header d-flex align-items-center justify-content-between">
+          <h5 class="m-0">Messages{% if unread_messages_count > 0 %} <span class="badge bg-light-danger text-danger">{{ unread_messages_count }} New</span>{% endif %}</h5>
+          <a href="#!" class="pc-head-link bg-transparent"><i class="ti ti-x text-danger"></i></a>
+        </div>
+        <div class="dropdown-divider"></div>
+        <div class="dropdown-header px-0 text-wrap header-notification-scroll position-relative" style="max-height: calc(100vh - 215px)">
+          <div class="list-group list-group-flush w-100">
+            {% if recent_messages %}
+              {% for message in recent_messages %}
+              <a href="/messages/{{ message.message_id }}" class="list-group-item list-group-item-action">
+                <div class="d-flex">
+                  <div class="flex-shrink-0">
+                    <img src="/static/assets/images/user/{{ message.profile_image }}" alt="user-image" class="user-avtar">
+                  </div>
+                  <div class="flex-grow-1 ms-1">
+                    <span class="float-end text-muted">{{ message.time_display }}</span>
+                    <p class="text-body mb-1">{{ message.content|truncate(60) }}</p>
+                    <span class="text-muted">{{ message.time_ago }}</span>
+                  </div>
+                </div>
+              </a>
+              {% endfor %}
+            {% else %}
+              <div class="text-center p-3">
+                <p class="text-muted">No new messages</p>
+              </div>
+            {% endif %}
+          </div>
+        </div>
+        <div class="dropdown-divider"></div>
+        <div class="text-center py-2">
+          <a href="/messages" class="link-primary">View all messages</a>
+        </div>
+      </div>
+    </li>
+    <li class="dropdown pc-h-item header-user-profile">
+      <a class="pc-head-link dropdown-toggle arrow-none me-0"
+        data-bs-toggle="dropdown"
+        href="#"
+        role="button"
+        aria-haspopup="false"
+        data-bs-auto-close="outside"
+        aria-expanded="false">
+        <img src="/static/assets/images/user/{{ therapist.profile_image }}" alt="user-image" class="user-avtar">
+        <span>{{ first_name }} {{ last_name }}</span>
+      </a>
+      <div class="dropdown-menu dropdown-user-profile dropdown-menu-end pc-h-dropdown">
+        <div class="dropdown-header">
+          <div class="d-flex mb-1">
+            <div class="flex-shrink-0">
+              <img src="/static/assets/images/user/{{ therapist.profile_image }}" alt="user-image" class="user-avtar">
+            </div>
+            <div class="flex-grow-1 ms-3">
+              <h6 class="mb-1">{{ first_name }} {{ last_name }}</h6>
+              <span>Physical Therapist</span>
+            </div>
+            <a href="/logout" class="pc-head-link bg-transparent"><i class="ti ti-power text-danger"></i></a>
+          </div>
+        </div>
+        <ul class="nav drp-tabs nav-fill nav-tabs" id="mydrpTab" role="tablist">
+          <li class="nav-item" role="presentation">
+            <button
+              class="nav-link active"
+              id="drp-t1"
+              data-bs-toggle="tab"
+              data-bs-target="#drp-tab-1"
+              type="button"
+              role="tab"
+              aria-controls="drp-tab-1"
+              aria-selected="true"
+              ><i class="ti ti-user"></i> Profile</button
+            >
+          </li>
+        </ul>
+        <div class="tab-content" id="mysrpTabContent">
+          <div class="tab-pane fade show active" id="drp-tab-1" role="tabpanel" aria-labelledby="drp-t1" tabindex="0">
+            <a href="/profile/edit" class="dropdown-item">
+              <i class="ti ti-edit-circle"></i>
+              <span>Edit Profile</span>
+            </a>
+            <a href="/profile" class="dropdown-item">
+              <i class="ti ti-user"></i>
+              <span>View Profile</span>
+            </a>
+            <a href="/profile/reviews" class="dropdown-item">
+              <i class="ti ti-star"></i>
+              <span>My Reviews</span>
+            </a>
+            <a href="/logout" class="dropdown-item">
+              <i class="ti ti-power"></i>
+              <span>Logout</span>
+            </a>
+          </div>
+          <div class="tab-pane fade" id="drp-tab-2" role="tabpanel" aria-labelledby="drp-t2" tabindex="0">
+            <a href="/support" class="dropdown-item">
+              <i class="ti ti-help"></i>
+              <span>Support</span>
+            </a>
+            <a href="/settings" class="dropdown-item">
+              <i class="ti ti-user"></i>
+              <span>Account Settings</span>
+            </a>
+            <a href="/privacy" class="dropdown-item">
+              <i class="ti ti-lock"></i>
+              <span>Privacy Center</span>
+            </a>
+            <a href="/feedback" class="dropdown-item">
+              <i class="ti ti-messages"></i>
+              <span>Feedback</span>
+            </a>
+            <a href="/activity" class="dropdown-item">
+              <i class="ti ti-list"></i>
+              <span>History</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </li>
+  </ul>
+</div>
+ </div>
+</header>
+
+
+
+
+  
+  <div class="pc-container">
+    <div class="pc-content">
+      
+      <div class="page-header">
+        <div class="page-block">
+          <div class="row align-items-center">
+            <div class="col-md-12">
+              <div class="page-header-title">
+                <h5 class="m-b-10">Home</h5>
+              </div>
+              <ul class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/front-page">Home</a></li>
+                <li class="breadcrumb-item"><a href="javascript: void(0)">Dashboard</a></li>
+                <li class="breadcrumb-item" aria-current="page">Home</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      
+      <div class="row">
+        
+        
+        <div class="col-md-6 col-xl-3">
+          <div class="card">
+            <div class="card-body">
+              <h6 class="mb-2 f-w-400 text-muted">Total Appointments</h6>
+              <h4 class="mb-3">{{ appointments_count }} <span class="badge bg-light-primary border border-primary"><i
+                    class="ti ti-trending-up"></i> {{ appointments_growth }}%</span></h4>
+              <p class="mb-0 text-muted text-sm">Up by <span class="text-primary">{{ appointments_monthly_diff }}</span> from last month
+              </p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6 col-xl-3">
+          <div class="card">
+            <div class="card-body">
+              <h6 class="mb-2 f-w-400 text-muted">Active Patients</h6>
+              <h4 class="mb-3">{{ active_patients_count }} <span class="badge bg-light-success border border-success"><i
+                    class="ti ti-trending-up"></i> {{ patient_growth }}%</span></h4>
+              <p class="mb-0 text-muted text-sm">New patients <span class="text-success">{{ new_patients_monthly }}</span> this month</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6 col-xl-3">
+          <div class="card">
+            <div class="card-body">
+              <h6 class="mb-2 f-w-400 text-muted">Exercise Plans</h6>
+              <h4 class="mb-3">{{ treatment_plans_count }} <span class="badge bg-light-success border border-success"><i
+                    class="ti ti-trending-up"></i> {{ plans_growth }}%</span></h4>
+              <p class="mb-0 text-muted text-sm">Created <span class="text-success">{{ new_plans_monthly }}</span> new this month</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6 col-xl-3">
+          <div class="card">
+            <div class="card-body">
+              <h6 class="mb-2 f-w-400 text-muted">Patient Adherence</h6>
+              <h4 class="mb-3">{{ average_adherence_rate }}% <span class="badge bg-light-{{ adherence_trend_color }} border border-{{ adherence_trend_color }}"><i
+                    class="ti ti-trending-{{ adherence_trend_direction }}"></i> {{ adherence_change }}%</span></h4>
+              <p class="mb-0 text-muted text-sm">{{ adherence_direction }} <span class="text-{{ adherence_trend_color }}">{{ adherence_monthly_diff }}%</span> from last month
+              </p>
+            </div>
+          </div>
+        </div>
+
+
+        <div class="col-md-12 col-xl-8">
+          <div class="d-flex align-items-center justify-content-between mb-3">
+            <h5 class="mb-0">Patient Activity</h5>
+            <ul class="nav nav-pills justify-content-end mb-0" id="chart-tab-tab" role="tablist">
+              <li class="nav-item" role="presentation">
+                <button class="nav-link" id="chart-tab-home-tab" data-bs-toggle="pill" data-bs-target="#chart-tab-home"
+                  type="button" role="tab" aria-controls="chart-tab-home" aria-selected="true">Month</button>
+              </li>
+              <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="chart-tab-profile-tab" data-bs-toggle="pill"
+                  data-bs-target="#chart-tab-profile" type="button" role="tab" aria-controls="chart-tab-profile"
+                  aria-selected="false">Week</button>
+              </li>
+            </ul>
+          </div>
+          <div class="card">
+            <div class="card-body">
+              <div class="tab-content" id="chart-tab-tabContent">
+                <div class="tab-pane" id="chart-tab-home" role="tabpanel" aria-labelledby="chart-tab-home-tab"
+                  tabindex="0">
+                  <div id="visitor-chart-1"></div>
+                </div>
+                <div class="tab-pane show active" id="chart-tab-profile" role="tabpanel"
+                  aria-labelledby="chart-tab-profile-tab" tabindex="0">
+                  <div id="visitor-chart"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-12 col-xl-4">
+          <h5 class="mb-3">Exercise Completion Overview</h5>
+          <div class="card">
+            <div class="card-body">
+              <h6 class="mb-2 f-w-400 text-muted">This Week's Statistics</h6>
+              <h3 class="mb-3">{{ weekly_completion_rate }}% Completion</h3>
+              <div id="income-overview-chart"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-12 col-xl-8">
+          <h5 class="mb-3">Recent Patients</h5>
+          <div class="card tbl-card">
+            <div class="card-body">
+              <div class="table-responsive">
+                <table class="table table-hover table-borderless mb-0">
+                  <thead>
+                    <tr>
+                      <th>PATIENT ID</th>
+                      <th>PATIENT NAME</th>
+                      <th>DIAGNOSIS</th>
+                      <th>STATUS</th>
+                      <th class="text-end">COMPLIANCE RATE</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for patient in recent_patients %}
+                    <tr>
+                      <td><a href="/patients/{{ patient.patient_id }}" class="text-muted">PT-{{ patient.patient_id }}</a></td>
+                      <td>{{ patient.first_name }} {{ patient.last_name }}</td>
+                      <td>{{ patient.diagnosis }}</td>
+                      <td>
+                        <span class="d-flex align-items-center gap-2">
+                          <i class="fas fa-circle text-{{ patient.status_color }} f-10 m-r-5"></i>{{ patient.status }}
+                        </span>
+                      </td>
+                      <td class="text-end">{{ patient.adherence_rate }}%</td>
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-12 col-xl-4">
+          <h5 class="mb-3">Therapy Metrics</h5>
+          <div class="card">
+            <div class="list-group list-group-flush">
+              <a href="/analytics/recovery"
+                class="list-group-item list-group-item-action d-flex align-items-center justify-content-between">Average Recovery Rate<span class="h5 mb-0">{{ avg_recovery_rate }}%</span></a>
+            </div>
+          </div>
+        </div>
+
+        
+<div class="modal fade" id="recoveryAnalyticsModal" tabindex="-1" aria-labelledby="recoveryAnalyticsModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header bg-light">
+        <h5 class="modal-title" id="recoveryAnalyticsModalLabel">
+          <i class="ti ti-activity text-primary me-2"></i>Recovery Analytics
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="row mb-3" id="recovery-loading">
+          <div class="col-12 text-center">
+            <div class="spinner-border text-primary" role="status">
+              <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-2">Loading recovery analytics...</p>
+          </div>
+        </div>
+        <div id="recovery-content" style="display: none;">
+          <div class="row mb-4">
+            <div class="col-12">
+              <div class="card">
+                <div class="card-header pb-0">
+                  <h5 class="card-title mb-0">Recent Patient Feedback</h5>90-Day Recovery Progress Trend</h5>
+                </div>
+                <div class="card-body">
+                  <div id="recovery-trend-chart" style="height: 300px;"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="row mb-4">
+            <div class="col-md-6">
+              <div class="card">
+                <div class="card-header pb-0">
+                  <h5 class="card-title mb-0">Recovery by Diagnosis</h5>
+                </div>
+                <div class="card-body">
+                  <div id="recovery-diagnosis-chart" style="height: 300px;"></div>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="card">
+                <div class="card-header pb-0">
+                  <h5 class="card-title mb-0">Patient Recovery Performance</h5>
+                </div>
+                <div class="card-body p-0">
+                  <div class="nav nav-tabs nav-tabs-custom" role="tablist">
+                    <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#top-recovery-tab" type="button">Top Performers</button>
+                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#bottom-recovery-tab" type="button">Needs Attention</button>
+                  </div>
+                  <div class="tab-content">
+                    <div class="tab-pane show active" id="top-recovery-tab">
+                      <div class="table-responsive">
+                        <table class="table table-hover table-borderless mb-0">
+                          <thead>
+                            <tr>
+                              <th>PATIENT</th>
+                              <th>DIAGNOSIS</th>
+                              <th class="text-end">PROGRESS</th>
+                            </tr>
+                          </thead>
+                          <tbody id="top-recovery-patients">
+                            
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                    <div class="tab-pane" id="bottom-recovery-tab">
+                      <div class="table-responsive">
+                        <table class="table table-hover table-borderless mb-0">
+                          <thead>
+                            <tr>
+                              <th>PATIENT</th>
+                              <th>DIAGNOSIS</th>
+                              <th class="text-end">PROGRESS</th>
+                            </tr>
+                          </thead>
+                          <tbody id="bottom-recovery-patients">
+                            
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="row" id="recovery-error" style="display: none;">
+          <div class="col-12">
+            <div class="alert alert-danger" role="alert">
+              <i class="ti ti-alert-circle me-2"></i>
+              <span id="recovery-error-message">Failed to load recovery analytics data.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary" id="recovery-refresh-btn">
+          <i class="ti ti-refresh me-1"></i>Refresh
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<div class="modal fade" id="completionAnalyticsModal" tabindex="-1" aria-labelledby="completionAnalyticsModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header bg-light">
+        <h5 class="modal-title" id="completionAnalyticsModalLabel">
+          <i class="ti ti-check-circle text-success me-2"></i>Exercise Completion Analytics
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="row mb-3" id="completion-loading">
+          <div class="col-12 text-center">
+            <div class="spinner-border text-success" role="status">
+              <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-2">Loading completion analytics...</p>
+          </div>
+        </div>
+        <div id="completion-content" style="display: none;">
+          <div class="row mb-4">
+            <div class="col-12">
+              <div class="card">
+                <div class="card-header pb-0">
+                  <h5 class="card-title mb-0">90-Day Completion Rate Trend</h5>
+                </div>
+                <div class="card-body">
+                  <div id="completion-trend-chart" style="height: 300px;"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="row mb-4">
+            <div class="col-md-6">
+              <div class="card">
+                <div class="card-header pb-0">
+                  <h5 class="card-title mb-0">Completion by Exercise Type</h5>
+                </div>
+                <div class="card-body">
+                  <div id="completion-type-chart" style="height: 300px;"></div>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="card">
+                <div class="card-header pb-0">
+                  <h5 class="card-title mb-0">Completion by Time of Day</h5>
+                </div>
+                <div class="card-body">
+                  <div id="completion-time-chart" style="height: 300px;"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="row mb-4">
+            <div class="col-md-6">
+              <div class="card">
+                <div class="card-header pb-0">
+                  <h5 class="card-title mb-0">Top 5 Exercises by Completion</h5>
+                </div>
+                <div class="card-body p-0">
+                  <div class="table-responsive">
+                    <table class="table table-hover table-borderless mb-0">
+                      <thead>
+                        <tr>
+                          <th>EXERCISE</th>
+                          <th>CATEGORY</th>
+                          <th class="text-end">RATE</th>
+                        </tr>
+                      </thead>
+                      <tbody id="top-completion-exercises">
+                        
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="card">
+                <div class="card-header pb-0">
+                  <h5 class="card-title mb-0">Bottom 5 Exercises by Completion</h5>
+                </div>
+                <div class="card-body p-0">
+                  <div class="table-responsive">
+                    <table class="table table-hover table-borderless mb-0">
+                      <thead>
+                        <tr>
+                          <th>EXERCISE</th>
+                          <th>CATEGORY</th>
+                          <th class="text-end">RATE</th>
+                        </tr>
+                      </thead>
+                      <tbody id="bottom-completion-exercises">
+                        
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="row" id="completion-error" style="display: none;">
+          <div class="col-12">
+            <div class="alert alert-danger" role="alert">
+              <i class="ti ti-alert-circle me-2"></i>
+              <span id="completion-error-message">Failed to load completion analytics data.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-success" id="completion-refresh-btn">
+          <i class="ti ti-refresh me-1"></i>Refresh
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<div class="modal fade" id="goalsAnalyticsModal" tabindex="-1" aria-labelledby="goalsAnalyticsModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header bg-light">
+        <h5 class="modal-title" id="goalsAnalyticsModalLabel">
+          <i class="ti ti-target text-info me-2"></i>Treatment Goals Analytics
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="row mb-3" id="goals-loading">
+          <div class="col-12 text-center">
+            <div class="spinner-border text-info" role="status">
+              <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-2">Loading goals analytics...</p>
+          </div>
+        </div>
+        <div id="goals-content" style="display: none;">
+          <div class="row mb-4">
+            <div class="col-md-5">
+              <div class="card">
+                <div class="card-header pb-0">
+                  <h5 class="card-title mb-0">Goals Overview</h5>
+                </div>
+                <div class="card-body">
+                  <div id="goals-overview-chart" style="height: 250px;"></div>
+                  <div class="row text-center mt-3">
+                    <div class="col-4">
+                      <h6 class="mb-1 text-success" id="completed-goals-percentage">--</h6>
+                      <p class="mb-0 text-muted">Completed</p>
+                    </div>
+                    <div class="col-4">
+                      <h6 class="mb-1 text-warning" id="in-progress-goals-percentage">--</h6>
+                      <p class="mb-0 text-muted">In Progress</p>
+                    </div>
+                    <div class="col-4">
+                      <h6 class="mb-1 text-danger" id="not-started-goals-percentage">--</h6>
+                      <p class="mb-0 text-muted">Not Started</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-7">
+              <div class="card">
+                <div class="card-header pb-0">
+                  <h5 class="card-title mb-0">Monthly Goal Completions</h5>
+                </div>
+                <div class="card-body">
+                  <div id="goal-trend-chart" style="height: 300px;"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="row mb-4">
+            <div class="col-md-5">
+              <div class="card">
+                <div class="card-header pb-0">
+                  <h5 class="card-title mb-0">Goals by Category</h5>
+                </div>
+                <div class="card-body">
+                  <div id="goal-category-chart" style="height: 300px;"></div>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-7">
+              <div class="card">
+                <div class="card-header pb-0">
+                  <h5 class="card-title mb-0">Recent Achievements</h5>
+                </div>
+                <div class="card-body p-0">
+                  <div class="list-group list-group-flush" id="recent-completed-goals">
+                    
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="row" id="goals-error" style="display: none;">
+          <div class="col-12">
+            <div class="alert alert-danger" role="alert">
+              <i class="ti ti-alert-circle me-2"></i>
+              <span id="goals-error-message">Failed to load goals analytics data.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-info" id="goals-refresh-btn">
+          <i class="ti ti-refresh me-1"></i>Refresh
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<div class="modal fade" id="plansAnalyticsModal" tabindex="-1" aria-labelledby="plansAnalyticsModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header bg-light">
+        <h5 class="modal-title" id="plansAnalyticsModalLabel">
+          <i class="ti ti-clipboard-check text-info me-2"></i>Treatment Plans Analytics
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="row mb-3" id="plans-loading">
+          <div class="col-12 text-center">
+            <div class="spinner-border text-info" role="status">
+              <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-2">Loading treatment plans analytics...</p>
+          </div>
+        </div>
+        <div id="plans-content" style="display: none;">
+          <div class="row mb-4">
+            <div class="col-md-5">
+              <div class="card">
+                <div class="card-header pb-0">
+                  <h5 class="card-title mb-0">Plans Overview</h5>
+                </div>
+                <div class="card-body">
+                  <div id="plans-overview-chart" style="height: 250px;"></div>
+                  <div class="row text-center mt-3">
+                    <div class="col-4">
+                      <h6 class="mb-1 text-primary" id="active-plans-percentage">--</h6>
+                      <p class="mb-0 text-muted">Active</p>
+                    </div>
+                    <div class="col-4">
+                      <h6 class="mb-1 text-success" id="completed-plans-percentage">--</h6>
+                      <p class="mb-0 text-muted">Completed</p>
+                    </div>
+                    <div class="col-4">
+                      <h6 class="mb-1 text-danger" id="cancelled-plans-percentage">--</h6>
+                      <p class="mb-0 text-muted">Cancelled</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-7">
+              <div class="card">
+                <div class="card-header pb-0">
+                  <h5 class="card-title mb-0">Monthly Plan Creation</h5>
+                </div>
+                <div class="card-body">
+                  <div id="plan-trend-chart" style="height: 300px;"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="row mb-4">
+            <div class="col-md-5">
+              <div class="card">
+                <div class="card-header pb-0">
+                  <h5 class="card-title mb-0">Plans by Diagnosis</h5>
+                </div>
+                <div class="card-body">
+                  <div id="plan-diagnosis-chart" style="height: 300px;"></div>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-7">
+              <div class="card">
+                <div class="card-header pb-0">
+                  <h5 class="card-title mb-0">Plan Statistics</h5>
+                </div>
+                <div class="card-body p-0">
+                  <div class="list-group list-group-flush">
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                      <div>
+                        <i class="ti ti-clipboard-list text-primary me-2"></i>
+                        <span>Total Treatment Plans</span>
+                      </div>
+                      <h6 class="mb-0" id="total-plans-count">--</h6>
+                    </div>
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                      <div>
+                        <i class="ti ti-stretching text-success me-2"></i>
+                        <span>Average Exercises Per Plan</span>
+                      </div>
+                      <h6 class="mb-0" id="avg-exercise-count">--</h6>
+                    </div>
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                      <div>
+                        <i class="ti ti-calendar-time text-warning me-2"></i>
+                        <span>Average Plan Duration</span>
+                      </div>
+                      <h6 class="mb-0" id="avg-plan-duration">--</h6>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-12">
+              <div class="card">
+                <div class="card-header pb-0">
+                  <h5 class="card-title mb-0">Recent Treatment Plans</h5>
+                </div>
+                <div class="card-body p-0">
+                  <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                      <thead>
+                        <tr>
+                          <th>PLAN NAME</th>
+                          <th>PATIENT</th>
+                          <th>DIAGNOSIS</th>
+                          <th>EXERCISES</th>
+                          <th>STATUS</th>
+                          <th>DURATION</th>
+                        </tr>
+                      </thead>
+                      <tbody id="recent-plans-table">
+                        
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="row" id="plans-error" style="display: none;">
+          <div class="col-12">
+            <div class="alert alert-danger" role="alert">
+              <i class="ti ti-alert-circle me-2"></i>
+              <span id="plans-error-message">Failed to load treatment plans analytics data.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-info" id="plans-refresh-btn">
+          <i class="ti ti-refresh me-1"></i>Refresh
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+        <div class="col-md-12 col-xl-8">
+          <div class="d-flex align-items-center justify-content-between mb-3">
+          <h5 class="mb-0">Patient Progress</h5>
+          </div>
+          <div class="card">
+            <div class="card-body">
+              <h6 class="mb-2 f-w-400 text-muted">This Week Statistics</h6>
+              <h3 class="mb-0">{{ progress_metric_value }}</h3>
+              <div id="sales-report-chart"></div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-12 col-xl-4">
+          <h5 class="mb-3">Recent Activities</h5>
+          <div class="card">
+            <div class="list-group list-group-flush">
+              {% for activity in recent_activities %}
+              <a href="{{ activity.link }}" class="list-group-item list-group-item-action">
+                <div class="d-flex">
+                  <div class="flex-shrink-0">
+                    <div class="avtar avtar-s rounded-circle text-{{ activity.color }} bg-light-{{ activity.color }}">
+                      <i class="ti ti-{{ activity.icon }} f-18"></i>
+                    </div>
+                  </div>
+                  <div class="flex-grow-1 ms-3">
+                    <h6 class="mb-1">{{ activity.title }}</h6>
+                    <p class="mb-0 text-muted">{{ activity.timestamp }}</p>
+                  </div>
+                  <div class="flex-shrink-0 text-end">
+                    <h6 class="mb-1">{{ activity.primary_detail }}</h6>
+                    <p class="mb-0 text-muted">{{ activity.secondary_detail }}</p>
+                  </div>
+                </div>
+              </a>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <footer class="pc-footer">
+    <div class="footer-wrapper container-fluid">
+      <div class="row">
+        <div class="col-auto my-1">
+          <ul class="list-inline footer-link mb-0">
+          </ul>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  
+  <script>
+    window.chartData = {{ chart_data|tojson }};
+    window.monthlyChartData = {{ monthly_chart_data|tojson }};
+    window.progressData = {{ progress_data|tojson }};
+    window.donutData = {{ donut_data|tojson }};
+  </script>
+
+  <script>
+
+document.addEventListener('DOMContentLoaded', function() {
+
+
+
+  let recoveryChart = null;
+  let recoveryDiagnosisChart = null;
+  
+
+  document.querySelector('a[href="/analytics/recovery"]').addEventListener('click', function(e) {
+    e.preventDefault();
+    const modal = new bootstrap.Modal(document.getElementById('recoveryAnalyticsModal'));
+    modal.show();
+    loadRecoveryAnalytics();
+  });
+  
+  document.getElementById('recovery-refresh-btn').addEventListener('click', function() {
+    loadRecoveryAnalytics();
+  });
+  
+  function loadRecoveryAnalytics() {
+    document.getElementById('recovery-loading').style.display = 'flex';
+    document.getElementById('recovery-content').style.display = 'none';
+    document.getElementById('recovery-error').style.display = 'none';
+    
+    fetch('/analytics/recovery')
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        return response.json();
+      })
+      .then(data => {
+        if (data.success) {
+          renderRecoveryAnalytics(data);
+          document.getElementById('recovery-loading').style.display = 'none';
+          document.getElementById('recovery-content').style.display = 'block';
+        } else {
+          throw new Error(data.error || 'Failed to load recovery analytics');
+        }
+      })
+      .catch(error => {
+        console.error('Error loading recovery analytics:', error);
+        document.getElementById('recovery-loading').style.display = 'none';
+        document.getElementById('recovery-error').style.display = 'block';
+        document.getElementById('recovery-error-message').textContent = error.message;
+      });
+  }
+  
+  function renderRecoveryAnalytics(data) {
+
+    if (recoveryChart) {
+      recoveryChart.destroy();
+    }
+    
+    const trendDates = data.recovery_trend.map(item => item.date);
+    const trendValues = data.recovery_trend.map(item => item.progress);
+    
+    const recoveryTrendOptions = {
+      series: [{
+        name: 'Recovery Progress',
+        data: trendValues
+      }],
+      chart: {
+        height: 300,
+        type: 'area',
+        toolbar: {
+          show: true,
+          tools: {
+            download: true,
+            selection: false,
+            zoom: false,
+            zoomin: false,
+            zoomout: false,
+            pan: false,
+            reset: false
+          }
+        },
+        fontFamily: 'Public Sans'
+      },
+      colors: ['#7367F0'],
+      dataLabels: {
+        enabled: false
+      },
+      stroke: {
+        curve: 'smooth',
+        width: 2
+      },
+      fill: {
+        type: 'gradient',
+        gradient: {
+          shadeIntensity: 1,
+          opacityFrom: 0.7,
+          opacityTo: 0.2,
+          stops: [0, 90, 100]
+        }
+      },
+      xaxis: {
+        categories: trendDates,
+        labels: {
+          style: {
+            colors: '#5e5873',
+            fontSize: '12px',
+            fontFamily: 'Public Sans'
+          }
+        },
+        tooltip: {
+          enabled: false
+        }
+      },
+      yaxis: {
+        title: {
+          text: 'Progress (%)',
+          style: {
+            fontSize: '12px',
+            fontFamily: 'Public Sans'
+          }
+        },
+        min: 0,
+        max: 100,
+        labels: {
+          style: {
+            colors: '#5e5873',
+            fontSize: '12px',
+            fontFamily: 'Public Sans'
+          },
+          formatter: function(val) {
+            return val.toFixed(1) + '%';
+          }
+        }
+      },
+      tooltip: {
+        x: {
+          format: 'dd MMM'
+        },
+        y: {
+          formatter: function(val) {
+            return val.toFixed(1) + '%';
+          }
+        }
+      },
+      grid: {
+        borderColor: '#f1f1f1',
+      }
+    };
+    
+    recoveryChart = new ApexCharts(document.getElementById('recovery-trend-chart'), recoveryTrendOptions);
+    recoveryChart.render();
+    
+
+    if (recoveryDiagnosisChart) {
+      recoveryDiagnosisChart.destroy();
+    }
+    
+
+    const sortedDiagnosisData = [...data.recovery_by_diagnosis].sort((a, b) => b.avg_progress - a.avg_progress);
+    
+    const diagnosisLabels = sortedDiagnosisData.map(item => item.diagnosis);
+    const diagnosisValues = sortedDiagnosisData.map(item => item.avg_progress);
+    const patientCounts = sortedDiagnosisData.map(item => item.patient_count);
+    
+    const recoveryDiagnosisOptions = {
+      series: [{
+        name: 'Recovery Progress',
+        data: diagnosisValues
+      }],
+      chart: {
+        type: 'bar',
+        height: 300,
+        fontFamily: 'Public Sans',
+        toolbar: {
+          show: false
+        }
+      },
+      plotOptions: {
+        bar: {
+          horizontal: true,
+          barHeight: '70%',
+          distributed: true,
+          dataLabels: {
+            position: 'bottom'
+          }
+        }
+      },
+      colors: ['#4680FF', '#00E396', '#FEB019', '#FF4560', '#775DD0', '#01C9E6', '#FF9F43'],
+      dataLabels: {
+        enabled: true,
+        textAnchor: 'start',
+        style: {
+          colors: ['#fff'],
+          fontSize: '12px',
+          fontWeight: 'bold',
+          fontFamily: 'Public Sans'
+        },
+        formatter: function(val, opt) {
+          return val.toFixed(1) + '% (' + patientCounts[opt.dataPointIndex] + ' patients)';
+        },
+        offsetX: 0,
+        dropShadow: {
+          enabled: true
+        }
+      },
+      xaxis: {
+        categories: diagnosisLabels,
+        min: 0,
+        max: 100,
+        labels: {
+          style: {
+            colors: '#5e5873',
+            fontSize: '12px',
+            fontFamily: 'Public Sans'
+          },
+          formatter: function(val) {
+            return val.toFixed(0) + '%';
+          }
+        }
+      },
+      yaxis: {
+        labels: {
+          style: {
+            colors: '#5e5873',
+            fontSize: '12px',
+            fontFamily: 'Public Sans'
+          }
+        }
+      },
+      tooltip: {
+        y: {
+          formatter: function(val) {
+            return val.toFixed(1) + '%';
+          }
+        }
+      },
+      legend: {
+        show: false
+      }
+    };
+    
+    recoveryDiagnosisChart = new ApexCharts(document.getElementById('recovery-diagnosis-chart'), recoveryDiagnosisOptions);
+    recoveryDiagnosisChart.render();
+    
+
+    const topPatientsHtml = data.top_recovery_patients.map(patient => `
+      <tr>
+        <td>${patient.name}</td>
+        <td>${patient.diagnosis}</td>
+        <td class="text-end text-success">${patient.avg_progress.toFixed(1)}%</td>
+      </tr>
+    `).join('');
+    
+    document.getElementById('top-recovery-patients').innerHTML = topPatientsHtml || '<tr><td colspan="3" class="text-center">No data available</td></tr>';
+    
+    const bottomPatientsHtml = data.bottom_recovery_patients.map(patient => `
+      <tr>
+        <td>${patient.name}</td>
+        <td>${patient.diagnosis}</td>
+        <td class="text-end text-danger">${patient.avg_progress.toFixed(1)}%</td>
+      </tr>
+    `).join('');
+    
+    document.getElementById('bottom-recovery-patients').innerHTML = bottomPatientsHtml || '<tr><td colspan="3" class="text-center">No data available</td></tr>';
+  }
+
+
+
+
+  let completionTrendChart = null;
+  let completionTypeChart = null;
+  let completionTimeChart = null;
+  
+
+  document.querySelector('a[href="/analytics/completion"]').addEventListener('click', function(e) {
+    e.preventDefault();
+    const modal = new bootstrap.Modal(document.getElementById('completionAnalyticsModal'));
+    modal.show();
+    loadCompletionAnalytics();
+  });
+  
+  document.getElementById('completion-refresh-btn').addEventListener('click', function() {
+    loadCompletionAnalytics();
+  });
+  
+  function loadCompletionAnalytics() {
+    document.getElementById('completion-loading').style.display = 'flex';
+    document.getElementById('completion-content').style.display = 'none';
+    document.getElementById('completion-error').style.display = 'none';
+    
+    fetch('/analytics/completion')
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        return response.json();
+      })
+      .then(data => {
+        if (data.success) {
+          renderCompletionAnalytics(data);
+          document.getElementById('completion-loading').style.display = 'none';
+          document.getElementById('completion-content').style.display = 'block';
+        } else {
+          throw new Error(data.error || 'Failed to load completion analytics');
+        }
+      })
+      .catch(error => {
+        console.error('Error loading completion analytics:', error);
+        document.getElementById('completion-loading').style.display = 'none';
+        document.getElementById('completion-error').style.display = 'block';
+        document.getElementById('completion-error-message').textContent = error.message;
+      });
+  }
+  
+  function renderCompletionAnalytics(data) {
+
+    if (completionTrendChart) {
+      completionTrendChart.destroy();
+    }
+    
+    const trendDates = data.completion_trend.map(item => item.date);
+    const trendValues = data.completion_trend.map(item => item.completion_rate);
+    
+
+    const movingAverage = [];
+    for (let i = 0; i < trendValues.length; i++) {
+      let sum = 0;
+      let count = 0;
+      for (let j = Math.max(0, i - 6); j <= i; j++) {
+        if (trendValues[j] !== undefined) {
+          sum += trendValues[j];
+          count++;
+        }
+      }
+      movingAverage.push(count > 0 ? sum / count : 0);
+    }
+    
+    const completionTrendOptions = {
+      series: [{
+        name: 'Completion Rate',
+        type: 'column',
+        data: trendValues
+      }, {
+        name: '7-Day Average',
+        type: 'line',
+        data: movingAverage
+      }],
+      chart: {
+        height: 300,
+        type: 'line',
+        stacked: false,
+        toolbar: {
+          show: true,
+          tools: {
+            download: true
+          }
+        },
+        fontFamily: 'Public Sans'
+      },
+      colors: ['#28C76F', '#FF9F43'],
+      stroke: {
+        width: [0, 3],
+        curve: 'smooth'
+      },
+      dataLabels: {
+        enabled: false
+      },
+      fill: {
+        opacity: [0.85, 1],
+        type: ['solid', 'solid'],
+        gradient: {
+          shade: 'light',
+          type: "vertical",
+          opacityFrom: 0.7,
+          opacityTo: 0.2,
+          stops: [0, 100]
+        }
+      },
+      markers: {
+        size: [0, 4],
+        colors: ["#FF9F43"],
+        strokeColors: "#fff",
+        strokeWidth: 2,
+        hover: {
+          size: 6,
+        }
+      },
+      xaxis: {
+        categories: trendDates,
+        labels: {
+          style: {
+            colors: '#5e5873',
+            fontSize: '12px',
+            fontFamily: 'Public Sans'
+          }
+        }
+      },
+      yaxis: {
+        title: {
+          text: 'Completion Rate (%)',
+          style: {
+            fontSize: '12px',
+            fontFamily: 'Public Sans'
+          }
+        },
+        min: 0,
+        max: 100,
+        labels: {
+          style: {
+            colors: '#5e5873',
+            fontSize: '12px',
+            fontFamily: 'Public Sans'
+          },
+          formatter: function(val) {
+            return val.toFixed(0) + '%';
+          }
+        }
+      },
+      tooltip: {
+        shared: true,
+        intersect: false,
+        y: [{
+          formatter: function(y) {
+            if (typeof y !== "undefined") {
+              return y.toFixed(1) + "%";
+            }
+            return y;
+          }
+        }, {
+          formatter: function(y) {
+            if (typeof y !== "undefined") {
+              return y.toFixed(1) + "%";
+            }
+            return y;
+          }
+        }]
+      },
+      legend: {
+        position: 'top',
+        horizontalAlign: 'right'
+      }
+    };
+    
+    completionTrendChart = new ApexCharts(document.getElementById('completion-trend-chart'), completionTrendOptions);
+    completionTrendChart.render();
+    
+
+    if (completionTypeChart) {
+      completionTypeChart.destroy();
+    }
+    
+    const typeLabels = data.completion_by_type.map(item => item.exercise_type);
+    const typeValues = data.completion_by_type.map(item => item.completion_rate);
+    const sessionCounts = data.completion_by_type.map(item => item.session_count);
+    
+    const completionTypeOptions = {
+      series: typeValues,
+      chart: {
+        type: 'radialBar',
+        height: 300,
+        fontFamily: 'Public Sans'
+      },
+      plotOptions: {
+        radialBar: {
+          dataLabels: {
+            name: {
+              fontSize: '14px',
+              fontFamily: 'Public Sans',
+              fontWeight: 400,
+              color: '#5e5873',
+              offsetY: -10
+            },
+            value: {
+              fontSize: '16px',
+              fontFamily: 'Public Sans',
+              fontWeight: 600,
+              color: '#5e5873',
+              formatter: function(val) {
+                return val.toFixed(0) + '%';
+              }
+            },
+            total: {
+              show: true,
+              label: 'Average',
+              fontSize: '14px',
+              fontFamily: 'Public Sans',
+              fontWeight: 400,
+              color: '#5e5873',
+              formatter: function(w) {
+                const sum = w.globals.seriesTotals.reduce((a, b) => a + b, 0);
+                const avg = sum / w.globals.series.length;
+                return avg.toFixed(0) + '%';
+              }
+            }
+          },
+          hollow: {
+            size: '30%'
+          },
+          track: {
+            background: '#f2f2f2'
+          }
+        }
+      },
+      labels: typeLabels,
+      colors: ['#4680FF', '#00E396', '#FEB019', '#FF4560', '#775DD0', '#01C9E6', '#FF9F43'],
+      legend: {
+        show: true,
+        position: 'bottom',
+        fontSize: '12px',
+        fontFamily: 'Public Sans',
+        fontWeight: 400,
+        formatter: function(seriesName, opts) {
+          return seriesName + ': ' + sessionCounts[opts.seriesIndex] + ' sessions';
+        }
+      }
+    };
+    
+    completionTypeChart = new ApexCharts(document.getElementById('completion-type-chart'), completionTypeOptions);
+    completionTypeChart.render();
+    
+
+    if (completionTimeChart) {
+      completionTimeChart.destroy();
+    }
+    
+    const timeLabels = data.completion_by_time.map(item => item.time_of_day);
+    const timeValues = data.completion_by_time.map(item => item.completion_rate);
+    const timeSessionCounts = data.completion_by_time.map(item => item.session_count);
+    
+    const completionTimeOptions = {
+      series: [{
+        name: 'Completion Rate',
+        data: timeValues
+      }],
+      chart: {
+        type: 'bar',
+        height: 300,
+        fontFamily: 'Public Sans',
+        toolbar: {
+          show: false
+        }
+      },
+      plotOptions: {
+        bar: {
+          borderRadius: 4,
+          columnWidth: '60%',
+          distributed: true,
+          dataLabels: {
+            position: 'top'
+          }
+        }
+      },
+      colors: ['#4680FF', '#00E396', '#FEB019', '#FF4560'],
+      dataLabels: {
+        enabled: true,
+        formatter: function(val) {
+          return val.toFixed(0) + '%';
+        },
+        offsetY: -20,
+        style: {
+          fontSize: '12px',
+          fontFamily: 'Public Sans',
+          colors: ["#5e5873"]
+        }
+      },
+      xaxis: {
+        categories: timeLabels,
+        labels: {
+          style: {
+            colors: '#5e5873',
+            fontSize: '12px',
+            fontFamily: 'Public Sans'
+          }
+        }
+      },
+      yaxis: {
+        title: {
+          text: 'Completion Rate (%)',
+          style: {
+            fontSize: '12px',
+            fontFamily: 'Public Sans'
+          }
+        },
+        min: 0,
+        max: 100,
+        labels: {
+          style: {
+            colors: '#5e5873',
+            fontSize: '12px',
+            fontFamily: 'Public Sans'
+          },
+          formatter: function(val) {
+            return val.toFixed(0) + '%';
+          }
+        }
+      },
+      tooltip: {
+        y: {
+          formatter: function(val, opts) {
+            const index = opts.dataPointIndex;
+            return val.toFixed(1) + '% (' + timeSessionCounts[index] + ' sessions)';
+          }
+        }
+      },
+      legend: {
+        show: false
+      }
+    };
+    
+    completionTimeChart = new ApexCharts(document.getElementById('completion-time-chart'), completionTimeOptions);
+    completionTimeChart.render();
+    
+
+    const topExercisesHtml = data.top_completion_exercises.map(exercise => `
+      <tr>
+        <td>${exercise.exercise_name}</td>
+        <td>${exercise.category}</td>
+        <td class="text-end text-success">${exercise.completion_rate.toFixed(1)}%</td>
+      </tr>
+    `).join('');
+    
+    document.getElementById('top-completion-exercises').innerHTML = topExercisesHtml || '<tr><td colspan="3" class="text-center">No data available</td></tr>';
+    
+    const bottomExercisesHtml = data.bottom_completion_exercises.map(exercise => `
+      <tr>
+        <td>${exercise.exercise_name}</td>
+        <td>${exercise.category}</td>
+        <td class="text-end text-danger">${exercise.completion_rate.toFixed(1)}%</td>
+      </tr>
+    `).join('');
+    
+    document.getElementById('bottom-completion-exercises').innerHTML = bottomExercisesHtml || '<tr><td colspan="3" class="text-center">No data available</td></tr>';
+  }
+
+
+
+
+  let goalsOverviewChart = null;
+  let goalTrendChart = null;
+  let goalCategoryChart = null;
+  
+
+  document.querySelector('a[href="/analytics/goals"]').addEventListener('click', function(e) {
+    e.preventDefault();
+    const modal = new bootstrap.Modal(document.getElementById('goalsAnalyticsModal'));
+    modal.show();
+    loadGoalsAnalytics();
+  });
+  
+  document.getElementById('goals-refresh-btn').addEventListener('click', function() {
+    loadGoalsAnalytics();
+  });
+  
+  function loadGoalsAnalytics() {
+    document.getElementById('goals-loading').style.display = 'flex';
+    document.getElementById('goals-content').style.display = 'none';
+    document.getElementById('goals-error').style.display = 'none';
+    
+    fetch('/analytics/goals')
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        return response.json();
+      })
+      .then(data => {
+        if (data.success) {
+          renderGoalsAnalytics(data);
+          document.getElementById('goals-loading').style.display = 'none';
+          document.getElementById('goals-content').style.display = 'block';
+        } else {
+          throw new Error(data.error || 'Failed to load goals analytics');
+        }
+      })
+      .catch(error => {
+        console.error('Error loading goals analytics:', error);
+        document.getElementById('goals-loading').style.display = 'none';
+        document.getElementById('goals-error').style.display = 'block';
+        document.getElementById('goals-error-message').textContent = error.message;
+      });
+  }
+  
+  function renderGoalsAnalytics(data) {
+
+    document.getElementById('completed-goals-percentage').textContent = data.goal_stats.completed_percentage + '%';
+    document.getElementById('in-progress-goals-percentage').textContent = data.goal_stats.in_progress_percentage + '%';
+    document.getElementById('not-started-goals-percentage').textContent = data.goal_stats.not_started_percentage + '%';
+    
+
+    if (goalsOverviewChart) {
+      goalsOverviewChart.destroy();
+    }
+    
+    const goalsOverviewOptions = {
+      series: [
+        data.goal_stats.completed_goals,
+        data.goal_stats.in_progress_goals,
+        data.goal_stats.not_started_goals
+      ],
+      chart: {
+        type: 'donut',
+        height: 250,
+        fontFamily: 'Public Sans'
+      },
+      labels: ['Completed', 'In Progress', 'Not Started'],
+      colors: ['#28C76F', '#FF9F43', '#EA5455'],
+      legend: {
+        show: false
+      },
+      dataLabels: {
+        enabled: true,
+        formatter: function(val, opt) {
+          return opt.w.globals.series[opt.seriesIndex];
+        },
+        style: {
+          fontSize: '14px',
+          fontFamily: 'Public Sans',
+          fontWeight: 'bold',
+          colors: ['#fff']
+        },
+        dropShadow: {
+          enabled: true,
+          blur: 3,
+          opacity: 0.2
+        }
+      },
+      plotOptions: {
+        pie: {
+          donut: {
+            size: '65%',
+            labels: {
+              show: true,
+              total: {
+                show: true,
+                label: 'Total Goals',
+                fontSize: '14px',
+                fontFamily: 'Public Sans',
+                fontWeight: 500,
+                color: '#5e5873',
+                formatter: function() {
+                  return data.goal_stats.total_goals;
+                }
+              }
+            }
+          }
+        }
+      },
+      responsive: [{
+        breakpoint: 480,
+        options: {
+          chart: {
+            height: 200
+          },
+          legend: {
+            position: 'bottom'
+          }
+        }
+      }]
+    };
+    
+    goalsOverviewChart = new ApexCharts(document.getElementById('goals-overview-chart'), goalsOverviewOptions);
+    goalsOverviewChart.render();
+    
+
+    if (goalTrendChart) {
+      goalTrendChart.destroy();
+    }
+    
+
+    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const currentDate = new Date();
+    const filledTrendData = [];
+    
+
+    for (let i = 11; i >= 0; i--) {
+      const monthDate = new Date(currentDate);
+      monthDate.setMonth(currentDate.getMonth() - i);
+      const monthYear = `${monthNames[monthDate.getMonth()]} ${monthDate.getFullYear()}`;
+      
+
+      const monthData = data.goal_trend.find(item => item.month === monthYear);
+      filledTrendData.push({
+        month: monthYear,
+        completed_count: monthData ? monthData.completed_count : 0
+      });
+    }
+    
+    const trendMonths = filledTrendData.map(item => item.month);
+    const trendCounts = filledTrendData.map(item => item.completed_count);
+    
+
+    const movingAverage = [];
+    for (let i = 0; i < trendCounts.length; i++) {
+      let sum = 0;
+      let count = 0;
+      for (let j = Math.max(0, i - 2); j <= i; j++) {
+        if (trendCounts[j] !== undefined) {
+          sum += trendCounts[j];
+          count++;
+        }
+      }
+      movingAverage.push(count > 0 ? Math.round((sum / count) * 10) / 10 : 0);
+    }
+    
+    const goalTrendOptions = {
+      series: [{
+        name: 'Completed Goals',
+        type: 'column',
+        data: trendCounts
+      }, {
+        name: '3-Month Average',
+        type: 'line',
+        data: movingAverage
+      }],
+      chart: {
+        height: 300,
+        type: 'line',
+        stacked: false,
+        toolbar: {
+          show: true,
+          tools: {
+            download: true
+          }
+        },
+        fontFamily: 'Public Sans'
+      },
+      colors: ['#4680FF', '#FF9F43'],
+      stroke: {
+        width: [0, 3],
+        curve: 'smooth'
+      },
+      dataLabels: {
+        enabled: false
+      },
+      markers: {
+        size: [0, 4],
+        colors: ["#FF9F43"],
+        strokeColors: "#fff",
+        strokeWidth: 2,
+        hover: {
+          size: 6,
+        }
+      },
+      xaxis: {
+        categories: trendMonths,
+        labels: {
+          rotate: -45,
+          style: {
+            colors: '#5e5873',
+            fontSize: '12px',
+            fontFamily: 'Public Sans'
+          }
+        }
+      },
+      yaxis: {
+        title: {
+          text: 'Completed Goals',
+          style: {
+            fontSize: '12px',
+            fontFamily: 'Public Sans'
+          }
+        },
+        min: 0,
+        labels: {
+          style: {
+            colors: '#5e5873',
+            fontSize: '12px',
+            fontFamily: 'Public Sans'
+          }
+        }
+      },
+      tooltip: {
+        shared: true,
+        intersect: false,
+        y: [{
+          formatter: function(y) {
+            if (typeof y !== "undefined") {
+              return y + " goals";
+            }
+            return y;
+          }
+        }, {
+          formatter: function(y) {
+            if (typeof y !== "undefined") {
+              return y.toFixed(1) + " avg";
+            }
+            return y;
+          }
+        }]
+      },
+      legend: {
+        position: 'top'
+      }
+    };
+    
+    goalTrendChart = new ApexCharts(document.getElementById('goal-trend-chart'), goalTrendOptions);
+    goalTrendChart.render();
+    
+
+    if (goalCategoryChart) {
+      goalCategoryChart.destroy();
+    }
+    
+
+    const sortedCategoryData = [...data.goal_by_category].sort((a, b) => b.completion_rate - a.completion_rate);
+    
+    const categoryLabels = sortedCategoryData.map(item => item.category);
+    const categoryValues = sortedCategoryData.map(item => item.completion_rate);
+    const categoryTotals = sortedCategoryData.map(item => item.total);
+    
+    const goalCategoryOptions = {
+      series: [{
+        name: 'Completion Rate',
+        data: categoryValues
+      }],
+      chart: {
+        type: 'bar',
+        height: 300,
+        fontFamily: 'Public Sans',
+        toolbar: {
+          show: false
+        }
+      },
+      plotOptions: {
+        bar: {
+          horizontal: true,
+          barHeight: '70%',
+          distributed: true,
+          dataLabels: {
+            position: 'bottom'
+          }
+        }
+      },
+      colors: ['#4680FF', '#00E396', '#FEB019', '#FF4560', '#775DD0', '#01C9E6', '#FF9F43'],
+      dataLabels: {
+        enabled: true,
+        textAnchor: 'start',
+        style: {
+          colors: ['#fff'],
+          fontSize: '12px',
+          fontWeight: 'bold',
+          fontFamily: 'Public Sans'
+        },
+        formatter: function(val, opt) {
+          return val.toFixed(1) + '% (' + categoryTotals[opt.dataPointIndex] + ' goals)';
+        },
+        offsetX: 0,
+        dropShadow: {
+          enabled: true
+        }
+      },
+      xaxis: {
+        categories: categoryLabels,
+        min: 0,
+        max: 100,
+        labels: {
+          style: {
+            colors: '#5e5873',
+            fontSize: '12px',
+            fontFamily: 'Public Sans'
+          },
+          formatter: function(val) {
+            return val.toFixed(0) + '%';
+          }
+        }
+      },
+      yaxis: {
+        labels: {
+          style: {
+            colors: '#5e5873',
+            fontSize: '12px',
+            fontFamily: 'Public Sans'
+          }
+        }
+      },
+      tooltip: {
+        y: {
+          formatter: function(val) {
+            return val.toFixed(1) + '%';
+          }
+        }
+      },
+      legend: {
+        show: false
+      }
+    };
+    
+    goalCategoryChart = new ApexCharts(document.getElementById('goal-category-chart'), goalCategoryOptions);
+    goalCategoryChart.render();
+    
+
+    const goalsHtml = data.recent_goals.map(goal => {
+      const progressPercentage = Math.min(100, (goal.current_value / goal.target_value) * 100) || 100;
+      
+      return `
+        <div class="list-group-item">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <h6 class="mb-0">${goal.title}</h6>
+            <span class="badge bg-success">${goal.category}</span>
+          </div>
+          <p class="mb-1 text-muted small">${goal.description || 'No description'}</p>
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <div class="progress w-75" style="height: 8px;">
+              <div class="progress-bar bg-success" role="progressbar" style="width: ${progressPercentage}%" 
+                aria-valuenow="${progressPercentage}" aria-valuemin="0" aria-valuemax="100"></div>
+            </div>
+            <small>${goal.current_value} / ${goal.target_value}</small>
+          </div>
+          <div class="d-flex justify-content-between align-items-center">
+            <small class="text-muted">${goal.patient_name}</small>
+            <small class="text-success">Completed: ${goal.completion_date}</small>
+          </div>
+        </div>
+      `;
+    }).join('');
+    
+    document.getElementById('recent-completed-goals').innerHTML = goalsHtml || 
+      '<div class="list-group-item text-center">No completed goals available</div>';
+  }
+});
+  </script>
+
+  <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+  
+  <script src="../static/assets/js/plugins/apexcharts.min.js"></script>
+  
+  
+  <script src="../static/assets/js/plugins/popper.min.js"></script>
+  <script src="../static/assets/js/plugins/simplebar.min.js"></script>
+  <script src="../static/assets/js/plugins/bootstrap.min.js"></script>
+  <script src="../static/assets/js/fonts/custom-font.js"></script>
+  <script src="../static/assets/js/pcoded.js"></script>
+  <script src="../static/assets/js/plugins/feather.min.js"></script>
+
+  <script>layout_change('light');</script>
+  <script>change_box_container('false');</script>
+  <script>layout_rtl_change('false');</script>
+  <script>preset_change("preset-1");</script>
+  <script>font_change("Public-Sans");</script>
+  
+  
+  <script src="../static/assets/js/dynamic-dashboard.js"></script>
+ 
+  <script>
+
+document.addEventListener('DOMContentLoaded', function() {
+
+
+
+  if (document.getElementById('visitor-chart') && window.chartData) {
+
+    const days = window.chartData.map(item => item.day);
+    const counts = window.chartData.map(item => item.count);
+    
+
+    const weeklyTotal = counts.reduce((acc, current) => acc + current, 0);
+    const weeklyAvg = Math.round(weeklyTotal / counts.length);
+    
+
+    const changePercentages = [];
+    for (let i = 1; i < counts.length; i++) {
+      const prevValue = counts[i-1] === 0 ? 1 : counts[i-1]; // Avoid division by zero
+      const change = ((counts[i] - counts[i-1]) / prevValue) * 100;
+      changePercentages.push(Math.round(change));
+    }
+    changePercentages.unshift(0); // First day has no previous day
+    
+    const weeklyOptions = {
+      series: [{
+        name: 'Sessions Completed',
+        type: 'column',
+        data: counts
+      }, {
+        name: 'Day-over-day Change (%)',
+        type: 'line',
+        data: changePercentages
+      }],
+      chart: {
+        height: 350,
+        type: 'line',
+        stacked: false,
+        toolbar: {
+          show: true,
+          tools: {
+            download: true,
+            selection: false,
+            zoom: false,
+            zoomin: false,
+            zoomout: false,
+            pan: false,
+            reset: false
+          },
+        },
+        animations: {
+          enabled: true,
+          easing: 'easeinout',
+          speed: 800,
+          animateGradually: {
+            enabled: true,
+            delay: 150
+          },
+          dynamicAnimation: {
+            enabled: true,
+            speed: 350
+          }
+        }
+      },
+      colors: ['#4680FF', '#FF6B6B'],
+      stroke: {
+        width: [0, 3],
+        curve: 'smooth'
+      },
+      plotOptions: {
+        bar: {
+          columnWidth: '65%',
+          borderRadius: 5,
+          dataLabels: {
+            position: 'top'
+          }
+        }
+      },
+      dataLabels: {
+        enabled: true,
+        enabledOnSeries: [0],
+        formatter: function(val) {
+          return val;
+        },
+        offsetY: -20,
+        style: {
+          fontSize: '12px',
+          colors: ["#304758"]
+        }
+      },
+      grid: {
+        borderColor: '#f1f1f1',
+        row: {
+          colors: ['#f9f9f9', 'transparent']
+        }
+      },
+      markers: {
+        size: 5,
+        colors: ["#FF6B6B"],
+        strokeColors: "#fff",
+        strokeWidth: 2,
+        hover: {
+          size: 7,
+        }
+      },
+      annotations: {
+        yaxis: [{
+          y: weeklyAvg,
+          y2: 0,
+          borderColor: '#4CAF50',
+          fillColor: '#E8F5E9',
+          opacity: 0.1,
+          label: {
+            borderColor: '#4CAF50',
+            style: {
+              color: '#fff',
+              background: '#4CAF50'
+            },
+            text: `Weekly Avg: ${weeklyAvg}`,
+          }
+        }]
+      },
+      xaxis: {
+        categories: days,
+        axisBorder: {
+          show: true,
+        },
+        axisTicks: {
+          show: true,
+        },
+        labels: {
+          style: {
+            colors: '#5e5873',
+            fontSize: '13px',
+            fontFamily: 'Public Sans'
+          }
+        }
+      },
+      yaxis: [{
+        title: {
+          text: 'Sessions Completed',
+          style: {
+            fontSize: '13px',
+            fontFamily: 'Public Sans'
+          }
+        },
+        labels: {
+          style: {
+            colors: '#5e5873',
+            fontSize: '13px',
+            fontFamily: 'Public Sans'
+          }
+        }
+      }, {
+        opposite: true,
+        title: {
+          text: 'Change (%)',
+          style: {
+            fontSize: '13px',
+            fontFamily: 'Public Sans'
+          }
+        },
+        labels: {
+          style: {
+            colors: '#FF6B6B',
+            fontSize: '13px',
+            fontFamily: 'Public Sans'
+          },
+          formatter: function(val) {
+            return val.toFixed(0) + '%';
+          }
+        }
+      }],
+      tooltip: {
+        shared: true,
+        intersect: false,
+        y: [{
+          formatter: function(y) {
+            if (typeof y !== "undefined") {
+              return y.toFixed(0) + " sessions";
+            }
+            return y;
+          }
+        }, {
+          formatter: function(y) {
+            if (typeof y !== "undefined") {
+              return y.toFixed(2) + "%";
+            }
+            return y;
+          }
+        }]
+      },
+      legend: {
+        horizontalAlign: 'center',
+        offsetY: 10
+      }
+    };
+
+    const weeklyChart = new ApexCharts(document.getElementById('visitor-chart'), weeklyOptions);
+    weeklyChart.render();
+  }
+
+
+
+
+  if (document.getElementById('visitor-chart-1') && window.monthlyChartData) {
+    const dates = window.monthlyChartData.map(item => item.date);
+    const counts = window.monthlyChartData.map(item => item.count);
+    
+
+    const movingAverage = [];
+    for (let i = 0; i < counts.length; i++) {
+      let sum = 0;
+      let validDays = 0;
+      
+
+      for (let j = Math.max(0, i - 6); j <= i; j++) {
+        if (counts[j] !== undefined) {
+          sum += counts[j];
+          validDays++;
+        }
+      }
+      
+      movingAverage.push(validDays > 0 ? Math.round(sum / validDays * 10) / 10 : 0);
+    }
+    
+    const monthlyOptions = {
+      series: [{
+        name: 'Sessions Completed',
+        type: 'area',
+        data: counts
+      }, {
+        name: '7-Day Moving Average',
+        type: 'line',
+        data: movingAverage
+      }],
+      chart: {
+        height: 350,
+        type: 'line',
+        stacked: false,
+        toolbar: {
+          show: true,
+          tools: {
+            download: true,
+            selection: true,
+            zoom: true,
+            zoomin: true,
+            zoomout: true,
+            pan: true,
+            reset: true
+          }
+        },
+        zoom: {
+          enabled: true
+        }
+      },
+      colors: ['rgba(70, 128, 255, 0.5)', '#FF9F43'],
+      stroke: {
+        width: [0, 3],
+        curve: 'smooth'
+      },
+      fill: {
+        type: ['gradient', 'solid'],
+        gradient: {
+          shade: 'light',
+          type: "vertical",
+          opacityFrom: 0.7,
+          opacityTo: 0.2,
+          stops: [0, 100]
+        }
+      },
+      markers: {
+        size: [0, 4],
+        colors: ["#FF9F43"],
+        strokeColors: "#fff",
+        strokeWidth: 2,
+        hover: {
+          size: 6,
+        }
+      },
+      xaxis: {
+        type: 'category',
+        categories: dates,
+        tickAmount: 10,
+        labels: {
+          rotate: -45,
+          style: {
+            colors: '#5e5873',
+            fontSize: '12px',
+            fontFamily: 'Public Sans'
+          }
+        },
+        axisBorder: {
+          show: true,
+        },
+        axisTicks: {
+          show: true,
+        }
+      },
+      yaxis: {
+        title: {
+          text: 'Sessions',
+          style: {
+            fontSize: '13px',
+            fontFamily: 'Public Sans'
+          }
+        },
+        labels: {
+          style: {
+            colors: '#5e5873',
+            fontSize: '13px',
+            fontFamily: 'Public Sans'
+          }
+        }
+      },
+      legend: {
+        position: 'top',
+        horizontalAlign: 'center',
+        offsetY: -10
+      },
+      grid: {
+        borderColor: '#f1f1f1',
+      },
+      tooltip: {
+        shared: true,
+        intersect: false,
+        y: [{
+          formatter: function(y) {
+            if (typeof y !== "undefined") {
+              return y.toFixed(0) + " sessions";
+            }
+            return y;
+          }
+        }, {
+          formatter: function(y) {
+            if (typeof y !== "undefined") {
+              return y.toFixed(1) + " avg";
+            }
+            return y;
+          }
+        }]
+      }
+    };
+
+    const monthlyChart = new ApexCharts(document.getElementById('visitor-chart-1'), monthlyOptions);
+    monthlyChart.render();
+  }
+
+
+
+
+  if (document.getElementById('income-overview-chart') && window.donutData) {
+
+    const total = window.donutData.Completed + window.donutData.Partial + window.donutData.Missed;
+    const completedPercentage = Math.round((window.donutData.Completed / total) * 100) || 0;
+    const partialPercentage = Math.round((window.donutData.Partial / total) * 100) || 0;
+    const missedPercentage = Math.round((window.donutData.Missed / total) * 100) || 0;
+    
+    const donutOptions = {
+      series: [window.donutData.Completed, window.donutData.Partial, window.donutData.Missed],
+      chart: {
+        type: 'donut',
+        height: 300,
+        fontFamily: 'Public Sans',
+        animations: {
+          enabled: true,
+          easing: 'easeinout',
+          speed: 800,
+          animateGradually: {
+            enabled: true,
+            delay: 150
+          },
+          dynamicAnimation: {
+            enabled: true,
+            speed: 350
+          }
+        }
+      },
+      labels: ['Completed', 'Partial', 'Missed'],
+      colors: ['#28C76F', '#FF9F43', '#EA5455'],
+      stroke: {
+        width: 0
+      },
+      legend: {
+        show: true,
+        position: 'bottom',
+        fontSize: '14px',
+        fontFamily: 'Public Sans',
+        fontWeight: 500,
+        labels: {
+          colors: '#5e5873'
+        },
+        markers: {
+          strokeWidth: 0,
+          strokeColor: '#fff',
+          width: 14,
+          height: 14,
+          radius: 5
+        },
+        formatter: function(seriesName, opts) {
+          const percentage = [completedPercentage, partialPercentage, missedPercentage][opts.seriesIndex];
+          return `${seriesName}: ${opts.w.globals.series[opts.seriesIndex]} (${percentage}%)`;
+        }
+      },
+      dataLabels: {
+        enabled: true,
+        formatter: function(val, opt) {
+          return opt.w.globals.labels[opt.seriesIndex] + ": " + val;
+        },
+        style: {
+          fontSize: '14px',
+          fontFamily: 'Public Sans',
+          fontWeight: 'bold',
+          colors: ['#fff']
+        },
+        dropShadow: {
+          enabled: true,
+          blur: 3,
+          opacity: 0.2
+        }
+      },
+      plotOptions: {
+        pie: {
+          donut: {
+            size: '65%',
+            background: 'transparent',
+            labels: {
+              show: true,
+              name: {
+                show: true,
+                fontSize: '22px',
+                fontFamily: 'Public Sans',
+                fontWeight: 600,
+                color: '#5e5873',
+                offsetY: -12,
+                formatter: function(val) {
+                  return val;
+                }
+              },
+              value: {
+                show: true,
+                fontSize: '16px',
+                fontFamily: 'Public Sans',
+                fontWeight: 500,
+                color: '#5e5873',
+                offsetY: 6,
+                formatter: function(val) {
+                  return val;
+                }
+              },
+              total: {
+                show: true,
+                showAlways: true,
+                label: 'Total',
+                fontSize: '16px',
+                fontFamily: 'Public Sans',
+                fontWeight: 500,
+                color: '#5e5873',
+                formatter: function(w) {
+                  return total;
+                }
+              }
+            }
+          }
+        }
+      },
+      responsive: [{
+        breakpoint: 480,
+        options: {
+          chart: {
+            height: 250
+          },
+          legend: {
+            position: 'bottom',
+            offsetY: 0
+          }
+        }
+      }],
+      tooltip: {
+        enabled: true,
+        theme: 'light',
+        fillSeriesColor: false,
+        style: {
+          fontSize: '14px',
+          fontFamily: 'Public Sans'
+        },
+        y: {
+          formatter: function(val) {
+            return val + " sessions";
+          }
+        }
+      }
+    };
+
+    const donutChart = new ApexCharts(document.getElementById('income-overview-chart'), donutOptions);
+    donutChart.render();
+  }
+
+
+
+
+  if (document.getElementById('sales-report-chart') && window.progressData) {
+
+    const dates = window.progressData.map(item => item.date);
+    const scores = window.progressData.map(item => item.score);
+    
+
+    const latestScore = scores[scores.length - 1] || 0;
+    const initialScore = scores[0] || 0;
+    const overallChange = latestScore - initialScore;
+    const overallPercentChange = initialScore !== 0 ? ((overallChange / initialScore) * 100).toFixed(1) : 0;
+    
+
+    const trendDirection = overallChange >= 0 ? 'Improving' : 'Declining';
+    const trendColor = overallChange >= 0 ? '#28C76F' : '#EA5455';
+    
+
+    const targetScore = 85;
+    
+    const progressOptions = {
+      series: [{
+        name: 'Functionality Score',
+        data: scores
+      }],
+      chart: {
+        height: 300,
+        type: 'line',
+        dropShadow: {
+          enabled: true,
+          color: '#000',
+          top: 18,
+          left: 7,
+          blur: 10,
+          opacity: 0.2
+        },
+        toolbar: {
+          show: true,
+          tools: {
+            download: true
+          }
+        },
+        fontFamily: 'Public Sans'
+      },
+      colors: ['#7367F0'],
+      stroke: {
+        curve: 'smooth',
+        width: 4
+      },
+      fill: {
+        type: 'gradient',
+        gradient: {
+          shade: 'dark',
+          gradientToColors: ['#A9A2F6'],
+          shadeIntensity: 1,
+          type: 'horizontal',
+          opacityFrom: 1,
+          opacityTo: 1,
+          stops: [0, 100]
+        }
+      },
+      markers: {
+        size: 6,
+        colors: ['#7367F0'],
+        strokeColors: '#fff',
+        strokeWidth: 2,
+        hover: {
+          size: 8
+        }
+      },
+      annotations: {
+        yaxis: [{
+          y: targetScore,
+          borderColor: '#28C76F',
+          label: {
+            borderColor: '#28C76F',
+            style: {
+              color: '#fff',
+              background: '#28C76F'
+            },
+            text: 'Target Score: 85',
+          }
+        }],
+        points: [{
+          x: dates[dates.length - 1],
+          y: latestScore,
+          marker: {
+            size: 8,
+            fillColor: trendColor,
+            strokeColor: '#fff',
+            strokeWidth: 2,
+            radius: 2
+          },
+          label: {
+            borderColor: trendColor,
+            offsetY: 0,
+            style: {
+              color: '#fff',
+              background: trendColor,
+              padding: {
+                left: 10,
+                right: 10,
+                top: 5,
+                bottom: 5
+              }
+            },
+            text: `${trendDirection}: ${overallPercentChange}%`,
+          }
+        }]
+      },
+      xaxis: {
+        categories: dates,
+        labels: {
+          style: {
+            colors: '#5e5873',
+            fontSize: '12px',
+            fontFamily: 'Public Sans'
+          }
+        },
+        axisBorder: {
+          show: true,
+        },
+        axisTicks: {
+          show: true,
+        }
+      },
+      yaxis: {
+        min: Math.max(0, Math.min(...scores) - 10),
+        max: Math.min(100, Math.max(...scores) + 10),
+        title: {
+          text: 'Functionality Score',
+          style: {
+            fontSize: '13px',
+            fontFamily: 'Public Sans'
+          }
+        },
+        labels: {
+          style: {
+            colors: '#5e5873',
+            fontSize: '13px',
+            fontFamily: 'Public Sans'
+          }
+        }
+      },
+      tooltip: {
+        theme: 'dark',
+        x: {
+          show: true
+        },
+        y: {
+          title: {
+            formatter: function() {
+              return 'Functionality Score:';
+            }
+          },
+          formatter: function(value) {
+            return value.toFixed(1) + ' / 100';
+          }
+        }
+      },
+      grid: {
+        borderColor: '#f1f1f1',
+      }
+    };
+
+    const progressChart = new ApexCharts(document.getElementById('sales-report-chart'), progressOptions);
+    progressChart.render();
+  }
+
+
+
+
+
+  const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+  tooltipTriggerList.map(function (tooltipTriggerEl) {
+    return new bootstrap.Tooltip(tooltipTriggerEl);
+  });
+});
+  </script>
+  
+  <script>
+    function updateUnreadMessageCount() {
+      fetch('/api/messages/unread-count')
+        .then(response => response.json())
+        .then(data => {
+          const messageCountBadge = document.getElementById('unread-message-count');
+          if (messageCountBadge) {
+            if (data.count > 0) {
+              messageCountBadge.textContent = data.count;
+              messageCountBadge.classList.remove('d-none');
+            } else {
+              messageCountBadge.classList.add('d-none');
+            }
+          }
+        })
+        .catch(error => console.error('Error fetching message count:', error));
+    }
+    
+
+    document.addEventListener('DOMContentLoaded', function() {
+      updateUnreadMessageCount();
+      setInterval(updateUnreadMessageCount, 120000);
+    });
+  </script>
+</body>
+
+
+
+</html>

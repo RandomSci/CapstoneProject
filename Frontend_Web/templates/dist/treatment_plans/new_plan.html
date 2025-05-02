@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Create Treatment Plan | APR-CV</title>
+  
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0, minimal-ui">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="description" content="APR-CV Patient Management System">
+  <meta name="keywords" content="physical therapy, rehab, cardiovascular therapy, patient management">
+  <meta name="author" content="APR-CV">
+  
+  
+  <link rel="icon" href="../static/assets/images/favicon.svg" type="image/x-icon">
+  
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700&display=swap" id="main-font-link">
+  
+  <link rel="stylesheet" href="../static/assets/fonts/tabler-icons.min.css" >
+  
+  <link rel="stylesheet" href="../static/assets/fonts/feather.css" >
+  
+  <link rel="stylesheet" href="../static/assets/fonts/fontawesome.css" >
+  
+  <link rel="stylesheet" href="../static/assets/fonts/material.css" >
+  
+  <link rel="stylesheet" href="../static/assets/css/style.css" id="main-style-link" >
+  <link rel="stylesheet" href="../static/assets/css/style-preset.css" >
+</head>
+
+<body data-pc-preset="preset-1" data-pc-direction="ltr" data-pc-theme="light">
+  
+  <div class="loader-bg">
+    <div class="loader-track">
+      <div class="loader-fill"></div>
+    </div>
+  </div>
+  
+  
+  
+  <nav class="pc-sidebar">
+    <div class="navbar-wrapper">
+      <div class="m-header">
+        <a href="/front-page" class="b-brand text-primary">
+          <i class="ti ti-medical-cross fs-4"></i>
+          <span class="ms-2 fw-bold">APR-CV</span>
+        </a>
+      </div>
+      <div class="navbar-content">
+        <ul class="pc-navbar">
+          <li class="pc-item">
+            <a href="/front-page" class="pc-link">
+              <span class="pc-micon"><i class="ti ti-dashboard"></i></span>
+              <span class="pc-mtext">Dashboard</span>
+            </a>
+          </li>
+        
+          <li class="pc-item pc-hasmenu">
+            <a href="#!" class="pc-link">
+              <span class="pc-micon"><i class="ti ti-users"></i></span>
+              <span class="pc-mtext">Patients</span>
+              <span class="pc-arrow"><i data-feather="chevron-right"></i></span>
+            </a>
+            <ul class="pc-submenu">
+              <li class="pc-item"><a class="pc-link" href="/patients">Patient Directory</a></li>
+              <li class="pc-item"><a class="pc-link" href="/reports/patients">Patient Reports</a></li>
+            </ul>
+          </li>
+        
+          <li class="pc-item pc-hasmenu">
+            <a href="#!" class="pc-link">
+              <span class="pc-micon"><i class="ti ti-calendar"></i></span>
+              <span class="pc-mtext">Appointments</span>
+              <span class="pc-arrow"><i data-feather="chevron-right"></i></span>
+            </a>
+            <ul class="pc-submenu">
+              <li class="pc-item"><a class="pc-link" href="/appointments">Schedule</a></li>
+            </ul>
+          </li>
+        
+          <li class="pc-item pc-hasmenu">
+            <a href="#!" class="pc-link">
+              <span class="pc-micon"><i class="ti ti-activity"></i></span>
+              <span class="pc-mtext">Exercise Library</span>
+              <span class="pc-arrow"><i data-feather="chevron-right"></i></span>
+            </a>
+            <ul class="pc-submenu">
+              <li class="pc-item"><a class="pc-link" href="/exercises">Browse Exercises</a></li>
+              <li class="pc-item"><a class="pc-link" href="/exercises/add">Upload New Exercise</a></li>
+            </ul>
+          </li>
+        
+          <li class="pc-item pc-hasmenu active">
+            <a href="#!" class="pc-link">
+              <span class="pc-micon"><i class="ti ti-report"></i></span>
+              <span class="pc-mtext">Treatment Plans</span>
+              <span class="pc-arrow"><i data-feather="chevron-right"></i></span>
+            </a>
+            <ul class="pc-submenu">
+              <li class="pc-item active"><a class="pc-link" href="/treatment-plans/new">Create Plan</a></li>
+              <li class="pc-item"><a class="pc-link" href="/treatment-plans">Manage Plans</a></li>
+            </ul>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+  
+  
+  
+  <header class="pc-header">
+    <div class="header-wrapper">
+      
+      <div class="me-auto pc-mob-drp">
+        <ul class="list-unstyled">
+          <li class="pc-h-item pc-sidebar-collapse">
+            <a href="#" class="pc-head-link ms-0" id="sidebar-hide">
+              <i class="ti ti-menu-2"></i>
+            </a>
+          </li>
+          <li class="pc-h-item pc-sidebar-popup">
+            <a href="#" class="pc-head-link ms-0" id="mobile-collapse">
+              <i class="ti ti-menu-2"></i>
+            </a>
+          </li>
+          <li class="pc-h-item d-none d-md-inline-flex">
+            <form class="header-search">
+              <i data-feather="search" class="icon-search"></i>
+              <input type="search" class="form-control" placeholder="Search...">
+            </form>
+          </li>
+        </ul>
+      </div>
+      
+      
+      <div class="ms-auto">
+        <ul class="list-unstyled">
+          <li class="dropdown pc-h-item header-user-profile">
+            <a class="pc-head-link dropdown-toggle arrow-none me-0" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="false" data-bs-auto-close="outside" aria-expanded="false">
+              <img src="/static/assets/images/user/{{ therapist.profile_image }}" alt="user-image" class="user-avtar">
+              <span>{{ first_name }} {{ last_name }}</span>
+            </a>
+            <div class="dropdown-menu dropdown-user-profile dropdown-menu-end pc-h-dropdown">
+              <div class="dropdown-header">
+                <div class="d-flex mb-1">
+                  <div class="flex-shrink-0">
+                    <img src="/static/assets/images/user/{{ therapist.profile_image }}" alt="user-image" class="user-avtar">
+                  </div>
+                  <div class="flex-grow-1 ms-3">
+                    <h6 class="mb-1">{{ first_name }} {{ last_name }}</h6>
+                    <span>Physical Therapist</span>
+                  </div>
+                  <a href="/logout" class="pc-head-link bg-transparent"><i class="ti ti-power text-danger"></i></a>
+                </div>
+              </div>
+              <ul class="nav drp-tabs nav-fill nav-tabs" id="mydrpTab" role="tablist">
+                <li class="nav-item" role="presentation">
+                  <button
+                    class="nav-link active"
+                    id="drp-t1"
+                    data-bs-toggle="tab"
+                    data-bs-target="#drp-tab-1"
+                    type="button"
+                    role="tab"
+                    aria-controls="drp-tab-1"
+                    aria-selected="true"
+                    ><i class="ti ti-user"></i> Profile</button
+                  >
+                </li>
+              </ul>
+              <div class="tab-content" id="mysrpTabContent">
+                <div class="tab-pane fade show active" id="drp-tab-1" role="tabpanel" aria-labelledby="drp-t1" tabindex="0">
+                  <a href="/profile/edit" class="dropdown-item">
+                    <i class="ti ti-edit-circle"></i>
+                    <span>Edit Profile</span>
+                  </a>
+                  <a href="/profile" class="dropdown-item">
+                    <i class="ti ti-user"></i>
+                    <span>View Profile</span>
+                  </a>
+                  <a href="/profile/reviews" class="dropdown-item">
+                    <i class="ti ti-star"></i>
+                    <span>My Reviews</span>
+                  </a>
+                  <a href="/logout" class="dropdown-item">
+                    <i class="ti ti-power"></i>
+                    <span>Logout</span>
+                  </a>
+                </div>
+                <div class="tab-pane fade" id="drp-tab-2" role="tabpanel" aria-labelledby="drp-t2" tabindex="0">
+                  <a href="/support" class="dropdown-item">
+                    <i class="ti ti-help"></i>
+                    <span>Support</span>
+                  </a>
+                  <a href="/settings" class="dropdown-item">
+                    <i class="ti ti-user"></i>
+                    <span>Account Settings</span>
+                  </a>
+                  <a href="/privacy" class="dropdown-item">
+                    <i class="ti ti-lock"></i>
+                    <span>Privacy Center</span>
+                  </a>
+                  <a href="/feedback" class="dropdown-item">
+                    <i class="ti ti-messages"></i>
+                    <span>Feedback</span>
+                  </a>
+                  <a href="/activity" class="dropdown-item">
+                    <i class="ti ti-list"></i>
+                    <span>History</span>
+                  </a>
+                </div>
+              </div>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </header>
+  
+
+  
+  <div class="pc-container">
+    <div class="pc-content">
+      
+      <div class="page-header">
+        <div class="page-block">
+          <div class="row align-items-center">
+            <div class="col-md-12">
+              <div class="page-header-title">
+                <h5 class="mb-0">Create Treatment Plan</h5>
+              </div>
+              <ul class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/front-page">Home</a></li>
+                <li class="breadcrumb-item"><a href="/treatment-plans">Treatment Plans</a></li>
+                <li class="breadcrumb-item active">Create New Plan</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+
+      <div class="row">
+        <div class="col-12">
+          <div class="card">
+            <div class="card-header">
+              <h5>New Treatment Plan</h5>
+            </div>
+            <div class="card-body">
+              <form id="treatmentPlanForm" action="/treatment-plans/new" method="POST">
+                <div class="row mb-4">
+                  <div class="col-md-6">
+                    <div class="form-group">
+                      <label for="patient_id" class="form-label">Patient <span class="text-danger">*</span></label>
+                      <select class="form-select" id="patient_id" name="patient_id" required>
+                        <option value="" selected disabled>Select a patient</option>
+                        {% for patient in patients %}
+                        <option value="{{ patient.patient_id }}" {% if request.query_params.get('patient_id') == patient.patient_id|string %}selected{% endif %}>
+                          {{ patient.first_name }} {{ patient.last_name }}
+                        </option>
+                        {% endfor %}
+                      </select>
+                    </div>
+                  </div>
+                  
+                  <div class="col-md-6">
+                    <div class="form-group">
+                      <label for="plan_name" class="form-label">Plan Name <span class="text-danger">*</span></label>
+                      <input type="text" class="form-control" id="plan_name" name="plan_name" required placeholder="e.g., Knee Rehabilitation Plan">
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="row mb-4">
+                  <div class="col-md-6">
+                    <div class="form-group">
+                      <label for="start_date" class="form-label">Start Date</label>
+                      <input type="date" class="form-control" id="start_date" name="start_date">
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="form-group">
+                      <label for="end_date" class="form-label">End Date</label>
+                      <input type="date" class="form-control" id="end_date" name="end_date">
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="row mb-4">
+                  <div class="col-md-12">
+                    <div class="form-group">
+                      <label for="description" class="form-label">Plan Description</label>
+                      <textarea class="form-control" id="description" name="description" rows="3" placeholder="Describe the treatment plan and its objectives"></textarea>
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="border p-3 rounded mb-4">
+                  <h5 class="mb-3">Exercises</h5>
+                  <div id="exercises-container">
+                    <div class="exercise-item border-bottom pb-3 mb-3">
+                      <div class="row">
+                        <div class="col-md-6">
+                          <div class="form-group">
+                            <label class="form-label">Exercise <span class="text-danger">*</span></label>
+                            <select class="form-select exercise-select" name="exercises[]" required>
+                              <option value="" selected disabled>Select an exercise</option>
+                              {% for exercise in exercises %}
+                              <option value="{{ exercise.exercise_id }}">{{ exercise.name }}{% if exercise.difficulty %} ({{ exercise.difficulty }}){% endif %}</option>
+                              {% endfor %}
+                            </select>
+                          </div>
+                        </div>
+                        <div class="col-md-3">
+                          <div class="form-group">
+                            <label class="form-label">Sets</label>
+                            <input type="number" class="form-control" name="sets[]" min="1" value="3">
+                          </div>
+                        </div>
+                        <div class="col-md-3">
+                          <div class="form-group">
+                            <label class="form-label">Repetitions</label>
+                            <input type="number" class="form-control" name="repetitions[]" min="1" value="10">
+                          </div>
+                        </div>
+                      </div>
+                      <div class="row mt-3">
+                        <div class="col-md-6">
+                          <div class="form-group">
+                            <label class="form-label">Frequency</label>
+                            <select class="form-select" name="frequency[]">
+                              <option value="Daily">Daily</option>
+                              <option value="Every other day" selected>Every other day</option>
+                              <option value="Twice a week">Twice a week</option>
+                              <option value="Weekly">Weekly</option>
+                            </select>
+                          </div>
+                        </div>
+                        <div class="col-md-6">
+                          <div class="form-group">
+                            <label class="form-label">Duration (minutes)</label>
+                            <input type="number" class="form-control" name="duration[]" min="1" value="10">
+                          </div>
+                        </div>
+                      </div>
+                      <div class="row mt-3">
+                        <div class="col-md-12">
+                          <div class="form-group">
+                            <label class="form-label">Notes</label>
+                            <textarea class="form-control" name="exercise_notes[]" rows="2" placeholder="Special instructions or modifications"></textarea>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="text-end mt-2">
+                        <button type="button" class="btn btn-sm btn-outline-danger remove-exercise" disabled>
+                          <i class="ti ti-trash me-1"></i> Remove
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="text-center mt-3">
+                    <button type="button" class="btn btn-outline-primary" id="add-exercise">
+                      <i class="ti ti-plus me-1"></i> Add Another Exercise
+                    </button>
+                  </div>
+                </div>
+                
+                <div class="border p-3 rounded mb-4">
+                  <h5 class="mb-3">Treatment Plan Settings</h5>
+                  <div class="row">
+                    <div class="col-md-6">
+                      <div class="form-group">
+                        <label for="status" class="form-label">Status</label>
+                        <select class="form-select" id="status" name="status">
+                          <option value="Active" selected>Active</option>
+                          <option value="Completed">Completed</option>
+                          <option value="Cancelled">Cancelled</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div class="col-md-6 d-flex align-items-center mt-3 mt-md-0">
+                      <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="send_notification" name="send_notification" checked>
+                        <label class="form-check-label" for="send_notification">Notify patient about this plan</label>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="text-end">
+                  <a href="/treatment-plans" class="btn btn-outline-secondary me-2">
+                    <i class="ti ti-x me-1"></i> Cancel
+                  </a>
+                  <button type="submit" class="btn btn-primary">
+                    <i class="ti ti-device-floppy me-1"></i> Save Treatment Plan
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+
+  <footer class="pc-footer">
+    <div class="footer-wrapper container-fluid">
+      <div class="row">
+        <div class="col-auto my-1">
+          <span>&copy; 2025 APR-CV Physical Therapy</span>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+
+<script src="../static/assets/js/plugins/popper.min.js"></script>
+<script src="../static/assets/js/plugins/perfect-scrollbar.min.js"></script>
+<script src="../static/assets/js/plugins/bootstrap.min.js"></script>
+<script src="../static/assets/js/pcoded.js"></script>
+<script src="../static/assets/js/plugins/feather.min.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+
+  const addExerciseBtn = document.getElementById('add-exercise');
+  const exercisesContainer = document.getElementById('exercises-container');
+  
+  addExerciseBtn.addEventListener('click', function() {
+    const exerciseItems = document.querySelectorAll('.exercise-item');
+    const lastExercise = exerciseItems[exerciseItems.length - 1];
+    const newExercise = lastExercise.cloneNode(true);
+    
+
+    newExercise.querySelectorAll('input[type="text"], input[type="number"], textarea').forEach(input => {
+      if (input.name === 'sets[]') {
+        input.value = '3';
+      } else if (input.name === 'repetitions[]') {
+        input.value = '10';
+      } else if (input.name === 'duration[]') {
+        input.value = '10';
+      } else {
+        input.value = '';
+      }
+    });
+    
+
+    newExercise.querySelectorAll('select').forEach(select => {
+      if (select.name === 'exercises[]') {
+        select.selectedIndex = 0;
+      }
+    });
+    
+
+    const removeBtn = newExercise.querySelector('.remove-exercise');
+    removeBtn.disabled = false;
+    
+    exercisesContainer.appendChild(newExercise);
+    
+
+    if (document.querySelectorAll('.exercise-item').length > 1) {
+      document.querySelectorAll('.remove-exercise').forEach(btn => {
+        btn.disabled = false;
+      });
+    }
+  });
+  
+
+  exercisesContainer.addEventListener('click', function(e) {
+    if (e.target.classList.contains('remove-exercise') || e.target.parentElement.classList.contains('remove-exercise')) {
+      const exerciseBtn = e.target.closest('.remove-exercise');
+      const exerciseItem = exerciseBtn.closest('.exercise-item');
+      
+
+      if (document.querySelectorAll('.exercise-item').length > 1) {
+        exerciseItem.remove();
+        
+
+        if (document.querySelectorAll('.exercise-item').length === 1) {
+          document.querySelector('.remove-exercise').disabled = true;
+        }
+      }
+    }
+  });
+  
+
+  const startDateInput = document.getElementById('start_date');
+  if (!startDateInput.value) {
+    const today = new Date();
+    startDateInput.value = today.toISOString().split('T')[0];
+  }
+  
+
+  startDateInput.addEventListener('change', function() {
+    const endDateInput = document.getElementById('end_date');
+    if (!endDateInput.value && startDateInput.value) {
+      const startDate = new Date(startDateInput.value);
+      const endDate = new Date(startDate);
+      endDate.setDate(startDate.getDate() + 56); // 8 weeks
+      endDateInput.value = endDate.toISOString().split('T')[0];
+    }
+  });
+  
+
+  if (startDateInput.value) {
+    startDateInput.dispatchEvent(new Event('change'));
+  }
+  
+
+  const form = document.getElementById('treatmentPlanForm');
+  form.addEventListener('submit', function(e) {
+    const patientId = document.getElementById('patient_id').value;
+    const planName = document.getElementById('plan_name').value;
+    const exerciseSelects = document.querySelectorAll('.exercise-select');
+    
+    let valid = true;
+    
+    if (!patientId) {
+      document.getElementById('patient_id').classList.add('is-invalid');
+      valid = false;
+    } else {
+      document.getElementById('patient_id').classList.remove('is-invalid');
+    }
+    
+    if (!planName) {
+      document.getElementById('plan_name').classList.add('is-invalid');
+      valid = false;
+    } else {
+      document.getElementById('plan_name').classList.remove('is-invalid');
+    }
+    
+    let exercisesValid = true;
+    exerciseSelects.forEach(select => {
+      if (!select.value) {
+        select.classList.add('is-invalid');
+        exercisesValid = false;
+      } else {
+        select.classList.remove('is-invalid');
+      }
+    });
+    
+    if (!exercisesValid) {
+      valid = false;
+    }
+    
+    if (!valid) {
+      e.preventDefault();
+      alert('Please fill in all required fields');
+    }
+  });
+});
+</script>
+</body>
+</html>

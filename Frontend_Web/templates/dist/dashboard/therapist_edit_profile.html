@@ -1,0 +1,916 @@
+<!DOCTYPE html>
+<html lang="en">
+
+
+<head>
+  <title>Edit Profile | APR-CV</title>
+  
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0, minimal-ui">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="description" content="APR-CV Physical Therapy Management System">
+  <meta name="keywords" content="PT, Physical Therapy, Rehab, Patient Management">
+  <meta name="author" content="APR-CV Team">
+
+  
+  <link rel="icon" href="../static/assets/images/favicon.svg" type="image/x-icon">
+  
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700&display=swap" id="main-font-link">
+  
+  <link rel="stylesheet" href="../static/assets/fonts/tabler-icons.min.css">
+  
+  <link rel="stylesheet" href="../static/assets/fonts/feather.css">
+  
+  <link rel="stylesheet" href="../static/assets/fonts/fontawesome.css">
+  
+  <link rel="stylesheet" href="../static/assets/fonts/material.css">
+  
+  <link rel="stylesheet" href="../static/assets/css/style.css" id="main-style-link">
+  <link rel="stylesheet" href="../static/assets/css/style-preset.css">
+  
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
+  
+  <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+  <style>
+    .user-avtar {
+      width: 35px !important;
+      height: 35px !important;
+      border-radius: 50% !important;
+      object-fit: cover !important;
+      aspect-ratio: 1/1 !important;
+    }
+    
+    .profile-avatar {
+      width: 150px !important;
+      height: 150px !important;
+      border-radius: 50% !important;
+      object-fit: cover !important;
+      border: 5px solid white !important;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1) !important;
+      margin-top: -75px !important;
+      aspect-ratio: 1/1 !important;
+    }
+    
+    
+    .header-user-profile .user-avtar {
+      width: 35px !important;
+      height: 35px !important;
+      border-radius: 50% !important;
+      display: inline-block !important;
+      vertical-align: middle !important;
+    }
+    
+    
+    .dropdown-user-profile .user-avtar {
+      border-radius: 50% !important;
+    }
+    .profile-image-preview {
+      width: 150px;
+      height: 150px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid #eaeaea;
+    }
+    
+    .map-container {
+      height: 300px;
+      width: 100%;
+      z-index: 1;
+    }
+    
+    .select2-container--default .select2-selection--multiple {
+      border-color: #ced4da;
+      min-height: 38px;
+    }
+    
+    .select2-container--default.select2-container--focus .select2-selection--multiple {
+      border-color: #7267EF;
+    }
+    
+    .image-upload-label {
+      display: block;
+      position: relative;
+      cursor: pointer;
+      width: 150px;
+      margin: 0 auto;
+    }
+    
+    .image-upload-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 150px;
+      height: 150px;
+      border-radius: 50%;
+      background: rgba(0, 0, 0, 0.5);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    
+    .image-upload-label:hover .image-upload-overlay {
+      opacity: 1;
+    }
+    
+    .image-upload-icon {
+      color: white;
+      font-size: 24px;
+    }
+    
+    .select2-container {
+      width: 100% !important;
+    }
+    
+    .address-search-container {
+      position: relative;
+      margin-bottom: 15px;
+    }
+    
+    .address-search-results {
+      position: absolute;
+      width: 100%;
+      max-height: 200px;
+      overflow-y: auto;
+      background: white;
+      border: 1px solid #ced4da;
+      border-radius: 0.25rem;
+      z-index: 1000;
+      display: none;
+    }
+    
+    .address-search-result {
+      padding: 8px 12px;
+      cursor: pointer;
+      border-bottom: 1px solid #f0f0f0;
+    }
+    
+    .address-search-result:hover {
+      background-color: #f8f9fa;
+    }
+    
+    .nav-tabs .nav-link.active {
+      font-weight: 600;
+      border-bottom: 3px solid #7267EF;
+    }
+  </style>
+</head>
+
+
+
+<body data-pc-preset="preset-1" data-pc-direction="ltr" data-pc-theme="light">
+  
+  <div class="loader-bg">
+    <div class="loader-track">
+      <div class="loader-fill"></div>
+    </div>
+  </div>
+  
+  
+  <nav class="pc-sidebar">
+    <div class="navbar-wrapper">
+      <div class="m-header">
+        <a href="/front-page" class="b-brand text-primary">
+          <i class="ti ti-medical-cross fs-4"></i>
+          <span class="ms-2 fw-bold">APR-CV</span>
+        </a>
+      </div>
+      <div class="navbar-content">
+        <ul class="pc-navbar">
+          <li class="pc-item">
+            <a href="/front-page" class="pc-link">
+              <span class="pc-micon"><i class="ti ti-dashboard"></i></span>
+              <span class="pc-mtext">Dashboard</span>
+            </a>
+          </li>
+        
+          <li class="pc-item pc-hasmenu">
+            <a href="#!" class="pc-link">
+              <span class="pc-micon"><i class="ti ti-users"></i></span>
+              <span class="pc-mtext">Patients</span>
+              <span class="pc-arrow"><i data-feather="chevron-right"></i></span>
+            </a>
+            <ul class="pc-submenu">
+              <li class="pc-item"><a class="pc-link" href="/patients">Patient Directory</a></li>
+              <li class="pc-item"><a class="pc-link" href="/reports/patients">Patient Reports</a></li>
+            </ul>
+          </li>
+        
+          <li class="pc-item pc-hasmenu">
+            <a href="#!" class="pc-link">
+              <span class="pc-micon"><i class="ti ti-calendar"></i></span>
+              <span class="pc-mtext">Appointments</span>
+              <span class="pc-arrow"><i data-feather="chevron-right"></i></span>
+            </a>
+            <ul class="pc-submenu">
+              <li class="pc-item"><a class="pc-link" href="/appointments">Schedule</a></li>
+            </ul>
+          </li>
+        
+          <li class="pc-item pc-hasmenu">
+            <a href="#!" class="pc-link">
+              <span class="pc-micon"><i class="ti ti-activity"></i></span>
+              <span class="pc-mtext">Exercise Library</span>
+              <span class="pc-arrow"><i data-feather="chevron-right"></i></span>
+            </a>
+            <ul class="pc-submenu">
+              <li class="pc-item"><a class="pc-link" href="/exercises">Browse Exercises</a></li>
+              <li class="pc-item"><a class="pc-link" href="/exercises/add">Upload New Exercise</a></li>
+              <li class="pc-item"><a class="pc-link" href="/exercises/categories">Exercise Categories</a></li>
+            </ul>
+          </li>
+        
+          <li class="pc-item pc-hasmenu">
+            <a href="#!" class="pc-link">
+              <span class="pc-micon"><i class="ti ti-report"></i></span>
+              <span class="pc-mtext">Treatment Plans</span>
+              <span class="pc-arrow"><i data-feather="chevron-right"></i></span>
+            </a>
+            <ul class="pc-submenu">
+              <li class="pc-item"><a class="pc-link" href="/treatment-plans/create">Create Plan</a></li>
+              <li class="pc-item"><a class="pc-link" href="/treatment-plans">Manage Plans</a></li>
+              <li class="pc-item"><a class="pc-link" href="/treatment-plans/templates">Templates</a></li>
+            </ul>
+          </li>
+          <li class="pc-item">
+            <a href="/messages" class="pc-link">
+              <span class="pc-micon"><i class="ti ti-mail"></i></span>
+              <span class="pc-mtext">Messages</span>
+              {% if unread_messages_count > 0 %}
+              <span class="badge bg-danger ms-auto">{{ unread_messages_count }}</span>
+              {% endif %}
+            </a>
+          </li>
+          
+          <li class="pc-item active">
+            <a href="/profile" class="pc-link">
+              <span class="pc-micon"><i class="ti ti-user"></i></span>
+              <span class="pc-mtext">My Profile</span>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+   
+  <header class="pc-header">
+    <div class="header-wrapper"> 
+      <div class="me-auto pc-mob-drp">
+        <ul class="list-unstyled">
+          
+          <li class="pc-h-item pc-sidebar-collapse">
+            <a href="#" class="pc-head-link ms-0" id="sidebar-hide">
+              <i class="ti ti-menu-2"></i>
+            </a>
+          </li>
+          <li class="pc-h-item pc-sidebar-popup">
+            <a href="#" class="pc-head-link ms-0" id="mobile-collapse">
+              <i class="ti ti-menu-2"></i>
+            </a>
+          </li>
+          <li class="dropdown pc-h-item d-inline-flex d-md-none">
+            <a class="pc-head-link dropdown-toggle arrow-none m-0"
+              data-bs-toggle="dropdown"
+              href="#"
+              role="button"
+              aria-haspopup="false"
+              aria-expanded="false">
+              <i class="ti ti-search"></i>
+            </a>
+            <div class="dropdown-menu pc-h-dropdown drp-search">
+              <form class="px-3">
+                <div class="form-group mb-0 d-flex align-items-center">
+                  <i data-feather="search"></i>
+                  <input type="search" class="form-control border-0 shadow-none" placeholder="Search here. . .">
+                </div>
+              </form>
+            </div>
+          </li>
+          <li class="pc-h-item d-none d-md-inline-flex">
+            <form class="header-search">
+              <i data-feather="search" class="icon-search"></i>
+              <input type="search" class="form-control" placeholder="Search here. . .">
+            </form>
+          </li>
+        </ul>
+      </div>
+      
+      <div class="ms-auto">
+        <ul class="list-unstyled">
+          <li class="dropdown pc-h-item">
+            <a class="pc-head-link dropdown-toggle arrow-none me-0"
+               data-bs-toggle="dropdown"
+               href="#"
+               role="button"
+               aria-haspopup="false"
+               aria-expanded="false">
+              <i class="ti ti-mail"></i>
+              {% if unread_messages_count > 0 %}
+              <span class="badge bg-danger pc-h-badge dots"><span class="sr-only">{{ unread_messages_count }} unread messages</span></span>
+              {% endif %}
+            </a>
+            <div class="dropdown-menu dropdown-notification dropdown-menu-end pc-h-dropdown">
+              <div class="dropdown-header d-flex align-items-center justify-content-between">
+                <h5 class="m-0">Messages{% if unread_messages_count > 0 %} <span class="badge bg-light-danger text-danger">{{ unread_messages_count }} New</span>{% endif %}</h5>
+                <a href="#!" class="pc-head-link bg-transparent"><i class="ti ti-x text-danger"></i></a>
+              </div>
+              <div class="dropdown-divider"></div>
+              <div class="dropdown-header px-0 text-wrap header-notification-scroll position-relative" style="max-height: calc(100vh - 215px)">
+                <div class="list-group list-group-flush w-100">
+                  
+                </div>
+              </div>
+              <div class="dropdown-divider"></div>
+              <div class="text-center py-2">
+                <a href="/messages" class="link-primary">View all messages</a>
+              </div>
+            </div>
+          </li>
+          <li class="dropdown pc-h-item header-user-profile">
+            <a class="pc-head-link dropdown-toggle arrow-none me-0"
+              data-bs-toggle="dropdown"
+              href="#"
+              role="button"
+              aria-haspopup="false"
+              data-bs-auto-close="outside"
+              aria-expanded="false">
+              <img src="/static/assets/images/user/{{ therapist.profile_image }}" alt="user-image" class="user-avtar">
+              <span>{{ first_name }} {{ last_name }}</span>
+            </a>
+            <div class="dropdown-menu dropdown-user-profile dropdown-menu-end pc-h-dropdown">
+              <div class="dropdown-header">
+                <div class="d-flex mb-1">
+                  <div class="flex-shrink-0">
+                    <img src="/static/assets/images/user/{{ therapist.profile_image }}" alt="user-image" class="user-avtar">
+                  </div>
+                  <div class="flex-grow-1 ms-3">
+                    <h6 class="mb-1">{{ first_name }} {{ last_name }}</h6>
+                    <span>Physical Therapist</span>
+                  </div>
+                  <a href="/logout" class="pc-head-link bg-transparent"><i class="ti ti-power text-danger"></i></a>
+                </div>
+              </div>
+              <ul class="nav drp-tabs nav-fill nav-tabs" id="mydrpTab" role="tablist">
+                <li class="nav-item" role="presentation">
+                  <button
+                    class="nav-link active"
+                    id="drp-t1"
+                    data-bs-toggle="tab"
+                    data-bs-target="#drp-tab-1"
+                    type="button"
+                    role="tab"
+                    aria-controls="drp-tab-1"
+                    aria-selected="true"
+                    ><i class="ti ti-user"></i> Profile</button
+                  >
+                </li>
+              </ul>
+              <div class="tab-content" id="mysrpTabContent">
+                <div class="tab-pane fade show active" id="drp-tab-1" role="tabpanel" aria-labelledby="drp-t1" tabindex="0">
+                  <a href="/profile/edit" class="dropdown-item">
+                    <i class="ti ti-edit-circle"></i>
+                    <span>Edit Profile</span>
+                  </a>
+                  <a href="/profile" class="dropdown-item">
+                    <i class="ti ti-user"></i>
+                    <span>View Profile</span>
+                  </a>
+                  <a href="/profile/reviews" class="dropdown-item">
+                    <i class="ti ti-star"></i>
+                    <span>My Reviews</span>
+                  </a>
+                  <a href="/logout" class="dropdown-item">
+                    <i class="ti ti-power"></i>
+                    <span>Logout</span>
+                  </a>
+                </div>
+                <div class="tab-pane fade" id="drp-tab-2" role="tabpanel" aria-labelledby="drp-t2" tabindex="0">
+                  <a href="/support" class="dropdown-item">
+                    <i class="ti ti-help"></i>
+                    <span>Support</span>
+                  </a>
+                  <a href="/settings" class="dropdown-item">
+                    <i class="ti ti-user"></i>
+                    <span>Account Settings</span>
+                  </a>
+                  <a href="/privacy" class="dropdown-item">
+                    <i class="ti ti-lock"></i>
+                    <span>Privacy Center</span>
+                  </a>
+                  <a href="/feedback" class="dropdown-item">
+                    <i class="ti ti-messages"></i>
+                    <span>Feedback</span>
+                  </a>
+                  <a href="/activity" class="dropdown-item">
+                    <i class="ti ti-list"></i>
+                    <span>History</span>
+                  </a>
+                </div>
+              </div>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </header>
+  
+
+
+
+  
+  <div class="pc-container">
+    <div class="pc-content">
+      
+      <div class="page-header">
+        <div class="page-block">
+          <div class="row align-items-center">
+            <div class="col-md-12">
+              <div class="page-header-title">
+                <h5 class="m-b-10">Edit Profile</h5>
+              </div>
+              <ul class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/front-page">Home</a></li>
+                <li class="breadcrumb-item"><a href="/profile">Profile</a></li>
+                <li class="breadcrumb-item" aria-current="page">Edit</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+
+      
+      <div class="row">
+        <div class="col-md-12">
+          <div class="card">
+            <div class="card-header">
+              <h5>Update Your Profile</h5>
+            </div>
+            <div class="card-body">
+              
+              <ul class="nav nav-tabs mb-4" id="profileTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                  <button class="nav-link active" id="personal-info-tab" data-bs-toggle="tab" data-bs-target="#personal-info" type="button" role="tab" aria-controls="personal-info" aria-selected="true">Personal Info</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                  <button class="nav-link" id="professional-tab" data-bs-toggle="tab" data-bs-target="#professional" type="button" role="tab" aria-controls="professional" aria-selected="false">Professional Details</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                  <button class="nav-link" id="location-tab" data-bs-toggle="tab" data-bs-target="#location" type="button" role="tab" aria-controls="location" aria-selected="false">Practice Location</button>
+                </li>
+              </ul>
+              <form action="/profile/update2" method="post" enctype="multipart/form-data" id="profileForm">
+                <div class="tab-content" id="profileTabContent">
+                  
+                  <div class="tab-pane fade show active" id="personal-info" role="tabpanel" aria-labelledby="personal-info-tab">
+                    <div class="row">
+                      
+                      <div class="col-md-12 mb-4 text-center">
+                        <label for="profile_image" class="image-upload-label">
+                          <img src="/static/assets/images/user/{{ therapist.profile_image }}" alt="Profile Image" class="profile-image-preview" id="profileImagePreview">
+                          <div class="image-upload-overlay">
+                            <i class="ti ti-camera image-upload-icon"></i>
+                          </div>
+                          <input type="file" name="profile_image" id="profile_image" class="d-none" accept="image/jpeg,image/png,image/jpg,image/gif">
+                        </label>
+                        <p class="text-muted mt-2">Click on the image to change your profile photo</p>
+                      </div>
+                      
+                      
+                      <div class="col-md-12">
+                        <h6 class="mb-3 text-primary">Basic Information</h6>
+                      </div>
+                      
+                      <div class="col-md-4 mb-3">
+                        <label for="first_name" class="form-label">First Name <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="first_name" name="first_name" value="{{ therapist.first_name }}" required>
+                      </div>
+                      
+                      <div class="col-md-4 mb-3">
+                        <label for="last_name" class="form-label">Last Name <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="last_name" name="last_name" value="{{ therapist.last_name }}" required>
+                      </div>
+                      
+                      <div class="col-md-4 mb-3">
+                        <label for="company_email" class="form-label">Email <span class="text-danger">*</span></label>
+                        <input type="email" class="form-control" id="company_email" name="company_email" value="{{ therapist.company_email }}" required>
+                      </div>
+                      
+                      <div class="col-md-12 mb-3">
+                        <label for="bio" class="form-label">Professional Bio</label>
+                        <textarea class="form-control" id="bio" name="bio" rows="5" placeholder="Share your professional background, approach to therapy, and other relevant information">{{ therapist.bio or '' }}</textarea>
+                      </div>
+                      
+                      <div class="col-md-4 mb-3">
+                        <label for="experience_years" class="form-label">Years of Experience</label>
+                        <input type="number" class="form-control" id="experience_years" name="experience_years" value="{{ therapist.experience_years or 0 }}" min="0">
+                      </div>
+                      
+                      <div class="col-md-4 mb-3">
+                        <label for="languages" class="form-label">Languages</label>
+                        <select class="form-control select2-tags" id="languages" name="languages" multiple="multiple">
+                          {% set existing_languages = therapist.languages or [] %}
+                          {% for language in ['English', 'Spanish', 'French', 'German', 'Italian', 'Portuguese', 'Russian', 'Chinese', 'Japanese', 'Korean', 'Arabic', 'Hindi', 'Tagalog'] %}
+                            <option value="{{ language }}" {% if language in existing_languages %}selected{% endif %}>{{ language }}</option>
+                          {% endfor %}
+                        </select>
+                        <small class="text-muted">You can add languages not in the list</small>
+                      </div>
+                      
+                      <div class="col-md-4 mb-3">
+                        <label class="form-label d-block">Accepting New Patients</label>
+                        <div class="form-check form-check-inline">
+                          <input class="form-check-input" type="radio" name="is_accepting_new_patients" id="accepting_yes" value="1" {% if therapist.is_accepting_new_patients %}checked{% endif %}>
+                          <label class="form-check-label" for="accepting_yes">Yes</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                          <input class="form-check-input" type="radio" name="is_accepting_new_patients" id="accepting_no" value="0" {% if not therapist.is_accepting_new_patients %}checked{% endif %}>
+                          <label class="form-check-label" for="accepting_no">No</label>
+                        </div>
+                      </div>
+                      
+                      <div class="col-md-12 text-end mt-4">
+                        <button type="button" class="btn btn-primary" id="nextToProfessional">
+                          Next: Professional Details <i class="ti ti-arrow-right ms-1"></i>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  
+                  <div class="tab-pane fade" id="professional" role="tabpanel" aria-labelledby="professional-tab">
+                    <div class="row">
+                      
+                      <div class="col-md-12">
+                        <h6 class="mb-3 text-primary">Specializations & Qualifications</h6>
+                      </div>
+                      
+                      <div class="col-md-6 mb-3">
+                        <label for="specialties" class="form-label">Specialties</label>
+                        <select class="form-control select2-tags" id="specialties" name="specialties" multiple="multiple">
+                            {% for specialty in all_specialties %}
+                            <option value="{{ specialty }}" {% if specialty in existing_specialties %}selected{% endif %}>{{ specialty }}</option>
+                          {% endfor %}
+                        </select>
+                        <small class="text-muted">You can add custom specialties not in the list</small>
+                      </div>
+                      
+                      <div class="col-md-6 mb-3">
+                        <label for="education" class="form-label">Education</label>
+                        <select class="form-control select2-tags" id="education" name="education" multiple="multiple">
+                          {% set existing_education = therapist.education or [] %}
+                          {% for item in existing_education %}
+                            <option value="{{ item }}" selected>{{ item }}</option>
+                          {% endfor %}
+                        </select>
+                        <small class="text-muted">Example: "DPT, University of California, 2018"</small>
+                      </div>
+                      
+                      <div class="col-md-4 mb-3">
+                        <label for="average_session_length" class="form-label">Average Session Length (minutes)</label>
+                        <input type="number" class="form-control" id="average_session_length" name="average_session_length" value="{{ therapist.average_session_length or 60 }}" min="15" step="5">
+                      </div>
+                      
+                      <div class="col-md-4 mb-3">
+                        <label for="rating" class="form-label">Rating</label>
+                        <div class="input-group">
+                          <input type="number" class="form-control" id="rating" name="rating" value="{{ therapist.rating or 0.0 }}" min="0" max="5" step="0.1">
+                          <span class="input-group-text"><i class="fas fa-star text-warning"></i></span>
+                        </div>
+                        <small class="text-muted">For display purposes only (1-5 stars)</small>
+                      </div>
+                      
+                      <div class="col-md-4 mb-3">
+                        <label for="review_count" class="form-label">Review Count</label>
+                        <input type="number" class="form-control" id="review_count" name="review_count" value="{{ therapist.review_count or 0 }}" min="0">
+                        <small class="text-muted">For display purposes only</small>
+                      </div>
+                      
+                      <div class="col-md-12 text-end mt-4">
+                        <button type="button" class="btn btn-outline-secondary me-2" id="backToPersonal">
+                          <i class="ti ti-arrow-left me-1"></i> Previous: Personal Info
+                        </button>
+                        <button type="button" class="btn btn-primary" id="nextToLocation">
+                          Next: Practice Location <i class="ti ti-arrow-right ms-1"></i>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  
+                  <div class="tab-pane fade" id="location" role="tabpanel" aria-labelledby="location-tab">
+                    <div class="row">
+                      
+                      <div class="col-md-12">
+                        <h6 class="mb-3 text-primary">Practice Location</h6>
+                      </div>
+                      
+                      <div class="col-md-12 mb-3">
+                        <label for="address_search" class="form-label">Search Address</label>
+                        <div class="address-search-container">
+                          <input type="text" class="form-control" id="address_search" placeholder="Start typing to search for an address...">
+                          <div id="address_search_results" class="address-search-results"></div>
+                        </div>
+                      </div>
+                      
+                      <div class="col-md-12 mb-3">
+                        <label for="address" class="form-label">Address</label>
+                        <input type="text" class="form-control" id="address" name="address" value="{{ therapist.address or '' }}" placeholder="Enter your practice address">
+                      </div>
+                      
+                      <div class="col-md-12 text-end mt-4">
+                        <button type="button" class="btn btn-outline-secondary me-2" id="backToProfessional">
+                          <i class="ti ti-arrow-left me-1"></i> Previous: Professional Details
+                        </button>
+                        <a href="/profile" class="btn btn-outline-secondary me-2">Cancel</a>
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </form>
+              
+              <script>
+              document.addEventListener('DOMContentLoaded', function() {
+
+                const profileImage = document.getElementById('profile_image');
+                const imagePreview = document.getElementById('profileImagePreview');
+                
+                if (profileImage && imagePreview) {
+                  profileImage.addEventListener('change', function(e) {
+                    console.log("Profile image changed:", this.files[0]?.name || "No file selected");
+                    if (this.files && this.files[0]) {
+                      const reader = new FileReader();
+                      
+                      reader.onload = function(e) {
+                        imagePreview.src = e.target.result;
+                        console.log("Image preview updated");
+                      }
+                      
+                      reader.readAsDataURL(this.files[0]);
+                    }
+                  });
+                } else {
+                  console.error("Profile image elements not found!");
+                }
+                
+
+                const nextToProfessional = document.getElementById('nextToProfessional');
+                const nextToLocation = document.getElementById('nextToLocation');
+                const backToPersonal = document.getElementById('backToPersonal');
+                const backToProfessional = document.getElementById('backToProfessional');
+                
+                if (nextToProfessional) {
+                  nextToProfessional.addEventListener('click', function() {
+                    document.getElementById('personal-info').classList.remove('show', 'active');
+                    document.getElementById('professional').classList.add('show', 'active');
+                  });
+                }
+                
+                if (nextToLocation) {
+                  nextToLocation.addEventListener('click', function() {
+                    document.getElementById('professional').classList.remove('show', 'active');
+                    document.getElementById('location').classList.add('show', 'active');
+                  });
+                }
+                
+                if (backToPersonal) {
+                  backToPersonal.addEventListener('click', function() {
+                    document.getElementById('professional').classList.remove('show', 'active');
+                    document.getElementById('personal-info').classList.add('show', 'active');
+                  });
+                }
+                
+                if (backToProfessional) {
+                  backToProfessional.addEventListener('click', function() {
+                    document.getElementById('location').classList.remove('show', 'active');
+                    document.getElementById('professional').classList.add('show', 'active');
+                  });
+                }
+              });
+              </script>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+    </div>
+  </div>
+
+  
+  <script src="../static/assets/js/plugins/popper.min.js"></script>
+  <script src="../static/assets/js/plugins/simplebar.min.js"></script>
+  <script src="../static/assets/js/plugins/bootstrap.min.js"></script>
+  <script src="../static/assets/js/fonts/custom-font.js"></script>
+  <script src="../static/assets/js/pcoded.js"></script>
+  <script src="../static/assets/js/plugins/feather.min.js"></script>
+  
+  
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  
+  
+  <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+  
+  
+  <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
+  
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+
+      document.getElementById('nextToProfessional').addEventListener('click', function() {
+        document.getElementById('professional-tab').click();
+      });
+      
+      document.getElementById('nextToLocation').addEventListener('click', function() {
+        document.getElementById('location-tab').click();
+      });
+      
+      document.getElementById('backToPersonal').addEventListener('click', function() {
+        document.getElementById('personal-info-tab').click();
+      });
+      
+      document.getElementById('backToProfessional').addEventListener('click', function() {
+        document.getElementById('professional-tab').click();
+      });
+      
+
+      $('.select2-tags').select2({
+        tags: true,
+        tokenSeparators: [','],
+        placeholder: 'Select or add new items'
+      });
+      
+
+      document.getElementById('profile_image').addEventListener('change', function(e) {
+        if (e.target.files && e.target.files[0]) {
+          const reader = new FileReader();
+          
+          reader.onload = function(e) {
+            document.getElementById('profileImagePreview').src = e.target.result;
+          }
+          
+          reader.readAsDataURL(e.target.files[0]);
+        }
+      });
+      
+
+      const defaultLat = {{ therapist.latitude or 0 }};
+      const defaultLng = {{ therapist.longitude or 0 }};
+      
+      const map = L.map('map').setView(
+        [defaultLat || 40.7128, defaultLng || -74.0060],
+        defaultLat && defaultLng ? 13 : 2
+      );
+      
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+      }).addTo(map);
+      
+
+      let marker;
+      if (defaultLat && defaultLng) {
+        marker = L.marker([defaultLat, defaultLng]).addTo(map);
+      }
+      
+
+      map.on('click', function(e) {
+        if (marker) {
+          map.removeLayer(marker);
+        }
+        
+        marker = L.marker(e.latlng).addTo(map);
+        
+        document.getElementById('latitude').value = e.latlng.lat.toFixed(6);
+        document.getElementById('longitude').value = e.latlng.lng.toFixed(6);
+      });
+      
+
+      const addressSearchInput = document.getElementById('address_search');
+      const addressSearchResults = document.getElementById('address_search_results');
+      const addressInput = document.getElementById('address');
+      
+      addressSearchInput.addEventListener('input', debounce(function() {
+        const searchTerm = this.value.trim();
+        
+        if (searchTerm.length < 3) {
+          addressSearchResults.style.display = 'none';
+          return;
+        }
+        
+
+        fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchTerm)}&limit=5`)
+          .then(response => response.json())
+          .then(data => {
+            addressSearchResults.innerHTML = '';
+            
+            if (data.length === 0) {
+              addressSearchResults.innerHTML = '<div class="address-search-result">No results found</div>';
+            } else {
+              data.forEach(result => {
+                const resultItem = document.createElement('div');
+                resultItem.className = 'address-search-result';
+                resultItem.textContent = result.display_name;
+                resultItem.addEventListener('click', function() {
+                  addressInput.value = result.display_name;
+                  document.getElementById('latitude').value = result.lat;
+                  document.getElementById('longitude').value = result.lon;
+                  
+
+                  if (marker) {
+                    map.removeLayer(marker);
+                  }
+                  
+                  const latlng = [parseFloat(result.lat), parseFloat(result.lon)];
+                  map.setView(latlng, 13);
+                  marker = L.marker(latlng).addTo(map);
+                  
+
+                  addressSearchInput.value = '';
+                  addressSearchResults.style.display = 'none';
+                });
+                
+                addressSearchResults.appendChild(resultItem);
+              });
+            }
+            
+            addressSearchResults.style.display = 'block';
+          })
+          .catch(error => {
+            console.error('Error searching for address:', error);
+          });
+      }, 500));
+      
+
+      document.addEventListener('click', function(e) {
+        if (!addressSearchInput.contains(e.target) && !addressSearchResults.contains(e.target)) {
+          addressSearchResults.style.display = 'none';
+        }
+      });
+      
+
+      document.getElementById('profileForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+
+        const specialtiesSelect = document.getElementById('specialties');
+        const educationSelect = document.getElementById('education');
+        const languagesSelect = document.getElementById('languages');
+        
+        const specialtiesValues = $('#specialties').select2('data').map(item => item.text);
+        const educationValues = $('#education').select2('data').map(item => item.text);
+        const languagesValues = $('#languages').select2('data').map(item => item.text);
+        
+        const specialtiesJson = JSON.stringify(specialtiesValues);
+        const educationJson = JSON.stringify(educationValues);
+        const languagesJson = JSON.stringify(languagesValues);
+        
+
+        const specialtiesInput = document.createElement('input');
+        specialtiesInput.type = 'hidden';
+        specialtiesInput.name = 'specialties';
+        specialtiesInput.value = specialtiesJson;
+        
+        const educationInput = document.createElement('input');
+        educationInput.type = 'hidden';
+        educationInput.name = 'education';
+        educationInput.value = educationJson;
+        
+        const languagesInput = document.createElement('input');
+        languagesInput.type = 'hidden';
+        languagesInput.name = 'languages';
+        languagesInput.value = languagesJson;
+        
+
+        specialtiesSelect.disabled = true;
+        educationSelect.disabled = true;
+        languagesSelect.disabled = true;
+        
+
+        this.appendChild(specialtiesInput);
+        this.appendChild(educationInput);
+        this.appendChild(languagesInput);
+        
+
+        this.submit();
+      });
+      
+
+      function debounce(func, wait) {
+        let timeout;
+        return function() {
+          const context = this;
+          const args = arguments;
+          clearTimeout(timeout);
+          timeout = setTimeout(() => {
+            func.apply(context, args);
+          }, wait);
+        };
+      }
+    });
+  </script>
+
+</body>
+
+
+</html>
