@@ -11470,12 +11470,10 @@ def Routes():
                         import traceback
                         traceback.print_exc()
                 
-
                 thread = threading.Thread(target=process_in_background)
                 thread.daemon = True
                 thread.start()
                 
-
                 app.video_processing_threads[submission_id] = thread
                 
                 print(f"Regeneration started for submission {submission_id}")

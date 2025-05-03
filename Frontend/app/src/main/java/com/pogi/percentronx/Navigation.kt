@@ -9,6 +9,7 @@ import android.widget.Toast
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
@@ -20,6 +21,7 @@ import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -80,6 +82,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.rotate
@@ -89,11 +92,14 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.google.gson.Gson
+import kotlinx.coroutines.launch
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -127,10 +133,88 @@ fun MainScreen() {
             color = MaterialTheme.colorScheme.primary
         )
         Spacer(modifier = Modifier.height(16.dp))
+
+        val context = LocalContext.current
+        var isLoggedIn by remember { mutableStateOf(false) }
+        var isLoading by remember { mutableStateOf(true) }
+        var progressData by remember { mutableStateOf<UserProgress?>(null) }
+        val coroutineScope = rememberCoroutineScope()
+
+        LaunchedEffect(key1 = Unit) {
+            coroutineScope.launch {
+                try {
+                    val prefs = context.getSharedPreferences("auth_prefs", Context.MODE_PRIVATE)
+                    isLoggedIn = prefs.getString("session_cookie", null) != null
+
+                    if (isLoggedIn) {
+                        try {
+                            progressData = retrofitClient.instance.getUserExercisesProgress()
+                        } catch (e: Exception) {
+                            Log.e("MainScreen", "Error fetching progress: ${e.message}")
+                        }
+                    } else {
+
+                    }
+                } catch (e: Exception) {
+                    Log.e("MainScreen", "Error checking login: ${e.message}")
+                } finally {
+                    isLoading = false
+                }
+            }
+        }
+
+        if (isLoading) {
+            CircularProgressIndicator(
+                modifier = Modifier.size(48.dp),
+                color = MaterialTheme.colorScheme.primary
+            )
+        } else if (!isLoggedIn) {
+            WelcomeCard()
+        } else if (progressData != null) {
+            ExerciseProgressCards(progressData!!)
+        } else {
+            WelcomeCard()
+        }
+    }
+}
+
+@Composable
+private fun WelcomeCard() {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                "Welcome to APR-CV",
+                style = MaterialTheme.typography.titleLarge
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                "Navigate using the bottom bar",
+                style = MaterialTheme.typography.bodyMedium
+            )
+        }
+    }
+}
+
+@Composable
+private fun ExerciseProgressCards(progressData: UserProgress) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .verticalScroll(rememberScrollState())
+    ) {
+        // Completion Rate Card
         Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
+                .padding(vertical = 8.dp),
             elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
         ) {
             Column(
@@ -138,19 +222,563 @@ fun MainScreen() {
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    "Welcome to APR-CV",
-                    style = MaterialTheme.typography.titleLarge
+                    "Exercise Completion",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
                 )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                val percentage = (progressData.completionRate * 100).toInt()
+
+                Box(
+                    modifier = Modifier
+                        .size(120.dp)
+                        .padding(8.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator(
+                        progress = progressData.completionRate,
+                        modifier = Modifier.fillMaxSize(),
+                        strokeWidth = 8.dp,
+                        color = when {
+                            percentage >= 75 -> Color.Green
+                            percentage >= 50 -> Color(0xFFFFC107) // Amber
+                            else -> Color(0xFFF44336) // Red
+                        }
+                    )
+
+                    Text(
+                        text = "$percentage%",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+
                 Spacer(modifier = Modifier.height(8.dp))
+
                 Text(
-                    "Navigate using the bottom bar",
-                    style = MaterialTheme.typography.bodyMedium
+                    when {
+                        percentage >= 75 -> "Great progress! Keep it up!"
+                        percentage >= 50 -> "Good start! Stay consistent!"
+                        percentage >= 25 -> "You're on your way!"
+                        else -> "Begin your journey today!"
+                    },
+                    style = MaterialTheme.typography.bodyMedium,
+                    textAlign = TextAlign.Center
                 )
+            }
+        }
+
+        // Weekly Activity Card
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 8.dp),
+            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+        ) {
+            Column(
+                modifier = Modifier.padding(16.dp)
+            ) {
+                Text(
+                    "Weekly Activity",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Weekly bar chart
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceEvenly,
+                    verticalAlignment = Alignment.Bottom
+                ) {
+                    val maxValue = progressData.weeklyStats.values.maxOrNull() ?: 1
+
+                    for ((day, count) in progressData.weeklyStats) {
+                        val height = if (maxValue > 0) {
+                            (count.toFloat() / maxValue.toFloat()) * 100f
+                        } else 0f
+
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            if (count > 0) {
+                                Text(
+                                    text = count.toString(),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    fontSize = 10.sp
+                                )
+                            } else {
+                                Spacer(modifier = Modifier.height(14.dp))
+                            }
+
+                            Spacer(modifier = Modifier.height(4.dp))
+
+                            Box(
+                                modifier = Modifier
+                                    .width(20.dp)
+                                    .height(80.dp),
+                                contentAlignment = Alignment.BottomCenter
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .width(12.dp)
+                                        .height(height.dp.coerceAtLeast(0.dp))
+                                        .background(
+                                            color = if (count > 0)
+                                                MaterialTheme.colorScheme.primary
+                                            else
+                                                MaterialTheme.colorScheme.surfaceVariant,
+                                            shape = RoundedCornerShape(topStart = 2.dp, topEnd = 2.dp)
+                                        )
+                                )
+                            }
+
+                            Spacer(modifier = Modifier.height(4.dp))
+
+                            Text(
+                                text = day,
+                                style = MaterialTheme.typography.bodySmall
+                            )
+                        }
+                    }
+                }
+            }
+        }
+
+        // Exercise Status Card
+        if (progressData.donutData.isNotEmpty()) {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp),
+                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+            ) {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        "Exercise Status",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceEvenly
+                    ) {
+                        val completed = progressData.donutData["Completed"] ?: 0
+                        val partial = progressData.donutData["Partial"] ?: 0
+                        val missed = progressData.donutData["Missed"] ?: 0
+
+                        StatusItem("Completed", completed, Color.Green)
+                        StatusItem("Partial", partial, Color(0xFFFFC107)) // Amber
+                        StatusItem("Missed", missed, Color(0xFFF44336)) // Red
+                    }
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+    }
+}
+
+@Composable
+private fun StatusItem(label: String, count: Int, color: Color) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Box(
+            modifier = Modifier
+                .size(48.dp)
+                .background(color = color.copy(alpha = 0.2f), shape = CircleShape)
+                .border(width = 2.dp, color = color, shape = CircleShape),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = count.toString(),
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                color = color
+            )
+        }
+
+        Spacer(modifier = Modifier.height(4.dp))
+
+        Text(
+            text = label,
+            style = MaterialTheme.typography.bodySmall
+        )
+    }
+}
+
+@Composable
+fun LoginPromptContent() {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Icon(
+            imageVector = Icons.Filled.Lock,
+            contentDescription = "Login Required",
+            modifier = Modifier.size(64.dp),
+            tint = MaterialTheme.colorScheme.primary
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Text(
+            "Track Your Progress",
+            style = MaterialTheme.typography.headlineMedium,
+            color = MaterialTheme.colorScheme.onBackground,
+            fontWeight = FontWeight.Bold
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Text(
+            "Please log in or sign up to view your exercise progress",
+            style = MaterialTheme.typography.bodyLarge,
+            textAlign = TextAlign.Center,
+            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)
+        )
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        Button(
+            onClick = { /* Navigate to login/profile */ },
+            modifier = Modifier
+                .fillMaxWidth(0.8f)
+                .height(48.dp)
+        ) {
+            Text("Login / Sign Up")
+        }
+    }
+}
+
+@Composable
+fun ExerciseProgressContent(progressData: UserProgress, navController: NavController) {
+    val scrollState = rememberScrollState()
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(scrollState),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(
+            "Your Fitness Journey",
+            style = MaterialTheme.typography.headlineMedium,
+            color = MaterialTheme.colorScheme.primary,
+            fontWeight = FontWeight.Bold
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Completion Rate Card
+        CompletionRateCard(progressData.completionRate)
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Weekly Stats Card
+        WeeklyStatsCard(progressData.weeklyStats)
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Donut Chart Card
+        DonutDataCard(progressData.donutData)
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        // Call to action
+        Button(
+            onClick = { /* Navigate to dashboard or exercises */ },
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(48.dp)
+        ) {
+            Text("Continue Your Exercises")
+        }
+    }
+}
+
+@Composable
+fun CompletionRateCard(completionRate: Float) {
+    val percentage = (completionRate * 100).toInt()
+    val animatedPercentage by animateFloatAsState(
+        targetValue = completionRate,
+        animationSpec = tween(1000),
+        label = ""
+    )
+
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant
+        )
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                "Completion Rate",
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Box(
+                modifier = Modifier
+                    .size(150.dp)
+                    .padding(8.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator(
+                    progress = animatedPercentage,
+                    modifier = Modifier.fillMaxSize(),
+                    strokeWidth = 12.dp,
+                    trackColor = MaterialTheme.colorScheme.surface,
+                    color = when {
+                        percentage >= 75 -> Color(0xFF4CAF50)
+                        percentage >= 50 -> Color(0xFFFFA000)
+                        percentage >= 25 -> Color(0xFFFF5722)
+                        else -> Color(0xFFF44336)
+                    }
+                )
+
+                Text(
+                    "$percentage%",
+                    style = MaterialTheme.typography.headlineLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Text(
+                when {
+                    percentage >= 90 -> "Excellent! You're almost there!"
+                    percentage >= 75 -> "Great progress! Keep it up!"
+                    percentage >= 50 -> "Good start! Stay consistent!"
+                    percentage >= 25 -> "You're on your way!"
+                    else -> "Begin your journey today!"
+                },
+                style = MaterialTheme.typography.bodyLarge,
+                textAlign = TextAlign.Center,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+    }
+}
+
+@Composable
+fun WeeklyStatsCard(weeklyStats: Map<String, Int>) {
+    val daysOfWeek = listOf("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
+    val maxValue = weeklyStats.values.maxOrNull() ?: 1
+
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        )
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        ) {
+            Text(
+                "Weekly Activity",
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.Bottom
+            ) {
+                for (day in daysOfWeek) {
+                    val exercises = weeklyStats[day] ?: 0
+                    val barHeight = if (maxValue > 0) {
+                        (exercises.toFloat() / maxValue.toFloat()) * 100f
+                    } else 0f
+
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = if (exercises > 0) exercises.toString() else "",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+
+                        Spacer(modifier = Modifier.height(4.dp))
+
+                        Box(
+                            modifier = Modifier
+                                .width(24.dp)
+                                .height(100.dp),
+                            contentAlignment = Alignment.BottomCenter
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .width(16.dp)
+                                    .height(barHeight.dp.coerceAtLeast(0.dp))
+                                    .background(
+                                        color = when {
+                                            exercises >= 3 -> MaterialTheme.colorScheme.primary
+                                            exercises > 0 -> MaterialTheme.colorScheme.primary.copy(alpha = 0.6f)
+                                            else -> MaterialTheme.colorScheme.surfaceVariant
+                                        },
+                                        shape = RoundedCornerShape(topStart = 4.dp, topEnd = 4.dp)
+                                    )
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(4.dp))
+
+                        Text(
+                            text = day,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                    }
+                }
             }
         }
     }
 }
 
+@Composable
+fun DonutDataCard(donutData: Map<String, Int>) {
+    val total = donutData.values.sum().coerceAtLeast(1)
+    val data = listOf(
+        Pair("Completed", donutData["Completed"] ?: 0),
+        Pair("Partial", donutData["Partial"] ?: 0),
+        Pair("Missed", donutData["Missed"] ?: 0)
+    )
+    val innerCircleColor = MaterialTheme.colorScheme.surface
+
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant
+        )
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                "Exercise Status",
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Box(
+                modifier = Modifier
+                    .size(160.dp)
+                    .padding(8.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Canvas(modifier = Modifier.fillMaxSize()) {
+                    val width = size.width
+                    val height = size.height
+                    val radius = minOf(width, height) / 2
+                    val innerRadius = radius * 0.6f
+                    val centerX = width / 2
+                    val centerY = height / 2
+
+                    val colors = listOf(
+                        Color(0xFF4CAF50),
+                        Color(0xFFFFC107),
+                        Color(0xFFF44336)
+                    )
+
+                    var startAngle = 0f
+
+                    data.forEachIndexed { index, (_, value) ->
+                        if (value > 0) {
+                            val sweepAngle = 360f * value.toFloat() / total.toFloat()
+
+                            drawArc(
+                                color = colors[index],
+                                startAngle = startAngle,
+                                sweepAngle = sweepAngle,
+                                useCenter = true,
+                                topLeft = Offset(centerX - radius, centerY - radius),
+                                size = Size(radius * 2, radius * 2)
+                            )
+
+                            startAngle += sweepAngle
+                        }
+                    }
+
+                    drawCircle(
+                        color = innerCircleColor,
+                        radius = innerRadius,
+                        center = Offset(centerX, centerY)
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Legend
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
+                LegendItem("Completed", Color(0xFF4CAF50), donutData["Completed"] ?: 0)
+                LegendItem("Partial", Color(0xFFFFC107), donutData["Partial"] ?: 0)
+                LegendItem("Missed", Color(0xFFF44336), donutData["Missed"] ?: 0)
+            }
+        }
+    }
+}
+
+@Composable
+fun LegendItem(label: String, color: Color, count: Int) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Box(
+            modifier = Modifier
+                .size(12.dp)
+                .background(color = color, shape = CircleShape)
+        )
+
+        Spacer(modifier = Modifier.width(4.dp))
+
+        Text(
+            text = "$label: $count",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+    }
+}
 
 @Composable
 fun LoadingScreen() {
@@ -312,51 +940,6 @@ fun LoggedInProfileScreen(onLogoutSuccess: () -> Unit = {}) {
                     label = "Joined:",
                     value = userData?.joined ?: "Loading..."
                 )
-            }
-        }
-
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp),
-            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = Color.White
-            )
-        ) {
-            Column(
-                modifier = Modifier.padding(16.dp)
-            ) {
-                Text(
-                    "Your Computer Vision Stats",
-                    style = MaterialTheme.typography.titleLarge,
-                    color = Color.Blue
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceEvenly
-                ) {
-                    StatItem(
-                        icon = Icons.Filled.Face,
-                        value = "24",
-                        label = "Scans"
-                    )
-
-                    StatItem(
-                        icon = Icons.Default.CheckCircle,
-                        value = "98%",
-                        label = "Accuracy"
-                    )
-
-                    StatItem(
-                        icon = Icons.Filled.Star,
-                        value = "Pro",
-                        label = "Level"
-                    )
-                }
             }
         }
 
