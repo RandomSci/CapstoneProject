@@ -62,7 +62,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Tab
@@ -90,10 +89,8 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.google.gson.Gson
@@ -106,6 +103,7 @@ data class BottomNavItem(
     val title: String,
     val icon: ImageVector
 )
+
 
 val bottomNavItems = listOf(
     BottomNavItem("main", "Home", Icons.Filled.Home),
@@ -153,47 +151,6 @@ fun MainScreen() {
     }
 }
 
-
-@Composable
-fun Profile(initialStatus: String? = null, onAuthStateChanged: (String) -> Unit = {}) {
-    var status by remember { mutableStateOf(initialStatus) }
-    var isLoading by remember { mutableStateOf(initialStatus == null) }
-
-    LaunchedEffect(Unit) {
-        if (initialStatus == null) {
-            try {
-                val response = retrofitClient.instance.getStatus()
-                status = response.status
-                Log.d("API", "Status received: $status")
-                status?.let { onAuthStateChanged(it) }
-            } catch (e: Exception) {
-                status = "invalid"
-                Log.e("API", "Failure: ${e.message}")
-                onAuthStateChanged("invalid")
-            } finally {
-                isLoading = false
-            }
-        } else {
-            isLoading = false
-        }
-    }
-
-    when {
-        isLoading -> LoadingScreen()
-        status == "valid" -> LoggedInProfileScreen(
-            onLogoutSuccess = {
-                status = "invalid"
-                onAuthStateChanged("invalid")
-            }
-        )
-        else -> AuthScreen(
-            onLoginSuccess = {
-                status = "valid"
-                onAuthStateChanged("valid")
-            }
-        )
-    }
-}
 
 @Composable
 fun LoadingScreen() {
@@ -1161,16 +1118,28 @@ fun ForgotPasswordDialog(
 
 @Composable
 fun BottomNavigationBar(navController: NavController) {
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = navBackStackEntry?.destination?.route
+    val context = LocalContext.current
+
+    var isLoggedIn by remember { mutableStateOf(false) }
+
+    LaunchedEffect(navBackStackEntry) {
+        val prefs = context.getSharedPreferences("auth_prefs", Context.MODE_PRIVATE)
+        isLoggedIn = prefs.getString("session_cookie", null) != null
+    }
+
     NavigationBar(
         modifier = Modifier.fillMaxWidth(),
         containerColor = MaterialTheme.colorScheme.surfaceVariant,
         tonalElevation = 8.dp
     ) {
-        val navBackStackEntry by navController.currentBackStackEntryAsState()
-        val currentDestination = navBackStackEntry?.destination
-
-        bottomNavItems.forEach { item ->
-            val selected = currentDestination?.hierarchy?.any { it.route == item.route } == true
+        listOf(
+            BottomNavItem("main", "Home", Icons.Filled.Home),
+            BottomNavItem("dashboard", "Dashboard", Icons.Filled.Settings),
+            BottomNavItem("activity", "Activity", Icons.Filled.List)
+        ).forEach { item ->
+            val selected = currentRoute == item.route
 
             NavigationBarItem(
                 icon = {
@@ -1197,6 +1166,67 @@ fun BottomNavigationBar(navController: NavController) {
                 )
             )
         }
+
+        val profileItem = if (isLoggedIn) {
+            BottomNavItem("profile", "Profile", Icons.Filled.Person)
+        } else {
+            BottomNavItem("profile", "Login", Icons.Filled.Lock)
+        }
+
+        NavigationBarItem(
+            icon = {
+                Icon(
+                    imageVector = profileItem.icon,
+                    contentDescription = profileItem.title
+                )
+            },
+            label = { Text(profileItem.title) },
+            selected = currentRoute == "profile",
+            onClick = {
+                navController.navigate("profile") {
+                    popUpTo(navController.graph.findStartDestination().id) {
+                        saveState = true
+                    }
+                    launchSingleTop = true
+                    restoreState = true
+                }
+            },
+            colors = NavigationBarItemDefaults.colors(
+                selectedIconColor = MaterialTheme.colorScheme.primary,
+                selectedTextColor = MaterialTheme.colorScheme.primary,
+                indicatorColor = MaterialTheme.colorScheme.primaryContainer
+            )
+        )
     }
 }
 
+@Composable
+fun Profile(onAuthStateChanged: (String) -> Unit = {}) {
+    val context = LocalContext.current
+    var isLoading by remember { mutableStateOf(true) }
+    var isLoggedIn by remember { mutableStateOf(false) }
+
+    LaunchedEffect(Unit) {
+        val prefs = context.getSharedPreferences("auth_prefs", Context.MODE_PRIVATE)
+        isLoggedIn = prefs.getString("session_cookie", null) != null
+        isLoading = false
+    }
+
+    if (isLoading) {
+        LoadingScreen()
+    } else if (isLoggedIn) {
+        LoggedInProfileScreen(
+            onLogoutSuccess = {
+                isLoggedIn = false
+                onAuthStateChanged("invalid")
+            }
+        )
+    } else {
+        AuthScreen(
+            onLoginSuccess = {
+                isLoggedIn = true
+                onAuthStateChanged("valid")
+            }
+        )
+    }
+}

@@ -215,4 +215,3 @@ async def main(user_id):
             exercise_details = await get_exercise_details(exercise['exercise_id'])
             print(f"Exercise {exercise['exercise_id']} details: {exercise_details}")
 
-#await main(48)
