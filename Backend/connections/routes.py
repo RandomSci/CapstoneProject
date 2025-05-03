@@ -9,42 +9,23 @@ import os
 UPLOAD_DIR = "uploads/exercise_videos"
 UPLOAD_URL_PATH = "/api/uploads/exercise_videos"
 
-
 ALLOWED_EXTENSIONS = {"mp4", "mov", "avi", "mkv"}
-
 
 MAX_CONTENT_LENGTH = 5 * 1024 * 1024 * 1024
 
 CHUNK_SIZE = 4 * 1024 * 1024
 
-
 MAX_VIDEO_DURATION = 3 * 60 * 60
-
 
 TEMP_UPLOAD_DIR = os.path.join(UPLOAD_DIR, "temp")
 
-
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-
 
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 os.makedirs(TEMP_UPLOAD_DIR, exist_ok=True)
 
 def find_best_matching_image(therapist_id, requested_filename, static_dir):
-    """
-    Find the best matching image for a therapist, even if the filename doesn't exactly match.
-    This handles cases where database references don't match actual files.
-    
-    Args:
-        therapist_id: The ID of the therapist
-        requested_filename: The filename from the database
-        static_dir: The static directory path
-        
-    Returns:
-        The best matching filename or a default avatar
-    """
-    
     user_images_dir = os.path.join(static_dir, "assets/images/user")
     
     if requested_filename and os.path.exists(os.path.join(user_images_dir, requested_filename)):
@@ -199,7 +180,6 @@ class PlatformRoutingMiddleware(BaseHTTPMiddleware):
         super().__init__(app)
         self.web_redirects = {
             "/": "/Therapist_Login",
-
 
         }
 
@@ -485,7 +465,6 @@ def Routes():
                 last_month_adherence = cursor.fetchone()
                 last_month_adherence_rate = last_month_adherence['avg_rate'] if last_month_adherence and last_month_adherence['avg_rate'] is not None else 0
 
- 
                 adherence_monthly_diff = round(average_adherence_rate - last_month_adherence_rate, 1)
                 adherence_change = abs(adherence_monthly_diff)
 

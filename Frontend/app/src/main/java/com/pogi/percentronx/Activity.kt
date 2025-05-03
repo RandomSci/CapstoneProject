@@ -325,8 +325,8 @@ fun ActivityContent(navController: NavController) {
                         val allExercises = treatmentPlans.flatMap { it.exercises }
                         exercisesState = ResourceState.Success(allExercises)
                     } catch (e: Exception) {
-                        Log.e("Activity", "Error loading treatment plans: ${e.message}")
-                        treatmentPlansState = ResourceState.Error("Error loading treatment plans: ${e.message}")
+                        Log.e("Activity", "Error loading treatment plans: Find a therapist first")
+                        treatmentPlansState = ResourceState.Error("Error loading treatment plans: Find a therapist first")
                     }
                 }
             }
@@ -350,8 +350,8 @@ fun ActivityContent(navController: NavController) {
                             exercisesState = ResourceState.Success(allExercises)
                         }
                     } catch (e: Exception) {
-                        Log.e("Activity", "Error loading exercises: ${e.message}")
-                        exercisesState = ResourceState.Error("Error loading exercises: ${e.message}")
+                        Log.e("Activity", "Error loading exercises: Find a therapist first")
+                        exercisesState = ResourceState.Error("Error loading exercises: Find a therapist first")
                     }
                 }
             }
@@ -369,8 +369,8 @@ fun ActivityContent(navController: NavController) {
                             treatmentPlansState = ResourceState.Success(treatmentPlans)
                         }
                     } catch (e: Exception) {
-                        Log.e("Activity", "Error loading progress data: ${e.message}")
-                        progressState = ResourceState.Error("Error loading progress data: ${e.message}")
+                        Log.e("Activity", "Error loading progress data: Find a therapist first")
+                        progressState = ResourceState.Error("Error loading progress data: Find a therapist first")
                     }
                 }
             }

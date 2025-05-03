@@ -40,16 +40,14 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Build
-import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Email
-import androidx.compose.material.icons.filled.Face
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -119,7 +117,7 @@ val bottomNavItems = listOf(
 )
 
 @Composable
-fun MainScreen() {
+fun MainScreen(navController: NavController) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -153,7 +151,7 @@ fun MainScreen() {
                             Log.e("MainScreen", "Error fetching progress: ${e.message}")
                         }
                     } else {
-
+                        // Empty else block in original code
                     }
                 } catch (e: Exception) {
                     Log.e("MainScreen", "Error checking login: ${e.message}")
@@ -169,36 +167,87 @@ fun MainScreen() {
                 color = MaterialTheme.colorScheme.primary
             )
         } else if (!isLoggedIn) {
-            WelcomeCard()
+            WelcomeCard(navController = navController)
         } else if (progressData != null) {
             ExerciseProgressCards(progressData!!)
         } else {
-            WelcomeCard()
+            WelcomeCard(navController = navController)
         }
     }
 }
 
 @Composable
-private fun WelcomeCard() {
+private fun WelcomeCard(navController: NavController) {
+    val colorScheme = MaterialTheme.colorScheme
+    val animatedElevation by animateFloatAsState(
+        targetValue = 4f,
+        animationSpec = tween(500, easing = LinearEasing),
+        label = "ElevationAnimation"
+    )
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+            .padding(16.dp)
+            .graphicsLayer {
+                shadowElevation = animatedElevation
+            },
+        elevation = CardDefaults.cardElevation(defaultElevation = animatedElevation.dp),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = colorScheme.surface,
+            contentColor = colorScheme.onSurface
+        )
     ) {
         Column(
-            modifier = Modifier.padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+            modifier = Modifier
+                .padding(24.dp)
+                .fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
         ) {
+            Icon(
+                imageVector = Icons.Default.FavoriteBorder,
+                contentDescription = "Welcome",
+                modifier = Modifier
+                    .size(48.dp)
+                    .padding(bottom = 16.dp),
+                tint = colorScheme.primary
+            )
+
             Text(
                 "Welcome to APR-CV",
-                style = MaterialTheme.typography.titleLarge
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold,
+                color = colorScheme.primary
             )
-            Spacer(modifier = Modifier.height(8.dp))
+
+            Spacer(modifier = Modifier.height(12.dp))
+
             Text(
-                "Navigate using the bottom bar",
-                style = MaterialTheme.typography.bodyMedium
+                "Track your exercise progress and connect with your therapist",
+                style = MaterialTheme.typography.bodyMedium,
+                textAlign = TextAlign.Center,
+                color = colorScheme.onSurfaceVariant
             )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Button(
+                onClick = {
+                    navController.navigate("dashboard") {
+                        popUpTo(navController.graph.findStartDestination().id) {
+                            saveState = true
+                        }
+                        launchSingleTop = true
+                        restoreState = true
+                    }
+                },
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(8.dp)
+            ) {
+                Text("Find a therapist")
+            }
         }
     }
 }
@@ -1561,7 +1610,7 @@ fun SignUpForm(
                 )
                 retrofitClient.instance.registerUser(registerRequest).enqueue(object : Callback<Status> {
                     override fun onResponse(call: Call<Status>, response: Response<Status>) {
-                        isLoading = false  
+                        isLoading = false
 
                         if (response.isSuccessful) {
                             statusMessage = "Registration successful! Please log in."
@@ -1571,16 +1620,27 @@ fun SignUpForm(
                         } else {
                             try {
                                 val errorBody = response.errorBody()?.string()
-                                val errorObj = Gson().fromJson(errorBody, ErrorResponse::class.java)
-                                statusMessage = errorObj?.detail ?: "Registration failed: ${response.code()}"
+                                if (errorBody != null && errorBody.startsWith("{")) {
+                                    try {
+                                        val errorObj = Gson().fromJson(errorBody, ErrorResponse::class.java)
+                                        statusMessage = errorObj?.detail ?: "Registration failed: ${response.code()}"
+                                    } catch (e: Exception) {
+                                        statusMessage = "Registration failed: ${response.code()}"
+                                        Log.e("SignUpForm", "JSON parsing error", e)
+                                    }
+                                } else {
+                                    statusMessage = "Registration failed: ${response.code()}"
+                                    Log.d("SignUpForm", "Non-JSON error body: $errorBody")
+                                }
                             } catch (e: Exception) {
                                 statusMessage = "Registration failed: ${response.code()}"
+                                Log.e("SignUpForm", "Error processing response", e)
                             }
                         }
                     }
 
                     override fun onFailure(call: Call<Status>, t: Throwable) {
-                        isLoading = false  
+                        isLoading = false
                         statusMessage = "Connection error: ${t.localizedMessage}"
                         Log.e("SignUpForm", "API call failed", t)
                     }

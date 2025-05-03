@@ -159,7 +159,7 @@ fun UpdatedNavigationGraph() {
                             slideOutHorizontally(targetOffsetX = { -it }) + fadeOut()
                         }
                     ) {
-                        MainScreen()
+                        MainScreen(navController = navController)
                     }
 
                     composable(
@@ -694,12 +694,12 @@ fun NavController.navigateToVideo(url: String, type: String = "youtube") {
     val encodedUrl = if (type.equals("youtube", ignoreCase = true)) {
         if (url.matches(Regex("^[a-zA-Z0-9_-]{11}$"))) {
             Log.d("Navigation", "URL is already a YouTube ID: $url")
-            url // This is the return value - keep the URL as is
+            url
         } else {
             val videoId = extractYoutubeVideoId(url)
             if (videoId != null) {
                 Log.d("Navigation", "Successfully extracted YouTube ID: $videoId")
-                videoId // This is the return value - use the extracted ID
+                videoId
             } else {
                 Log.d("Navigation", "Failed to extract YouTube ID, using full URL")
                 java.net.URLEncoder.encode(url, "UTF-8")
