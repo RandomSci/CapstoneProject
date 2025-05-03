@@ -2851,12 +2851,6 @@ fun ProgressTracker(userProgress: UserProgress, treatmentPlansState: ResourceSta
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                OutlinedButton(
-                    onClick = {  },
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text("View Detailed Statistics")
-                }
             }
         }
     }

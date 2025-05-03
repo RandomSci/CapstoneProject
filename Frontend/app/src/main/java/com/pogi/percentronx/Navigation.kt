@@ -151,7 +151,6 @@ fun MainScreen(navController: NavController) {
                             Log.e("MainScreen", "Error fetching progress: ${e.message}")
                         }
                     } else {
-                        // Empty else block in original code
                     }
                 } catch (e: Exception) {
                     Log.e("MainScreen", "Error checking login: ${e.message}")
@@ -259,7 +258,6 @@ private fun ExerciseProgressCards(progressData: UserProgress) {
             .fillMaxWidth()
             .verticalScroll(rememberScrollState())
     ) {
-        // Completion Rate Card
         Card(
             modifier = Modifier
                 .fillMaxWidth()
@@ -292,8 +290,8 @@ private fun ExerciseProgressCards(progressData: UserProgress) {
                         strokeWidth = 8.dp,
                         color = when {
                             percentage >= 75 -> Color.Green
-                            percentage >= 50 -> Color(0xFFFFC107) // Amber
-                            else -> Color(0xFFF44336) // Red
+                            percentage >= 50 -> Color(0xFFFFC107) 
+                            else -> Color(0xFFF44336) 
                         }
                     )
 
@@ -319,7 +317,6 @@ private fun ExerciseProgressCards(progressData: UserProgress) {
             }
         }
 
-        // Weekly Activity Card
         Card(
             modifier = Modifier
                 .fillMaxWidth()
@@ -337,7 +334,6 @@ private fun ExerciseProgressCards(progressData: UserProgress) {
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Weekly bar chart
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceEvenly,
@@ -397,7 +393,6 @@ private fun ExerciseProgressCards(progressData: UserProgress) {
             }
         }
 
-        // Exercise Status Card
         if (progressData.donutData.isNotEmpty()) {
             Card(
                 modifier = Modifier
@@ -426,8 +421,8 @@ private fun ExerciseProgressCards(progressData: UserProgress) {
                         val missed = progressData.donutData["Missed"] ?: 0
 
                         StatusItem("Completed", completed, Color.Green)
-                        StatusItem("Partial", partial, Color(0xFFFFC107)) // Amber
-                        StatusItem("Missed", missed, Color(0xFFF44336)) // Red
+                        StatusItem("Partial", partial, Color(0xFFFFC107)) 
+                        StatusItem("Missed", missed, Color(0xFFF44336))  
                     }
                 }
             }
@@ -531,22 +526,18 @@ fun ExerciseProgressContent(progressData: UserProgress, navController: NavContro
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Completion Rate Card
         CompletionRateCard(progressData.completionRate)
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Weekly Stats Card
         WeeklyStatsCard(progressData.weeklyStats)
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Donut Chart Card
         DonutDataCard(progressData.donutData)
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // Call to action
         Button(
             onClick = { /* Navigate to dashboard or exercises */ },
             modifier = Modifier
@@ -795,7 +786,6 @@ fun DonutDataCard(donutData: Map<String, Int>) {
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Legend
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceEvenly
