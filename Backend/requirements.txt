@@ -25,3 +25,5 @@ aiofiles
 opencv-python
 matplotlib
 moviepy
+mediapipe
+pygame
