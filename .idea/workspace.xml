@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="NONE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="49e63f36-a35b-40ea-9ac4-ca87b02ad8fa" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/Backend/connections/routes.py" beforeDir="false" afterPath="$PROJECT_DIR$/Backend/connections/routes.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Frontend/app/src/main/java/com/pogi/percentronx/ApiService.kt" beforeDir="false" afterPath="$PROJECT_DIR$/Frontend/app/src/main/java/com/pogi/percentronx/ApiService.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Frontend/app/src/main/java/com/pogi/percentronx/ErrorHandlingExerciseDetailScreen.kt" beforeDir="false" afterPath="$PROJECT_DIR$/Frontend/app/src/main/java/com/pogi/percentronx/ErrorHandlingExerciseDetailScreen.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Frontend/app/src/main/java/com/pogi/percentronx/TherapistChat.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Frontend/app/src/main/java/com/pogi/percentronx/VideoSubmissionComponents.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Frontend/app/src/main/java/com/pogi/percentronx/YouTubePlayerFullScreen.kt" beforeDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="ClangdSettings">
+    <option name="formatViaClangd" value="false" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="GitLabMergeRequestsSettings">{}</component>
+  <component name="GithubPullRequestsUISettings">{}</component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 3
+}</component>
+  <component name="ProjectId" id="2wfsCccFAeeK9Z7TZnZ1ClFyegq" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+    <option name="showMembers" value="true" />
+  </component>
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.cidr.known.project.marker&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.readMode.enableVisualFormatting&quot;: &quot;true&quot;,
+    &quot;cf.first.check.clang-format&quot;: &quot;false&quot;,
+    &quot;cidr.known.project.marker&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;clean-master&quot;,
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/home/zkllmt/Documents/AI_Section/Repositories/CapstoneProject/Frontend&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;AndroidSdkUpdater&quot;
+  }
+}</component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="49e63f36-a35b-40ea-9ac4-ca87b02ad8fa" name="Changes" comment="" />
+      <created>1746443836797</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1746443836797</updated>
+    </task>
+    <servers />
+  </component>
+</project>

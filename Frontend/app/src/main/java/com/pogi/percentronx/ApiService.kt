@@ -71,22 +71,6 @@ data class AppointmentRequest(
     val insuranceMemberId: String? = null
 )
 
-data class patient_profile(
-    val patient_id: Int,
-    val therapist_id: Int,
-    val first_name: String,
-    val last_name: String,
-    val email: String,
-    val phone: String,
-    val date_of_birth: String,
-    val address: String,
-    val diagnosis: String,
-    val status: String,
-    val notes: String,
-    val created_at: String,
-    val updated_at: String,
-    val user_id: String,
-)
 
 data class Therapist(
     val id: Int,
@@ -148,23 +132,11 @@ data class Patient(
     val therapistId: Int
 )
 
-data class MessageToTherapistRequest(
-    @SerializedName("therapist_id") val therapistId: Int,
-    @SerializedName("content") val content: String,
-    @SerializedName("subject") val subject: String = "Chat message"
-)
-
 data class MessageRequest(
     val recipient_id: Int,
     val recipient_type: String = "therapist",
     val subject: String,
     val content: String
-)
-
-data class MessageResponse(
-    val id: Int,
-    val status: String,
-    val message: String? = null
 )
 
 data class UserProgress(
@@ -383,67 +355,7 @@ data class ExerciseVideoSubmissionResponse(
     val message: String
 )
 
-data class VideoSubmission(
-    val submission_id: Int,
-    val exercise_id: Int,
-    val exercise_name: String,
-    val treatment_plan_id: Int,
-    val treatment_plan_name: String,
-    val video_url: String,
-    val submission_date: String,
-    val status: String,
-
-    @SerializedName("has_feedback")
-    private val _hasFeedback: Any? = null
-) {
-    val has_feedback: Boolean
-        get() = when (_hasFeedback) {
-            is Boolean -> _hasFeedback
-            is Number -> _hasFeedback.toInt() != 0
-            else -> false
-        }
-}
-data class VideoSubmissionDetails(
-    val submission_id: Int,
-    val patient_id: Int,
-    val exercise_id: Int,
-    val exercise_name: String,
-    val treatment_plan_id: Int,
-    val treatment_plan_name: String,
-    val video_url: String,
-    val submission_date: String,
-    val notes: String?,
-    val status: String,
-    val therapist_feedback: String?,
-    val feedback_rating: String?,
-    val feedback_date: String?
-)
-
 interface ApiService {
-
-    @Multipart
-    @POST("api/exercises/video-submission")
-    suspend fun uploadExerciseVideo(
-        @Part("exercise_id") exerciseId: RequestBody,
-        @Part("treatment_plan_id") treatmentPlanId: RequestBody,
-        @Part("notes") notes: RequestBody?,
-        @Part video: MultipartBody.Part
-    ): ExerciseVideoSubmissionResponse
-
-
-    @GET("api/user/video-submissions")
-    suspend fun getUserVideoSubmissions(): List<VideoSubmission>
-
-
-    @GET("api/video-submissions/{submissionId}")
-    suspend fun getVideoSubmissionDetails(@Path("submissionId") submissionId: Int): VideoSubmissionDetails
-
-
-    @DELETE("api/video-submissions/{submissionId}")
-    suspend fun deleteVideoSubmission(@Path("submissionId") submissionId: Int): Status
-
-    @GET("api/exercises/{exerciseId}")
-    suspend fun getExerciseDetails(@Path("exerciseId") exerciseId: Int): ExerciseDetails
 
     @POST("api/exercises/{planExerciseId}/progress")
     suspend fun addExerciseProgress(
@@ -469,9 +381,6 @@ interface ApiService {
         @Query("completed") completed: Boolean
     ): Status
 
-    @GET("api/exercises/{exerciseId}/history")
-    suspend fun getExerciseHistory(@Path("exerciseId") exerciseId: Int): ExerciseHistory
-
     @POST("loginUser")
     fun loginUser(@Body loginData: Login): Call<Status>
 
@@ -483,9 +392,6 @@ interface ApiService {
 
     @POST("logout")
     fun logout(): Call<Status>
-
-    @POST("reset-password")
-    fun resetPassword(@Body email: Map<String, String>): Call<Status>
 
     @GET("getUserInfo")
     fun getUserInfo(): Call<User_Data>
@@ -501,9 +407,6 @@ interface ApiService {
 
     @GET("therapists/{id}/availability")
     suspend fun getTherapistAvailability(@Path("id") therapistId: Int): List<AvailableTimeSlot>
-
-    @POST("messages/send")
-    suspend fun sendMessage(@Body messageRequest: MessageRequest): MessageResponse
 
     @POST("therapists/{id}/add_patient")
     suspend fun addPatientToTherapist(
@@ -541,12 +444,4 @@ interface ApiService {
     @GET("api/user/appointments/next")
     suspend fun getUserNextAppointment(): Appointments?
 
-    @GET("messages/therapist/{therapist_id}")
-    suspend fun getTherapistMessages(@Path("therapist_id") therapistId: Int): List<ChatMessage>
-
-    @POST("messages/{message_id}/read")
-    suspend fun markMessageAsRead(@Path("message_id") messageId: Int): Status
-
-    @POST("messages/send-to-therapist")
-    suspend fun sendMessageToTherapist(@Body request: MessageToTherapistRequest): MessageResponse
 }
