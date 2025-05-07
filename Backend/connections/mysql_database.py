@@ -10,58 +10,7 @@ import logging
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger("database")
 
-class MySQLConnectorErrors:
-    IntegrityError = pymysql.err.IntegrityError
-
-class MySQLConnector:
-    errors = MySQLConnectorErrors
-    Error = pymysql.Error
-
-import sys
-sys.modules['mysql.connector'] = MySQLConnector
-
-class MySQLConnectorCursor:
-    def __init__(self, pymysql_cursor):
-        self._cursor = pymysql_cursor
-        
-    def execute(self, query, params=None):
-        return self._cursor.execute(query, params)
-        
-    def fetchone(self):
-        return self._cursor.fetchone()
-        
-    def fetchall(self):
-        return self._cursor.fetchall()
-        
-    def close(self):
-        return self._cursor.close()
-
-class MySQLConnectorConnection:
-    def __init__(self, pymysql_connection):
-        self._connection = pymysql_connection
-        
-    def cursor(self, dictionary=True):
-        """Compatible with mysql.connector's cursor(dictionary=True)"""
-        if dictionary:
-            cursor = self._connection.cursor(pymysql.cursors.DictCursor)
-        else:
-            cursor = self._connection.cursor()
-        return cursor
-        
-    def commit(self):
-        return self._connection.commit()
-        
-    def close(self):
-        return self._connection.close()
-        
-    def is_connected(self):
-        return True
-
 def get_Mysql_db():
-    """
-    Connect to MySQL using PyMySQL (works on Railway) but with
-    mysql.connector compatibility
-    """
     try:
         host = os.getenv("MYSQL_HOST", "mysql.railway.internal")
         port = int(os.getenv("MYSQL_PORT", 3306))
@@ -80,16 +29,14 @@ def get_Mysql_db():
         )
         
         logger.debug("Connection successful")
-        
-        wrapped_connection = MySQLConnectorConnection(connection)
-        return wrapped_connection
+        return connection
     except Exception as e:
         logger.error(f"Database connection failed: {e}", exc_info=True)
         raise
 
 def Register_User_Web(first_name, last_name, company_email, password):
     db = get_Mysql_db()
-    cursor = db.cursor(dictionary=True)
+    cursor = db.cursor(pymysql.cursors.DictCursor)
     hashed_password = bcrypt.hashpw(password.password.encode("utf-8"), bcrypt.gensalt())
     try:
         logger.debug(f"Registering user: {first_name} {last_name}, {company_email}")
@@ -108,7 +55,7 @@ def Register_User_Web(first_name, last_name, company_email, password):
         db.commit()
         logger.debug("User registered successfully")
         return {"message": "User registered successfully"}
-    except MySQLConnector.errors.IntegrityError:
+    except pymysql.err.IntegrityError:
         logger.error("Integrity error during registration")
         return {"error": "Username or email already exists."}
     except Exception as e:
@@ -123,7 +70,7 @@ async def get_exercise_categories():
     cursor = None
     
     try:
-        cursor = db.cursor(dictionary=True)
+        cursor = db.cursor(pymysql.cursors.DictCursor)
         cursor.execute("SELECT * FROM ExerciseCategories ORDER BY name")
         return cursor.fetchall()
     except Exception as e:
@@ -139,7 +86,7 @@ async def user_profile(user_id):
     db = get_Mysql_db()
     cursor = None
     try:
-        cursor = db.cursor(dictionary=True)
+        cursor = db.cursor(pymysql.cursors.DictCursor)
         cursor.execute("SELECT * FROM users WHERE user_id = %s", (user_id,))
         return cursor.fetchall()
     except Exception as e:
@@ -155,7 +102,7 @@ async def user_patient_profile(user_id):
     db = get_Mysql_db()
     cursor = None
     try:
-        cursor = db.cursor(dictionary=True)
+        cursor = db.cursor(pymysql.cursors.DictCursor)
         cursor.execute("SELECT * FROM Patients WHERE user_id = %s", (user_id,))
         return cursor.fetchall()
     except Exception as e:
@@ -171,7 +118,7 @@ async def get_therapist_data(therapist_id):
     db = get_Mysql_db()
     cursor = None
     try:
-        cursor = db.cursor(dictionary=True)
+        cursor = db.cursor(pymysql.cursors.DictCursor)
         cursor.execute("SELECT * FROM Therapists WHERE id = %s", (therapist_id,))
         return cursor.fetchall()
     except Exception as e:
@@ -187,7 +134,7 @@ async def get_appointment_data(patient_id):
     db = get_Mysql_db()
     cursor = None
     try:
-        cursor = db.cursor(dictionary=True)
+        cursor = db.cursor(pymysql.cursors.DictCursor)
         cursor.execute("SELECT * FROM Appointments WHERE patient_id = %s", (patient_id,))
         return cursor.fetchall()
     except Exception as e:
@@ -203,7 +150,7 @@ async def get_treatment_plans(patient_id):
     db = get_Mysql_db()
     cursor = None
     try:
-        cursor = db.cursor(dictionary=True)
+        cursor = db.cursor(pymysql.cursors.DictCursor)
         cursor.execute("SELECT * FROM TreatmentPlans WHERE patient_id = %s", (patient_id,))
         return cursor.fetchall()
     except Exception as e:
@@ -219,7 +166,7 @@ async def get_treatment_plan_exercises(plan_id):
     db = get_Mysql_db()
     cursor = None
     try:
-        cursor = db.cursor(dictionary=True)
+        cursor = db.cursor(pymysql.cursors.DictCursor)
         cursor.execute("""
             SELECT * FROM TreatmentPlanExercises 
             WHERE plan_id = %s
@@ -249,7 +196,7 @@ async def get_exercise_details(exercise_id):
     db = get_Mysql_db()
     cursor = None
     try:
-        cursor = db.cursor(dictionary=True)
+        cursor = db.cursor(pymysql.cursors.DictCursor)
         cursor.execute("SELECT * FROM Exercises WHERE exercise_id = %s", (exercise_id,))
         return cursor.fetchone()
     except Exception as e:
@@ -263,14 +210,14 @@ async def get_exercise_details(exercise_id):
 
 def verify_therapist_login(email, password):
     """
-    Dedicated login function for therapists with detailed error handling
+    Login function for therapists
     """
     db = None
     cursor = None
     try:
         logger.debug(f"Verifying login for: {email}")
         db = get_Mysql_db()
-        cursor = db.cursor(dictionary=True)
+        cursor = db.cursor(pymysql.cursors.DictCursor)
         
         cursor.execute(
             "SELECT id, first_name, last_name, password FROM Therapists WHERE company_email = %s",

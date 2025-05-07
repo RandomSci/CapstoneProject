@@ -2247,12 +2247,10 @@ def Routes():
         return {"message": f"Welcome, {user['username']}!", "user_id": user["user_id"]}
 
     @app.post("/registerUser")
-    async def registerUser(result: Register): 
+    async def registerUser(result: Register):
         db = get_Mysql_db()
         cursor = db.cursor()
-    
         hashed_password = bcrypt.hashpw(result.password.encode("utf-8"), bcrypt.gensalt())
-
         try:
             cursor.execute(
                 "INSERT INTO users (username, email, password_hash) VALUES (%s, %s, %s)",
@@ -2260,12 +2258,12 @@ def Routes():
             )
             db.commit()
             return RedirectResponse(url="/", status_code=303)
-        except mysql.connector.IntegrityError:
+        except pymysql.err.IntegrityError:
             return {"error": "Username or email already exists."}
         finally:
             cursor.close()
             db.close()
-            
+
     @app.route("/Register_User_Web", methods=["GET", "POST"])
     async def Register_User_Web(request: Request):
         form = await request.form()
@@ -2273,18 +2271,16 @@ def Routes():
         last_name = form.get("last_name")
         company_email = form.get("company_email")
         password = form.get("password")
-
+        
         if not all([first_name, last_name, company_email, password]):
             return templates.TemplateResponse("dist/pages/register.html", {
                 "request": request,
                 "error": "All fields are required."
             })
-
+            
         db = get_Mysql_db()
         cursor = db.cursor()
-
         hashed_password = bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt())
-
         try:
             cursor.execute(
                 "INSERT INTO Therapists (first_name, last_name, company_email, password) VALUES (%s, %s, %s, %s)",
@@ -2292,7 +2288,7 @@ def Routes():
             )
             db.commit()
             return RedirectResponse(url="/", status_code=303)
-        except mysql.connector.IntegrityError:
+        except pymysql.err.IntegrityError:
             return templates.TemplateResponse("dist/pages/register.html", {
                 "request": request,
                 "error": "Therapist with this email already exists."
@@ -2307,75 +2303,68 @@ def Routes():
     async def loginUser(result: Login, response: Response):
         db = get_Mysql_db()
         cursor = db.cursor()
-
         try:
             cursor.execute(
                 "SELECT user_id, password_hash FROM users WHERE username = %s",
                 (result.username,)
             )
             user = cursor.fetchone()
-
             if user is None:
                 raise HTTPException(status_code=401, detail="Invalid username or password")
-
+                
             user_id, stored_password_hash = user[0], user[1].encode("utf-8")
-
+            
             if bcrypt.checkpw(result.password.encode("utf-8"), stored_password_hash):
                 session_id = await create_session(
-                    user_id=user_id, 
+                    user_id=user_id,
                     email=result.username,
                 )
-
                 response.set_cookie(
-                    key="session_id", 
-                    value=session_id, 
+                    key="session_id",
+                    value=session_id,
                     httponly=True,
                     samesite="lax",
                     path="/"
                 )
                 print("response 152", response)
-
                 return {"status": "valid"}
             else:
                 raise HTTPException(status_code=401, detail="Invalid username or password")
         finally:
             cursor.close()
             db.close()
-            
-    @app.get("/getUserInfo") 
+
+    @app.get("/getUserInfo")
     async def get_user_info(request: Request):
         session_id = request.cookies.get("session_id")
         print(f"session_id: {session_id}")
-
         if not session_id:
-            raise HTTPException(status_code=401, detail="Session not found") 
-
+            raise HTTPException(status_code=401, detail="Session not found")
+            
         session_data = await get_session_data(session_id)
         print(f"session_data: {session_data}")
-
         if not session_data:
             raise HTTPException(status_code=401, detail="Invalid session")
-
+            
         user_id = session_data.user_id
         print(f"user_id: {user_id}")
-
+        
         db = get_Mysql_db()
         cursor = db.cursor()
-
         try:
             cursor.execute("SELECT username, email, created_at FROM users WHERE user_id = %s", (user_id,))
             row = cursor.fetchone()
-
             if not row:
                 raise HTTPException(status_code=404, detail="User not found")
-
+                
+            # With PyMySQL's default cursor, row is a tuple
             username, email, created_at = row
+            
             return {
                 "username": username,
                 "email": email,
                 "joined": str(created_at)
             }
-
         finally:
             cursor.close()
             db.close()
