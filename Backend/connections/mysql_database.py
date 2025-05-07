@@ -13,7 +13,7 @@ class MySQLCompat:
 pymysql.connector = MySQLCompat
 
 def get_Mysql_db(max_retries=5, retry_delay=2):
-    host = os.getenv("MYSQL_HOST", "db")  
+    host = os.getenv("MYSQL_HOST", "mysql.railway.internal") 
     user = os.getenv("MYSQL_USER", "root")
     password = os.getenv("MYSQL_PASSWORD", "root")  
     database = os.getenv("MYSQL_DB", "perceptronx")
