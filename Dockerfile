@@ -25,10 +25,12 @@ COPY Frontend_Web /PERCEPTRONX/Frontend_Web
 COPY Frontend /PERCEPTRONX/Frontend
 COPY docker-compose.yml .
 COPY init.sql .
+COPY start.sh /PERCEPTRONX/
 COPY Frontend_Web/static/assets/images/user/ /PERCEPTRONX/Frontend_Web/static/assets/images/user/
 RUN chmod -R 777 /PERCEPTRONX/Frontend_Web/static/assets/images/user
+RUN chmod +x /PERCEPTRONX/start.sh
 
 WORKDIR /PERCEPTRONX/Backend
 EXPOSE 8000
 
-CMD uvicorn main:app --host 0.0.0.0 --port $PORT --reload
+CMD ["/bin/bash", "/PERCEPTRONX/start.sh"]
