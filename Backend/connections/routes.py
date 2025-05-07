@@ -2307,34 +2307,30 @@ def Routes():
     async def loginUser(result: Login, response: Response):
         db = get_Mysql_db()
         cursor = db.cursor()
-
         try:
             cursor.execute(
                 "SELECT user_id, password_hash FROM users WHERE username = %s",
                 (result.username,)
             )
             user = cursor.fetchone()
-
             if user is None:
                 raise HTTPException(status_code=401, detail="Invalid username or password")
-
-            user_id, stored_password_hash = user[0], user[1].encode("utf-8")
-
+            
+            user_id, stored_password_hash = user['user_id'], user['password_hash'].encode("utf-8")
+            
             if bcrypt.checkpw(result.password.encode("utf-8"), stored_password_hash):
                 session_id = await create_session(
-                    user_id=user_id, 
+                    user_id=user_id,
                     email=result.username,
                 )
-
                 response.set_cookie(
-                    key="session_id", 
-                    value=session_id, 
+                    key="session_id",
+                    value=session_id,
                     httponly=True,
                     samesite="lax",
                     path="/"
                 )
                 print("response 152", response)
-
                 return {"status": "valid"}
             else:
                 raise HTTPException(status_code=401, detail="Invalid username or password")
