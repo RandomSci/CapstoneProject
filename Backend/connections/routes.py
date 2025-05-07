@@ -6609,7 +6609,6 @@ def Routes():
                 status_code=401,
                 content={"detail": "Not authenticated"}
             )
-
         try:
             session_data = await get_session_data(session_id)
             if not session_data:
@@ -6617,55 +6616,57 @@ def Routes():
                     status_code=401,
                     content={"detail": "Not authenticated"}
                 )
-
-            user_id = session_data.user_id
             
+            user_id = session_data.user_id
             db = get_Mysql_db()
             cursor = None
-            
             try:
-                cursor = db.cursor()
+                cursor = db.cursor(pymysql.cursors.DictCursor)
                 
                 cursor.execute(
-                    """SELECT p.therapist_id, t.* 
+                    """SELECT p.therapist_id, t.*
                     FROM Patients p
                     JOIN Therapists t ON p.therapist_id = t.id
                     WHERE p.user_id = %s""",
                     (user_id,)
                 )
-                result = cursor.fetchone()
                 
+                result = cursor.fetchone()
                 if not result:
                     return JSONResponse(
                         status_code=404,
                         content={"detail": "Therapist not found for this user"}
                     )
-                
+                    
                 for field in ['specialties', 'education', 'languages']:
-                    result[field] = safely_parse_json_field(result[field], [])
+                    if field in result:
+                        result[field] = safely_parse_json_field(result[field], [])
+                    else:
+                        result[field] = []
                 
                 formatted_therapist = {
-                    "id": result["id"],
-                    "first_name": result["first_name"] or "",
-                    "last_name": result["last_name"] or "",
-                    "company_email": result["company_email"] or "",
-                    "profile_image": result["profile_image"] or "",
-                    "bio": result["bio"] or "",
-                    "experience_years": result["experience_years"] or 0,
-                    "specialties": result["specialties"],
-                    "education": result["education"],
-                    "languages": result["languages"],
-                    "address": result["address"] or "",
-                    "rating": float(result["rating"] or 0),
-                    "review_count": result["review_count"] or 0,
-                    "is_accepting_new_patients": bool(result["is_accepting_new_patients"]),
-                    "average_session_length": result["average_session_length"] or 60
+                    "id": result.get("id", 0),
+                    "first_name": result.get("first_name", "") or "",
+                    "last_name": result.get("last_name", "") or "",
+                    "company_email": result.get("company_email", "") or "",
+                    "profile_image": result.get("profile_image", "") or "",
+                    "bio": result.get("bio", "") or "",
+                    "experience_years": result.get("experience_years", 0) or 0,
+                    "specialties": result.get("specialties", []),
+                    "education": result.get("education", []),
+                    "languages": result.get("languages", []),
+                    "address": result.get("address", "") or "",
+                    "rating": float(result.get("rating", 0) or 0),
+                    "review_count": result.get("review_count", 0) or 0,
+                    "is_accepting_new_patients": bool(result.get("is_accepting_new_patients", False)),
+                    "average_session_length": result.get("average_session_length", 60) or 60
                 }
                 
                 return formatted_therapist
-
+                
             except Exception as e:
                 print(f"Database error in get user therapist data API: {e}")
+                import traceback
                 print(f"Traceback: {traceback.format_exc()}")
                 return JSONResponse(
                     status_code=500,
@@ -6678,6 +6679,7 @@ def Routes():
                     db.close()
         except Exception as e:
             print(f"Error in get user therapist data API: {e}")
+            import traceback
             print(f"Traceback: {traceback.format_exc()}")
             return JSONResponse(
                 status_code=500,
@@ -6799,6 +6801,8 @@ def Routes():
     @app.get("/api/user/treatment-plans")
     async def get_user_treatment_plans(request: Request):
         """API endpoint to get treatment plans for the current logged-in user"""
+        import traceback
+        
         session_id = request.cookies.get("session_id")
         if not session_id:
             return JSONResponse(
@@ -6816,9 +6820,8 @@ def Routes():
             cursor = None
             
             try:
-                cursor = db.cursor()
+                cursor = db.cursor(pymysql.cursors.DictCursor)
                 
-
                 cursor.execute(
                     "SELECT patient_id, therapist_id FROM Patients WHERE user_id = %s",
                     (user_id,)
@@ -6831,7 +6834,6 @@ def Routes():
                 patient_id = patient["patient_id"]
                 therapist_id = patient["therapist_id"]
                 
-
                 cursor.execute(
                     "SELECT first_name, last_name FROM Therapists WHERE id = %s",
                     (therapist_id,)
@@ -6839,7 +6841,6 @@ def Routes():
                 therapist = cursor.fetchone()
                 therapist_name = f"{therapist['first_name']} {therapist['last_name']}" if therapist else "Unknown"
                 
-
                 cursor.execute(
                     """
                     SELECT * FROM TreatmentPlans 
@@ -6852,7 +6853,6 @@ def Routes():
                 
                 treatment_plans = []
                 for plan in treatment_plans_raw:
-
                     cursor.execute(
                         """
                         SELECT 
@@ -6868,11 +6868,10 @@ def Routes():
                     )
                     progress_data = cursor.fetchone()
                     
-                    total_exercises = progress_data["total_exercises"] or 0
-                    completed_exercises = progress_data["completed_exercises"] or 0
+                    total_exercises = progress_data.get("total_exercises", 0) or 0
+                    completed_exercises = progress_data.get("completed_exercises", 0) or 0
                     progress = completed_exercises / total_exercises if total_exercises > 0 else 0
                     
-
                     cursor.execute(
                         """
                         SELECT tpe.*, e.name, e.description, e.video_url, e.video_type, 
@@ -6891,36 +6890,34 @@ def Routes():
                     
                     exercises = []
                     for ex in exercises_raw:
-
                         exercise = {
-                            "exerciseId": ex["exercise_id"],
-                            "planExerciseId": ex["plan_exercise_id"],
-                            "name": ex["name"],
-                            "description": ex["description"] or ex["instructions"] or "",
-                            "videoUrl": ex["video_url"],
+                            "exerciseId": ex.get("exercise_id"),
+                            "planExerciseId": ex.get("plan_exercise_id"),
+                            "name": ex.get("name", ""),
+                            "description": ex.get("description") or ex.get("instructions") or "",
+                            "videoUrl": ex.get("video_url"),
                             "imageUrl": None,  
-                            "videoType": ex["video_type"] or "",
-                            "sets": ex["sets"] or 3,
-                            "repetitions": ex["repetitions"] or 10,
-                            "frequency": ex["frequency"] or "Daily",
-                            "duration": ex["duration"],
-                            "completed": bool(ex["completed"]),
-                            "thumbnailUrl": ex["thumbnailUrl"]
+                            "videoType": ex.get("video_type", ""),
+                            "sets": ex.get("sets", 3),
+                            "repetitions": ex.get("repetitions", 10),
+                            "frequency": ex.get("frequency", "Daily"),
+                            "duration": ex.get("duration", 0),
+                            "completed": bool(ex.get("completed", False)),
+                            "thumbnailUrl": ex.get("thumbnailUrl")
                         }
                         exercises.append(exercise)
                     
-
                     formatted_plan = {
-                        "planId": plan["plan_id"],
-                        "patientId": plan["patient_id"],
-                        "therapistId": plan["therapist_id"],
-                        "name": plan["name"],
-                        "description": plan["description"],
-                        "startDate": plan["start_date"].isoformat() if plan["start_date"] else None,
-                        "endDate": plan["end_date"].isoformat() if plan["end_date"] else None,
-                        "status": plan["status"],
-                        "createdAt": plan["created_at"].isoformat() if plan["created_at"] else None,
-                        "updatedAt": plan["updated_at"].isoformat() if plan["updated_at"] else None,
+                        "planId": plan.get("plan_id"),
+                        "patientId": plan.get("patient_id"),
+                        "therapistId": plan.get("therapist_id"),
+                        "name": plan.get("name", ""),
+                        "description": plan.get("description", ""),
+                        "startDate": plan.get("start_date").isoformat() if plan.get("start_date") else None,
+                        "endDate": plan.get("end_date").isoformat() if plan.get("end_date") else None,
+                        "status": plan.get("status", "Unknown"),
+                        "createdAt": plan.get("created_at").isoformat() if plan.get("created_at") else None,
+                        "updatedAt": plan.get("updated_at").isoformat() if plan.get("updated_at") else None,
                         "therapistName": therapist_name,
                         "progress": progress,
                         "exercises": exercises
