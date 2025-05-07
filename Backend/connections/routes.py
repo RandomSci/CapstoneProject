@@ -6955,6 +6955,8 @@ def Routes():
     @app.get("/api/user/exercises/progress")
     async def get_user_exercises_progress(request: Request):
         """API endpoint to get overall user progress across all exercises and treatment plans"""
+        import traceback
+        
         session_id = request.cookies.get("session_id")
         if not session_id:
             return JSONResponse(
@@ -6973,9 +6975,8 @@ def Routes():
             cursor = None
             
             try:
-                cursor = db.cursor()
+                cursor = db.cursor(pymysql.cursors.DictCursor)
                 
-
                 cursor.execute(
                     "SELECT patient_id FROM Patients WHERE user_id = %s",
                     (user_id,)
@@ -6985,10 +6986,9 @@ def Routes():
                 if not patient:
                     return JSONResponse(status_code=404, content={"detail": "Patient profile not found"})
                 
-                patient_id = patient["patient_id"]
+                patient_id = patient.get("patient_id")
                 print(f"Found patient_id: {patient_id}")
                 
-
                 cursor.execute(
                     """
                     SELECT plan_id, status FROM TreatmentPlans WHERE patient_id = %s
@@ -6999,14 +6999,12 @@ def Routes():
                 plans = cursor.fetchall()
                 if not plans:
                     print("No treatment plans found for patient")
-
                     return {
                         "completionRate": 0.0,
                         "weeklyStats": {},
                         "donutData": {"Completed": 0, "Partial": 0, "Missed": 0}
                     }
                 
-
                 cursor.execute(
                     """
                     SELECT 
@@ -7027,13 +7025,12 @@ def Routes():
                 )
                 
                 overall_stats = cursor.fetchone()
-                total_exercises = overall_stats["total_exercises"] or 0
-                completed_exercises = overall_stats["completed_exercises"] or 0
+                total_exercises = overall_stats.get("total_exercises", 0) or 0
+                completed_exercises = overall_stats.get("completed_exercises", 0) or 0
                 
                 completion_rate = completed_exercises / total_exercises if total_exercises > 0 else 0
                 print(f"Overall completion rate: {completed_exercises}/{total_exercises} = {completion_rate:.2f}")
                 
-
                 cursor.execute(
                     """
                     SELECT 
@@ -7050,7 +7047,6 @@ def Routes():
                 weekly_data = cursor.fetchall()
                 weekly_stats = {}
                 
-
                 day_mapping = {
                     'Monday': 'Mon', 
                     'Tuesday': 'Tue', 
@@ -7062,15 +7058,14 @@ def Routes():
                 }
                 
                 for day in weekly_data:
-                    day_abbrev = day_mapping.get(day["day_of_week"], day["day_of_week"][:3])
-                    weekly_stats[day_abbrev] = day["exercises_completed"]
+                    day_name = day.get("day_of_week", "")
+                    day_abbrev = day_mapping.get(day_name, day_name[:3] if day_name else "")
+                    weekly_stats[day_abbrev] = day.get("exercises_completed", 0)
                 
-
                 for abbrev in ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']:
                     if abbrev not in weekly_stats:
                         weekly_stats[abbrev] = 0
                 
-
                 cursor.execute(
                     """
                     SELECT
@@ -7099,14 +7094,13 @@ def Routes():
                 
                 donut_data = cursor.fetchone()
                 
-
                 result = {
                     "completionRate": completion_rate,
                     "weeklyStats": weekly_stats,
                     "donutData": {
-                        "Completed": donut_data["completed"] or 0,
-                        "Partial": donut_data["partial"] or 0,
-                        "Missed": donut_data["missed"] or 0
+                        "Completed": donut_data.get("completed", 0) or 0,
+                        "Partial": donut_data.get("partial", 0) or 0,
+                        "Missed": donut_data.get("missed", 0) or 0
                     }
                 }
                 
@@ -7261,6 +7255,8 @@ def Routes():
         exercise_id: int
     ):
         """API endpoint to get detailed information about a specific exercise"""
+        import traceback
+        
         session_id = request.cookies.get("session_id")
         if not session_id:
             return JSONResponse(
@@ -7278,7 +7274,7 @@ def Routes():
             cursor = None
             
             try:
-                cursor = db.cursor()
+                cursor = db.cursor(pymysql.cursors.DictCursor)
                 
                 cursor.execute(
                     "SELECT patient_id FROM Patients WHERE user_id = %s",
@@ -7287,9 +7283,9 @@ def Routes():
                 patient = cursor.fetchone()
                 
                 if not patient:
-                    return JSONResponse(status_code=404, conteCCnt={"detail": "Patient profile not found"})
+                    return JSONResponse(status_code=404, content={"detail": "Patient profile not found"})
                 
-                patient_id = patient["patient_id"]
+                patient_id = patient.get("patient_id")
                 
                 cursor.execute(
                     """
@@ -7318,7 +7314,6 @@ def Routes():
                 )
                 plan_exercises = cursor.fetchall()
                 
-
                 plan_exercise_instances = []
                 for pe in plan_exercises:
                     cursor.execute(
@@ -7328,47 +7323,46 @@ def Routes():
                         WHERE plan_exercise_id = %s AND patient_id = %s
                         ORDER BY completion_date DESC
                         """,
-                        (pe["plan_exercise_id"], patient_id)
+                        (pe.get("plan_exercise_id"), patient_id)
                     )
                     progress = cursor.fetchall()
                     
                     plan_exercise_instances.append({
-                        "planExerciseId": pe["plan_exercise_id"],
-                        "planId": pe["plan_id"],
-                        "planName": pe["plan_name"],
-                        "planStatus": pe["plan_status"],
-                        "sets": pe["sets"] or 3,
-                        "repetitions": pe["repetitions"] or 10,
-                        "frequency": pe["frequency"] or "Daily",
-                        "duration": pe["duration"],
-                        "notes": pe["notes"],
+                        "planExerciseId": pe.get("plan_exercise_id"),
+                        "planId": pe.get("plan_id"),
+                        "planName": pe.get("plan_name", ""),
+                        "planStatus": pe.get("plan_status", ""),
+                        "sets": pe.get("sets", 3) or 3,
+                        "repetitions": pe.get("repetitions", 10) or 10,
+                        "frequency": pe.get("frequency", "Daily") or "Daily",
+                        "duration": pe.get("duration", 0),
+                        "notes": pe.get("notes", ""),
                         "completed": len(progress) > 0,
                         "progressHistory": [
                             {
-                                "completionDate": p["completion_date"].isoformat() if p["completion_date"] else None,
-                                "setsCompleted": p["sets_completed"],
-                                "repetitionsCompleted": p["repetitions_completed"],
-                                "durationSeconds": p["duration_seconds"],
-                                "painLevel": p["pain_level"],
-                                "difficultyLevel": p["difficulty_level"],
-                                "notes": p["notes"]
+                                "completionDate": p.get("completion_date").isoformat() if p.get("completion_date") else None,
+                                "setsCompleted": p.get("sets_completed", 0),
+                                "repetitionsCompleted": p.get("repetitions_completed", 0),
+                                "durationSeconds": p.get("duration_seconds", 0),
+                                "painLevel": p.get("pain_level", 0),
+                                "difficultyLevel": p.get("difficulty_level", 0),
+                                "notes": p.get("notes", "")
                             } for p in progress
                         ]
                     })
                 
-
                 result = {
-                    "exerciseId": exercise["exercise_id"],
-                    "name": exercise["name"],
-                    "description": exercise["description"] or "",
-                    "videoUrl": exercise["video_url"],
-                    "videoType": exercise["video_type"] or "",
-                    "thumbnailUrl": exercise["video_filename"],
-                    "difficulty": exercise["difficulty"] or "Beginner",
-                    "categoryId": exercise["category_id"],
-                    "categoryName": exercise["category_name"],
-                    "duration": exercise["duration"],
-                    "instructions": exercise["instructions"] or "",
+                    "exerciseId": exercise.get("exercise_id"),
+                    "name": exercise.get("name", ""),
+                    "description": exercise.get("description", "") or "",
+                    "videoUrl": exercise.get("video_url", ""),
+                    "videoType": exercise.get("video_type", "") or "",
+                    "thumbnailUrl": exercise.get("video_filename", ""),
+                    "difficulty": exercise.get("difficulty", "Beginner") or "Beginner",
+                    "categoryId": exercise.get("category_id"),
+                    "categoryName": exercise.get("category_name", ""),
+                    "duration": exercise.get("duration", 0),
+                    "instructions": exercise.get("instructions", "") or "",
                     "planInstances": plan_exercise_instances
                 }
                 
@@ -8850,6 +8844,8 @@ def Routes():
     @app.get("/messages/therapist/{therapist_id}")
     async def get_therapist_messages(request: Request, therapist_id: int):
         """API endpoint to get messages between the current user/patient and a specific therapist"""
+        import traceback
+        
         session_id = request.cookies.get("session_id")
         if not session_id:
             return JSONResponse(
@@ -8891,7 +8887,7 @@ def Routes():
             cursor = None
             
             try:
-                cursor = db.cursor()
+                cursor = db.cursor(pymysql.cursors.DictCursor)
                 
                 print(f"Checking if user {user_id} has a patient record")
                 cursor.execute(
@@ -8899,7 +8895,7 @@ def Routes():
                     (user_id,)
                 )
                 patient_record = cursor.fetchone()
-                patient_id = patient_record['patient_id'] if patient_record else None
+                patient_id = patient_record.get('patient_id') if patient_record else None
                 
                 print(f"Patient ID for user {user_id}: {patient_id}")
                 
@@ -8937,21 +8933,21 @@ def Routes():
                 
                 formatted_messages = []
                 for message in messages:
-                    created_at = message['created_at']
+                    created_at = message.get('created_at')
                     
-                    is_from_current_user = ((message['sender_type'] == 'user' and int(message['sender_id']) == int(user_id)) or 
-                                        (message['sender_type'] == 'patient' and patient_id and int(message['sender_id']) == int(patient_id)))
+                    is_from_current_user = ((message.get('sender_type') == 'user' and int(message.get('sender_id', 0)) == int(user_id)) or 
+                                        (message.get('sender_type') == 'patient' and patient_id and int(message.get('sender_id', 0)) == int(patient_id)))
                     
                     display_sender_type = "user" if is_from_current_user else "therapist"
                     
                     formatted_message = {
-                        "id": message['message_id'],
-                        "senderId": message['sender_id'],
-                        "receiverId": message['recipient_id'],
-                        "senderType": display_sender_type,  
-                        "content": message['content'] or "",
+                        "id": message.get('message_id'),
+                        "senderId": message.get('sender_id'),
+                        "receiverId": message.get('recipient_id'),
+                        "senderType": display_sender_type,
+                        "content": message.get('content', "") or "",
                         "timestamp": created_at.isoformat() if created_at else "",
-                        "isRead": bool(message['is_read'])
+                        "isRead": bool(message.get('is_read', False))
                     }
                     
                     formatted_messages.append(formatted_message)
@@ -8978,12 +8974,10 @@ def Routes():
                 status_code=500,
                 content={"detail": f"Server error: {str(e)}"}
             )
-    
+
     @app.post("/messages/send-to-therapist")
     async def send_message_to_therapist(request: Request):
-        """Simple endpoint for sending message to therapist"""
-        print("=================== Accessed send_message_to_therapist ===================")
-        
+        import traceback
         try:
             session_id = request.cookies.get("session_id")
             if not session_id:
@@ -9025,9 +9019,11 @@ def Routes():
             db = get_Mysql_db()
             
             try:
-                db.autocommit = True
+                # PyMySQL doesn't support autocommit property directly
+                # Instead, we'll commit explicitly
                 
-                cursor = db.cursor()
+                # Use DictCursor for PyMySQL
+                cursor = db.cursor(pymysql.cursors.DictCursor)
                 
                 sender_id = int(user_id)
                 sender_type = "user"
@@ -9043,6 +9039,9 @@ def Routes():
                     VALUES (%s, %s, %s, %s, %s, %s)""",
                     (sender_id, sender_type, recipient_id, recipient_type, subject, content)
                 )
+                
+                # Explicitly commit
+                db.commit()
                 
                 message_id = cursor.lastrowid
                 print(f"Message inserted with ID: {message_id}")
@@ -9066,6 +9065,7 @@ def Routes():
                 
             except Exception as e:
                 print(f"Database error: {str(e)}")
+                print(f"Traceback: {traceback.format_exc()}")
                 return JSONResponse(
                     status_code=500,
                     content={"id": 0, "status": "invalid", "message": f"Database error: {str(e)}"}
@@ -9077,6 +9077,7 @@ def Routes():
                 
         except Exception as e:
             print(f"Server error: {str(e)}")
+            print(f"Traceback: {traceback.format_exc()}")
             return JSONResponse(
                 status_code=500,
                 content={"id": 0, "status": "invalid", "message": f"Server error: {str(e)}"}
