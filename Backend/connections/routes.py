@@ -5769,9 +5769,11 @@ def Routes():
     @app.get("/therapists")
     async def get_therapists():
         """API endpoint to get a list of all therapists for the mobile app"""
+        import traceback
+        
         try:
             db = get_Mysql_db()
-            cursor = db.cursor()
+            cursor = db.cursor(pymysql.cursors.DictCursor)
 
             try:
                 cursor.execute(
@@ -5791,27 +5793,27 @@ def Routes():
                 
                 formatted_therapists = []
                 for therapist in therapists:
-                    specialties = safely_parse_json_field(therapist['specialties'], [])
+                    specialties = safely_parse_json_field(therapist.get('specialties'), [])
                     
-                    profile_image = therapist['profile_image']
+                    profile_image = therapist.get('profile_image')
                     matched_image = find_best_matching_image(
-                        therapist["id"], 
+                        therapist.get("id"), 
                         profile_image, 
                         static_dir
                     )
                     
                     photoUrl = f"/static/assets/images/user/{matched_image}"
                     
-                    print(f"Therapist ID: {therapist['id']}, Original Image: {profile_image}, Matched: {matched_image}, URL: {photoUrl}")
+                    print(f"Therapist ID: {therapist.get('id')}, Original Image: {profile_image}, Matched: {matched_image}, URL: {photoUrl}")
 
                     formatted_therapists.append({
-                        "id": therapist["id"],
-                        "name": f"{therapist['first_name']} {therapist['last_name']}",
+                        "id": therapist.get("id"),
+                        "name": f"{therapist.get('first_name', '')} {therapist.get('last_name', '')}",
                         "photoUrl": photoUrl,
                         "specialties": specialties,
-                        "location": therapist["address"] or "Location not provided",
-                        "rating": float(therapist["rating"] or 0),
-                        "reviewCount": therapist["review_count"] or 0,
+                        "location": therapist.get("address") or "Location not provided",
+                        "rating": float(therapist.get("rating", 0) or 0),
+                        "reviewCount": therapist.get("review_count", 0) or 0,
                         "distance": 0.0, 
                         "nextAvailable": "Today" 
                     })
@@ -5820,6 +5822,7 @@ def Routes():
 
             except Exception as e:
                 print(f"Database error in get therapists API: {e}")
+                print(f"Traceback: {traceback.format_exc()}")
                 return JSONResponse(
                     status_code=500,
                     content={"error": f"Internal server error: {str(e)}"}
@@ -5829,6 +5832,7 @@ def Routes():
                 db.close()
         except Exception as e:
             print(f"Error in get therapists API: {e}")
+            print(f"Traceback: {traceback.format_exc()}")
             return JSONResponse(
                 status_code=500,
                 content={"error": f"Server error: {str(e)}"}
@@ -5837,9 +5841,11 @@ def Routes():
     @app.get("/therapists/{id}")
     async def get_therapist_details(id: int):
         """API endpoint to get detailed information about a specific therapist"""
+        import traceback
+        
         try:
             db = get_Mysql_db()
-            cursor = db.cursor()
+            cursor = db.cursor(pymysql.cursors.DictCursor)
             try:
                 print(f"Looking up therapist with ID: {id}")
                 
@@ -5860,43 +5866,41 @@ def Routes():
                         content={"error": "Therapist not found"}
                     )
                 
-                if therapist['first_name'] is None:
-                    therapist['first_name'] = ""
-                if therapist['last_name'] is None:
-                    therapist['last_name'] = ""
+                first_name = therapist.get('first_name', "")
+                last_name = therapist.get('last_name', "")
                     
-                print(f"Therapist found: {therapist['first_name']} {therapist['last_name']}")
+                print(f"Therapist found: {first_name} {last_name}")
                 
                 for field in ['specialties', 'education', 'languages']:
-                    therapist[field] = safely_parse_json_field(therapist[field], [])
+                    therapist[field] = safely_parse_json_field(therapist.get(field), [])
                 
                 static_dir = getattr(app.state, 'static_directory', "/PERCEPTRONX/Frontend_Web/static")
-                profile_image = therapist['profile_image']
+                profile_image = therapist.get('profile_image')
                 matched_image = find_best_matching_image(id, profile_image, static_dir)
                 photoUrl = f"/static/assets/images/user/{matched_image}"
                 print(f"Therapist detail ID: {id}, Original Image: {profile_image}, Matched: {matched_image}, URL: {photoUrl}")
                 
                 formatted_therapist = {
-                    "id": therapist["id"],
-                    "first_name": therapist["first_name"],
-                    "last_name": therapist["last_name"],
-                    "name": f"{therapist['first_name']} {therapist['last_name']}",
+                    "id": therapist.get("id"),
+                    "first_name": first_name,
+                    "last_name": last_name,
+                    "name": f"{first_name} {last_name}",
                     "photoUrl": photoUrl,
                     "profile_image": matched_image,
-                    "specialties": therapist["specialties"],
-                    "bio": therapist["bio"] or "",
-                    "experienceYears": therapist["experience_years"] or 0,
-                    "experience_years": therapist["experience_years"] or 0,
-                    "education": therapist["education"],
-                    "languages": therapist["languages"],
-                    "address": therapist["address"] or "",
-                    "rating": float(therapist["rating"] or 0),
-                    "reviewCount": therapist["review_count"] or 0,
-                    "review_count": therapist["review_count"] or 0,
-                    "isAcceptingNewPatients": bool(therapist["is_accepting_new_patients"]),
-                    "is_accepting_new_patients": bool(therapist["is_accepting_new_patients"]),
-                    "averageSessionLength": therapist["average_session_length"] or 60,
-                    "average_session_length": therapist["average_session_length"] or 60
+                    "specialties": therapist.get("specialties", []),
+                    "bio": therapist.get("bio", "") or "",
+                    "experienceYears": therapist.get("experience_years", 0) or 0,
+                    "experience_years": therapist.get("experience_years", 0) or 0,
+                    "education": therapist.get("education", []),
+                    "languages": therapist.get("languages", []),
+                    "address": therapist.get("address", "") or "",
+                    "rating": float(therapist.get("rating", 0) or 0),
+                    "reviewCount": therapist.get("review_count", 0) or 0,
+                    "review_count": therapist.get("review_count", 0) or 0,
+                    "isAcceptingNewPatients": bool(therapist.get("is_accepting_new_patients", False)),
+                    "is_accepting_new_patients": bool(therapist.get("is_accepting_new_patients", False)),
+                    "averageSessionLength": therapist.get("average_session_length", 60) or 60,
+                    "average_session_length": therapist.get("average_session_length", 60) or 60
                 }
                 
                 print(f"Formatted therapist: {formatted_therapist}")
@@ -5928,12 +5932,14 @@ def Routes():
     @app.get("/therapists/{id}/availability")
     async def get_therapist_availability(id: int, date: str = None):
         """API endpoint to get available time slots for a therapist"""
+        import traceback
+        
         try:
             if not date:
                 date = datetime.datetime.now().strftime("%Y-%m-%d")
             
             db = get_Mysql_db()
-            cursor = db.cursor()
+            cursor = db.cursor(pymysql.cursors.DictCursor)
 
             try:
                 cursor.execute(
@@ -5960,7 +5966,7 @@ def Routes():
                 start_hour = 9
                 end_hour = 17
                 
-                slot_duration = therapist['average_session_length'] or 60
+                slot_duration = therapist.get('average_session_length', 60) or 60
                 
                 available_slots = []
                 current_time = datetime.time(start_hour, 0)
@@ -5973,9 +5979,9 @@ def Routes():
                     
                     is_available = True
                     for booked in booked_slots:
-                        booked_start = convert_mysql_time_to_time(booked['appointment_time'])
+                        booked_start = convert_mysql_time_to_time(booked.get('appointment_time'))
                         booked_end_dt = (datetime.datetime.combine(datetime.date.today(), booked_start) + 
-                                        datetime.timedelta(minutes=booked['duration']))
+                                        datetime.timedelta(minutes=booked.get('duration', 60)))
                         booked_end = booked_end_dt.time()
                         
                         if (current_time < booked_end and slot_end > booked_start):
@@ -6001,6 +6007,7 @@ def Routes():
 
             except Exception as e:
                 print(f"Database error in get therapist availability API: {e}")
+                print(f"Traceback: {traceback.format_exc()}")
                 return JSONResponse(
                     status_code=500,
                     content={"error": f"Internal server error: {str(e)}"}
@@ -6010,6 +6017,7 @@ def Routes():
                 db.close()
         except Exception as e:
             print(f"Error in get therapist availability API: {e}")
+            print(f"Traceback: {traceback.format_exc()}")
             return JSONResponse(        
                 status_code=500,
                 content={"error": f"Server error: {str(e)}"}
@@ -6017,13 +6025,13 @@ def Routes():
 
     @app.post("/api/book-appointment")
     async def book_appointment(appointment_request: AppointmentRequest, request: Request):
-        print("⭐️⭐️⭐️ BOOK APPOINTMENT ENDPOINT HIT ⭐️⭐️⭐️")
-        """API endpoint to request an appointment with a therapist"""
+        import traceback
+        
         session_id = request.cookies.get("session_id")
         print(f"Appointment request - Cookie session ID: {session_id}")
 
         db = get_Mysql_db()
-        cursor = db.cursor()
+        cursor = db.cursor(pymysql.cursors.DictCursor)
 
         try:
             cursor.execute(
@@ -6057,21 +6065,25 @@ def Routes():
             patient_id = None
 
             if user_info:
+                user_username = user_info.get('username')
+                user_email = user_info.get('email')
+                user_user_id = user_info.get('user_id')
+                
                 cursor.execute(
                     "SELECT patient_id FROM Patients WHERE email = %s",
-                    (user_info[1],)
+                    (user_email,)
                 )
                 patient_record = cursor.fetchone()
                 print(f"patient_record: {patient_record}")
 
                 if patient_record:
-                    patient_id = patient_record[0]
+                    patient_id = patient_record.get('patient_id')
                 else:
                     cursor.execute(
                         """INSERT INTO Patients 
                         (therapist_id, first_name, last_name, email, user_id) 
                         VALUES (%s, %s, %s, %s, %s)""",
-                        (appointment_request.therapist_id, user_info[0], "", user_info[1], user_info[2])
+                        (appointment_request.therapist_id, user_username, "", user_email, user_user_id)
                     )
                     db.commit()
                     patient_id = cursor.lastrowid
@@ -6124,6 +6136,7 @@ def Routes():
         except Exception as e:
             db.rollback()
             print(f"Database error in request appointment API: {e}")
+            print(f"Traceback: {traceback.format_exc()}")
             return JSONResponse(
                 status_code=500,
                 content={"status": "failed", "message": f"Error requesting appointment: {str(e)}"}
@@ -6131,7 +6144,7 @@ def Routes():
         finally:
             cursor.close()
             db.close()
-
+        
     @app.post("/therapists/{id}/add_patient")
     async def add_patient_to_therapist(request: Request, id: int, patient: dict):
         """API endpoint to add a user as a patient to a therapist"""
@@ -8330,6 +8343,8 @@ def Routes():
         exercise_id: int
     ):
         """API endpoint to get history of all completions of a specific exercise across all treatment plans"""
+        import traceback
+        
         session_id = request.cookies.get("session_id")
         if not session_id:
             return JSONResponse(
@@ -8347,9 +8362,8 @@ def Routes():
             cursor = None
             
             try:
-                cursor = db.cursor()
+                cursor = db.cursor(pymysql.cursors.DictCursor)
                 
-
                 cursor.execute(
                     "SELECT patient_id FROM Patients WHERE user_id = %s",
                     (user_id,)
@@ -8359,9 +8373,8 @@ def Routes():
                 if not patient:
                     return JSONResponse(status_code=404, content={"detail": "Patient profile not found"})
                 
-                patient_id = patient["patient_id"]
+                patient_id = patient.get("patient_id")
                 
-
                 cursor.execute(
                     "SELECT * FROM Exercises WHERE exercise_id = %s",
                     (exercise_id,)
@@ -8371,7 +8384,6 @@ def Routes():
                 if not exercise:
                     return JSONResponse(status_code=404, content={"detail": "Exercise not found"})
                 
-
                 cursor.execute(
                     """
                     SELECT tpe.plan_exercise_id, tpe.plan_id, tp.name as plan_name, 
@@ -8390,8 +8402,7 @@ def Routes():
                         content={"detail": "Exercise not found in any of your treatment plans"}
                     )
                 
-
-                plan_exercise_ids = [pe["plan_exercise_id"] for pe in plan_exercises]
+                plan_exercise_ids = [pe.get("plan_exercise_id") for pe in plan_exercises]
                 placeholders = ', '.join(['%s'] * len(plan_exercise_ids))
                 
                 cursor.execute(
@@ -8408,7 +8419,7 @@ def Routes():
                 )
                 progress_entries = cursor.fetchall()
                 
-
+                # Get statistics
                 cursor.execute(
                     f"""
                     SELECT 
@@ -8424,50 +8435,47 @@ def Routes():
                 )
                 stats = cursor.fetchone()
                 
-
                 formatted_progress = []
                 for entry in progress_entries:
                     formatted_progress.append({
-                        "progressId": entry["progress_id"],
-                        "planExerciseId": entry["plan_exercise_id"],
-                        "planId": entry["plan_id"],
-                        "planName": entry["plan_name"],
-                        "completionDate": entry["completion_date"].isoformat() if entry["completion_date"] else None,
-                        "setsCompleted": entry["sets_completed"],
-                        "repetitionsCompleted": entry["repetitions_completed"],
-                        "durationSeconds": entry["duration_seconds"],
-                        "painLevel": entry["pain_level"],
-                        "difficultyLevel": entry["difficulty_level"],
-                        "notes": entry["notes"],
-                        "createdAt": entry["created_at"].isoformat() if entry["created_at"] else None
+                        "progressId": entry.get("progress_id"),
+                        "planExerciseId": entry.get("plan_exercise_id"),
+                        "planId": entry.get("plan_id"),
+                        "planName": entry.get("plan_name", ""),
+                        "completionDate": entry.get("completion_date").isoformat() if entry.get("completion_date") else None,
+                        "setsCompleted": entry.get("sets_completed", 0),
+                        "repetitionsCompleted": entry.get("repetitions_completed", 0),
+                        "durationSeconds": entry.get("duration_seconds", 0),
+                        "painLevel": entry.get("pain_level", 0),
+                        "difficultyLevel": entry.get("difficulty_level", 0),
+                        "notes": entry.get("notes", ""),
+                        "createdAt": entry.get("created_at").isoformat() if entry.get("created_at") else None
                     })
                 
-
                 formatted_plans = []
                 for pe in plan_exercises:
                     formatted_plans.append({
-                        "planExerciseId": pe["plan_exercise_id"],
-                        "planId": pe["plan_id"],
-                        "planName": pe["plan_name"],
-                        "sets": pe["sets"] or 3,
-                        "repetitions": pe["repetitions"] or 10,
-                        "frequency": pe["frequency"] or "Daily"
+                        "planExerciseId": pe.get("plan_exercise_id"),
+                        "planId": pe.get("plan_id"),
+                        "planName": pe.get("plan_name", ""),
+                        "sets": pe.get("sets", 3) or 3,
+                        "repetitions": pe.get("repetitions", 10) or 10,
+                        "frequency": pe.get("frequency", "Daily") or "Daily"
                     })
                 
-
                 result = {
-                    "exerciseId": exercise["exercise_id"],
-                    "name": exercise["name"],
-                    "description": exercise["description"] or "",
-                    "videoUrl": exercise["video_url"],
-                    "videoType": exercise["video_type"] or "",
-                    "difficulty": exercise["difficulty"] or "Beginner",
+                    "exerciseId": exercise.get("exercise_id"),
+                    "name": exercise.get("name", ""),
+                    "description": exercise.get("description", "") or "",
+                    "videoUrl": exercise.get("video_url", ""),
+                    "videoType": exercise.get("video_type", "") or "",
+                    "difficulty": exercise.get("difficulty", "Beginner") or "Beginner",
                     "stats": {
-                        "totalCompletions": stats["total_completions"] or 0,
-                        "averagePain": float(stats["avg_pain"]) if stats["avg_pain"] is not None else None,
-                        "averageDifficulty": float(stats["avg_difficulty"]) if stats["avg_difficulty"] is not None else None,
-                        "firstCompleted": stats["first_completed"].isoformat() if stats["first_completed"] else None,
-                        "lastCompleted": stats["last_completed"].isoformat() if stats["last_completed"] else None
+                        "totalCompletions": stats.get("total_completions", 0) or 0,
+                        "averagePain": float(stats.get("avg_pain", 0)) if stats.get("avg_pain") is not None else None,
+                        "averageDifficulty": float(stats.get("avg_difficulty", 0)) if stats.get("avg_difficulty") is not None else None,
+                        "firstCompleted": stats.get("first_completed").isoformat() if stats.get("first_completed") else None,
+                        "lastCompleted": stats.get("last_completed").isoformat() if stats.get("last_completed") else None
                     },
                     "planInstances": formatted_plans,
                     "progressHistory": formatted_progress
@@ -8498,12 +8506,15 @@ def Routes():
     @app.get("/api/therapists/{therapist_id}/details")
     async def get_therapist_details(therapist_id: int):
         """API endpoint to get detailed information about a specific therapist"""
+        import traceback
+        
         try:
             db = get_Mysql_db()
             cursor = None
             
             try:
-                cursor = db.cursor()
+                cursor = db.cursor(pymysql.cursors.DictCursor)
+                
                 cursor.execute(
                     """SELECT id, first_name, last_name, company_email, profile_image, 
                             bio, experience_years, specialties, education, languages, 
@@ -8522,31 +8533,31 @@ def Routes():
                     )
                 
                 for field in ['specialties', 'education', 'languages']:
-                    therapist[field] = safely_parse_json_field(therapist[field], [])
+                    therapist[field] = safely_parse_json_field(therapist.get(field), [])
                 
                 static_dir = getattr(app.state, 'static_directory', "/PERCEPTRONX/Frontend_Web/static")
                 
-                profile_image = therapist['profile_image']
+                profile_image = therapist.get('profile_image')
                 matched_image = find_best_matching_image(therapist_id, profile_image, static_dir)
                 photo_url = f"/static/assets/images/user/{matched_image}"
                 
                 formatted_therapist = {
-                    "id": therapist["id"],
-                    "first_name": therapist["first_name"] or "",
-                    "last_name": therapist["last_name"] or "",
-                    "company_email": therapist["company_email"] or "",
-                    "profile_image": therapist["profile_image"] or "",
-                    "bio": therapist["bio"] or "",
-                    "experience_years": therapist["experience_years"] or 0,
-                    "specialties": therapist["specialties"],
-                    "education": therapist["education"],
-                    "languages": therapist["languages"],
-                    "address": therapist["address"] or "",
-                    "rating": float(therapist["rating"] or 0),
-                    "review_count": therapist["review_count"] or 0,
-                    "is_accepting_new_patients": bool(therapist["is_accepting_new_patients"]),
-                    "average_session_length": therapist["average_session_length"] or 60,
-                    "name": f"{therapist['first_name']} {therapist['last_name']}",
+                    "id": therapist.get("id"),
+                    "first_name": therapist.get("first_name", "") or "",
+                    "last_name": therapist.get("last_name", "") or "",
+                    "company_email": therapist.get("company_email", "") or "",
+                    "profile_image": therapist.get("profile_image", "") or "",
+                    "bio": therapist.get("bio", "") or "",
+                    "experience_years": therapist.get("experience_years", 0) or 0,
+                    "specialties": therapist.get("specialties", []),
+                    "education": therapist.get("education", []),
+                    "languages": therapist.get("languages", []),
+                    "address": therapist.get("address", "") or "",
+                    "rating": float(therapist.get("rating", 0) or 0),
+                    "review_count": therapist.get("review_count", 0) or 0,
+                    "is_accepting_new_patients": bool(therapist.get("is_accepting_new_patients", False)),
+                    "average_session_length": therapist.get("average_session_length", 60) or 60,
+                    "name": f"{therapist.get('first_name', '')} {therapist.get('last_name', '')}",
                     "photoUrl": photo_url
                 }
                 
