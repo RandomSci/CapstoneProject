@@ -5,7 +5,6 @@ fastapi-redis-cache
 pydantic
 python-dotenv
 httpx
-celery
 flower
 asyncpg
 databases
@@ -17,13 +16,11 @@ starlette-session
 user_agents
 qrcode
 sockets
-ultralytics
 bcrypt
 mysql.connector
 fastcore==1.5.29
 aiofiles
 opencv-python
-matplotlib
 moviepy
 mediapipe
 pygame
