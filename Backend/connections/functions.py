@@ -20,7 +20,6 @@ import json
 import aiofiles
 import mediapipe as mp
 import time
-import pygame
 import subprocess
 import os
 import numpy as np
