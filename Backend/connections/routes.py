@@ -10327,6 +10327,8 @@ def Routes():
     @app.get("/api/user/video-submissions")
     async def get_user_video_submissions(request: Request):
         """API endpoint to get all video submissions for the current user"""
+        import traceback
+        
         session_id = request.cookies.get("session_id")
         if not session_id:
             return JSONResponse(
@@ -10344,7 +10346,7 @@ def Routes():
             cursor = None
             
             try:
-                cursor = db.cursor()
+                cursor = db.cursor(pymysql.cursors.DictCursor)
                 
                 cursor.execute(
                     "SELECT patient_id FROM Patients WHERE user_id = %s",
@@ -10355,7 +10357,7 @@ def Routes():
                 if not patient:
                     return JSONResponse(status_code=404, content={"detail": "Patient profile not found"})
                 
-                patient_id = patient["patient_id"]
+                patient_id = patient.get("patient_id")
                 
                 cursor.execute(
                     """
@@ -10380,25 +10382,20 @@ def Routes():
                 
                 submissions = []
                 for row in cursor:
-
                     submission = dict(row)
                     
-
-                    if submission["submission_date"]:
-                        submission["submission_date"] = submission["submission_date"].isoformat()
+                    if submission.get("submission_date"):
+                        submission["submission_date"] = submission.get("submission_date").isoformat()
                     
-
-                    submission["has_feedback"] = submission["has_feedback"] == 1 if isinstance(submission["has_feedback"], int) else bool(submission["has_feedback"])
+                    submission["has_feedback"] = bool(submission.get("has_feedback"))
                     
                     submissions.append(submission)
 
                 response_data = []
                 for sub in submissions:
-
                     sub_dict = {}
                     for key, value in sub.items():
                         if key == "has_feedback":
-
                             sub_dict[key] = True if value else False
                         else:
                             sub_dict[key] = value
@@ -10430,6 +10427,8 @@ def Routes():
     @app.get("/api/video-submissions/{submission_id}")
     async def get_video_submission_details(submission_id: int, request: Request):
         """API endpoint to get detailed information about a specific video submission"""
+        import traceback
+        
         session_id = request.cookies.get("session_id")
         if not session_id:
             return JSONResponse(
@@ -10448,9 +10447,8 @@ def Routes():
             cursor = None
             
             try:
-                cursor = db.cursor()
+                cursor = db.cursor(pymysql.cursors.DictCursor)
                 
-
                 cursor.execute(
                     "SELECT patient_id FROM Patients WHERE user_id = %s",
                     (user_id,)
@@ -10460,9 +10458,8 @@ def Routes():
                 if not patient:
                     return JSONResponse(status_code=404, content={"detail": "Patient profile not found"})
                 
-                patient_id = patient["patient_id"]
+                patient_id = patient.get("patient_id")
                 
-
                 cursor.execute(
                     """
                     SELECT 
@@ -10495,16 +10492,13 @@ def Routes():
                         content={"detail": "Video submission not found or you don't have access to it"}
                     )
                 
-                if submission and "video_url" in submission and submission["video_url"]:
-
-                    filename = os.path.basename(submission["video_url"])
+                if submission and "video_url" in submission and submission.get("video_url"):
+                    filename = os.path.basename(submission.get("video_url"))
                     
-
                     token = await generate_video_token(user_id, filename)
                     
-
                     query_params = urlencode({"token": token})
-                    submission["video_url"] = f"{submission['video_url']}?{query_params}"
+                    submission["video_url"] = f"{submission.get('video_url')}?{query_params}"
                 
                 return submission
                 
@@ -10532,6 +10526,8 @@ def Routes():
     @app.delete("/api/video-submissions/{submission_id}")
     async def delete_video_submission(submission_id: int, request: Request):
         """API endpoint to delete a video submission"""
+        import traceback
+        
         session_id = request.cookies.get("session_id")
         if not session_id:
             return JSONResponse(
@@ -10550,9 +10546,8 @@ def Routes():
             cursor = None
             
             try:
-                cursor = db.cursor()
+                cursor = db.cursor(pymysql.cursors.DictCursor)
                 
-
                 cursor.execute(
                     "SELECT patient_id FROM Patients WHERE user_id = %s",
                     (user_id,)
@@ -10562,9 +10557,8 @@ def Routes():
                 if not patient:
                     return JSONResponse(status_code=404, content={"detail": "Patient profile not found"})
                 
-                patient_id = patient["patient_id"]
+                patient_id = patient.get("patient_id")
                 
-
                 cursor.execute(
                     """
                     SELECT video_url 
@@ -10582,7 +10576,6 @@ def Routes():
                         content={"detail": "Video submission not found or you don't have access to it"}
                     )
                 
-
                 cursor.execute(
                     "DELETE FROM ExerciseVideoSubmissions WHERE submission_id = %s AND patient_id = %s",
                     (submission_id, patient_id)
@@ -10590,8 +10583,7 @@ def Routes():
                 
                 db.commit()
                 
-
-                video_path = submission["video_url"]
+                video_path = submission.get("video_url")
                 if video_path and video_path.startswith("/api/uploads/exercise_videos/"):
                     filename = os.path.basename(video_path)
                     file_path = os.path.join(UPLOAD_DIR, filename)
