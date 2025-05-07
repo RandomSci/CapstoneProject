@@ -6696,6 +6696,8 @@ def Routes():
     @app.get("/api/user/appointments")
     async def get_user_appointments_data(request: Request):
         """API endpoint to get appointments for the current logged-in user"""
+        import traceback
+        
         session_id = request.cookies.get("session_id")
         if not session_id:
             return JSONResponse(
@@ -6717,7 +6719,8 @@ def Routes():
             cursor = None
             
             try:
-                cursor = db.cursor()
+                cursor = db.cursor(pymysql.cursors.DictCursor)
+                
                 cursor.execute(
                     "SELECT patient_id FROM Patients WHERE user_id = %s",
                     (user_id,)
@@ -6727,7 +6730,7 @@ def Routes():
                 if not patient_record:
                     return []
                 
-                patient_id = patient_record['patient_id']
+                patient_id = patient_record.get('patient_id')
                 
                 cursor.execute(
                     """SELECT a.* 
@@ -6741,8 +6744,10 @@ def Routes():
                 formatted_appointments = []
                 for appointment in appointments:
                     notes_info = {"appointmentType": "", "additionalNotes": "", "insurance": "", "memberId": 0}
-                    if appointment["notes"]:
-                        lines = appointment["notes"].split('\n')
+                    appointment_notes = appointment.get("notes", "")
+                    
+                    if appointment_notes:
+                        lines = appointment_notes.split('\n')
                         for line in lines:
                             if line.startswith('Type:'):
                                 notes_info["appointmentType"] = line[5:].strip()
@@ -6758,20 +6763,20 @@ def Routes():
                                     notes_info["memberId"] = 0
                     
                     formatted_appointment = {
-                        "appointment_id": appointment["appointment_id"],
-                        "patient_id": appointment["patient_id"],
-                        "therapist_id": appointment["therapist_id"],
-                        "appointment_date": appointment["appointment_date"].isoformat() if appointment["appointment_date"] else "",
-                        "appointment_time": format_mysql_time(appointment["appointment_time"]),
-                        "duration": appointment["duration"] or 60,
-                        "status": appointment["status"] or "Scheduled",
-                        "notes": appointment["notes"] or "",
+                        "appointment_id": appointment.get("appointment_id", 0),
+                        "patient_id": appointment.get("patient_id", 0),
+                        "therapist_id": appointment.get("therapist_id", 0),
+                        "appointment_date": appointment.get("appointment_date").isoformat() if appointment.get("appointment_date") else "",
+                        "appointment_time": format_mysql_time(appointment.get("appointment_time")),
+                        "duration": appointment.get("duration", 60) or 60,
+                        "status": appointment.get("status", "Scheduled") or "Scheduled",
+                        "notes": appointment.get("notes", "") or "",
                         "appointmentType": notes_info["appointmentType"],
-                        "additionalNotes": notes_info["additionalNotes"],  
-                        "insurance": notes_info["insurance"],             
-                        "memberId": notes_info["memberId"],               
-                        "created_at": appointment["created_at"].isoformat() if appointment["created_at"] else "",
-                        "updated_at": appointment["updated_at"].isoformat() if appointment["updated_at"] else ""
+                        "additionalNotes": notes_info["additionalNotes"],
+                        "insurance": notes_info["insurance"],
+                        "memberId": notes_info["memberId"],
+                        "created_at": appointment.get("created_at").isoformat() if appointment.get("created_at") else "",
+                        "updated_at": appointment.get("updated_at").isoformat() if appointment.get("updated_at") else ""
                     }
                     
                     formatted_appointments.append(formatted_appointment)
