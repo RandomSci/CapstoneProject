@@ -14,11 +14,18 @@ pymysql.connector = MySQLCompat
 
 def get_Mysql_db():
     try:
+        import pymysql
+        
+        host = os.getenv("MYSQL_HOST", "mysql.railway.internal")
+        user = os.getenv("MYSQL_USER", "root")
+        password = os.getenv("MYSQL_PASSWORD", "aPEoDFprMBfSmzewrBvKJViriSHQxgKP")
+        database = os.getenv("MYSQL_DB", "perceptronx")
+        
         connection = pymysql.connect(
-            host="mysql.railway.internal",
-            user="root",
-            password="yjjwIasbqHWwyKrbdmNRCWHVBGMgNMNG",
-            database="perceptronx",
+            host=host,
+            user=user,
+            password=password,
+            database=database,
             cursorclass=pymysql.cursors.DictCursor
         )
         return connection
