@@ -13,19 +13,28 @@ class MySQLCompat:
 pymysql.connector = MySQLCompat
 
 def get_Mysql_db(max_retries=5, retry_delay=2):
-    host = os.getenv("MYSQL_HOST", "mysql.railway.internal") 
-    user = os.getenv("MYSQL_USER", "root")
-    password = os.getenv("MYSQL_PASSWORD", "root")  
-    database = os.getenv("MYSQL_DB", "perceptronx")
+    mysql_url = os.getenv("MYSQL_URL", "mysql://root:root@mysql.railway.internal:3306/perceptronx")
     
     for attempt in range(max_retries):
         try:
+            parts = mysql_url.replace('mysql://', '').split('@')
+            auth = parts[0].split(':')
+            host_info = parts[1].split('/')
+            host_port = host_info[0].split(':')
+            
+            user = auth[0]
+            password = ""
+            host = host_port[0]
+            port = int(host_port[1]) if len(host_port) > 1 else 3306
+            database = host_info[1] if len(host_info) > 1 else 'perceptronx'
+            
             connection = pymysql.connect(
                 host=host,
                 user=user,
-                password=password,
+                password=password, 
+                port=port,
                 database=database,
-                cursorclass=pymysql.cursors.DictCursor 
+                cursorclass=pymysql.cursors.DictCursor
             )
             return connection
         except Exception as err:
