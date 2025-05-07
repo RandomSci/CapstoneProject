@@ -1,0 +1,41 @@
+{
+  "$schema": "https://railway.app/railway.schema.json",
+  "build": {
+    "builder": "DOCKERFILE",
+    "dockerfilePath": "Dockerfile"
+  },
+  "deploy": {
+    "numReplicas": 1,
+    "startCommand": "uvicorn main:app --host 0.0.0.0 --port $PORT --reload",
+    "restartPolicyType": "ON_FAILURE",
+    "restartPolicyMaxRetries": 3
+  },
+  "variables": {
+    "PORT": "8000",
+    "MYSQL_HOST": "${{ service.db.MYSQL_HOST }}",
+    "MYSQL_USER": "root",
+    "MYSQL_PASSWORD": "${{ service.db.MYSQL_ROOT_PASSWORD }}",
+    "MYSQL_DB": "perceptronx",
+    "REDIS_HOST": "${{ service.redis.REDIS_HOST }}",
+    "REDIS_PORT": "6379",
+    "MONGO_HOST": "${{ service.mongodb.MONGO_HOST }}",
+    "MONGO_PORT": "27017",
+    "STATIC_DIR": "/PERCEPTRONX/Frontend_Web/static"
+  },
+  "services": {
+    "web": {
+      "healthcheck": {
+        "path": "/",
+        "interval": 30,
+        "timeout": 10
+      }
+    }
+  },
+  "volumes": [
+    {
+      "name": "static-files",
+      "mountPath": "/PERCEPTRONX/Frontend_Web/static/assets/images/user",
+      "persistent": true
+    }
+  ]
+}

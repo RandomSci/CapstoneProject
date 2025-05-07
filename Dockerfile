@@ -1,10 +1,7 @@
 FROM python:3.11-slim
-
 WORKDIR /PERCEPTRONX
-
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
-
 RUN apt-get update && apt-get install -y \
     gcc \
     default-libmysqlclient-dev \
@@ -20,25 +17,17 @@ RUN apt-get update && apt-get install -y \
     libxext6 \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
-
 COPY Backend/requirements.txt .
 RUN pip install --upgrade pip && \
     pip install --no-cache-dir -r requirements.txt
-
 COPY Backend /PERCEPTRONX/Backend
 COPY Frontend_Web /PERCEPTRONX/Frontend_Web
 COPY Frontend /PERCEPTRONX/Frontend
 COPY docker-compose.yml .
 COPY init.sql .
-
 COPY Frontend_Web/static/assets/images/user/ /PERCEPTRONX/Frontend_Web/static/assets/images/user/
-
 RUN chmod -R 777 /PERCEPTRONX/Frontend_Web/static/assets/images/user
 
-VOLUME ["/PERCEPTRONX/Frontend_Web/static"]
-
 WORKDIR /PERCEPTRONX/Backend
-
 EXPOSE 8000
-
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "${PORT:-8000}", "--reload"]
