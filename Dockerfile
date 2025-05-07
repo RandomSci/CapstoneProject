@@ -30,4 +30,5 @@ RUN chmod -R 777 /PERCEPTRONX/Frontend_Web/static/assets/images/user
 
 WORKDIR /PERCEPTRONX/Backend
 EXPOSE 8000
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "${PORT:-8000}", "--reload"]
+
+CMD uvicorn main:app --host 0.0.0.0 --port $PORT --reload
