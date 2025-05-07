@@ -13,48 +13,53 @@ class MySQLCompat:
 pymysql.connector = MySQLCompat
 
 def get_Mysql_db(max_retries=5, retry_delay=2):
-    mysql_url = os.getenv("MYSQL_URL", "")
+    host = os.getenv("MYSQL_HOST", "mysql.railway.internal")
+    user = os.getenv("MYSQL_USER", "root")
+    password = os.getenv("MYSQL_PASSWORD", "yjjwIasbqHWwyKrbdmNRCWHVBGMgNMNG")
+    database = os.getenv("MYSQL_DB", "perceptronx")
+    port = int(os.getenv("MYSQL_PORT", "3306"))
     
-    if not mysql_url:
-        host = os.getenv("MYSQL_HOST", "mysql.railway.internal")
-        user = os.getenv("MYSQL_USER", "root")
-        password = os.getenv("MYSQL_PASSWORD", "yjjwIasbqHWwyKrbdmNRCWHVBGMgNMNG")
-        database = os.getenv("MYSQL_DB", "perceptronx")
-        port = os.getenv("MYSQL_PORT", "3306")
-        mysql_url = f"mysql://{user}:{password}@{host}:{port}/{database}"
+    print(f"Connecting to MySQL at {host}:{port} as {user}")
     
-    for attempt in range(max_retries):
-        try:
-            parts = mysql_url.replace('mysql://', '').split('@')
-            auth = parts[0].split(':')
-            host_info = parts[1].split('/')
-            host_port = host_info[0].split(':')
-            
-            user = auth[0]
-            password = auth[1]  
-            host = host_port[0]
-            port = int(host_port[1]) if len(host_port) > 1 else 3306
-            database = host_info[1] if len(host_info) > 1 else 'perceptronx'
-            
-            print(f"Connecting to MySQL at {host}:{port} as {user}")
-            
-            connection = pymysql.connect(
-                host=host,
-                user=user,
-                password=password,  
-                port=port,
-                database=database,
-                cursorclass=pymysql.cursors.DictCursor
-            )
-            print("MySQL connection successful!")
-            return connection
-        except Exception as err:
-            if attempt < max_retries - 1:
-                print(f"Database connection attempt {attempt+1} failed: {err}. Retrying in {retry_delay} seconds...")
-                time.sleep(retry_delay)
-            else:
-                print(f"Failed to connect to database after {max_retries} attempts: {err}")
-                raise
+    connection_configs = [
+        {"ssl": True},
+        {"ssl": {}},
+        {},
+        {"client_flag": pymysql.constants.CLIENT.SSL},
+        {"ssl": {"ca": None}}
+    ]
+    
+    for config in connection_configs:
+        for attempt in range(max_retries // len(connection_configs) + 1):
+            try:
+                print(f"Trying connection config: {config}")
+                
+                connection_params = {
+                    "host": host,
+                    "user": user,
+                    "password": password,
+                    "database": database,
+                    "port": port,
+                    "cursorclass": pymysql.cursors.DictCursor,
+                    "charset": 'utf8mb4'
+                }
+                
+                connection_params.update(config)
+                
+                connection = pymysql.connect(**connection_params)
+                print("MySQL connection successful!")
+                return connection
+            except Exception as err:
+                print(f"Connection attempt failed with config {config}: {err}")
+                if attempt < max_retries // len(connection_configs):
+                    print(f"Retrying with same config in {retry_delay} seconds...")
+                    time.sleep(retry_delay)
+                else:
+                    print(f"Moving to next configuration...")
+                    break
+    
+    print("All connection configurations failed")
+    raise Exception("Could not establish database connection after trying all configurations")
 
 def Register_User_Web(first_name, last_name, company_email, password):
     db = get_Mysql_db()
