@@ -1,6 +1,8 @@
 import mysql.connector
 from connections.functions import *
 import os
+import pymysql
+pymysql.install_as_MySQLdb()
 
 def get_Mysql_db(max_retries=5, retry_delay=2):
     host = os.getenv("MYSQL_HOST", "db")  

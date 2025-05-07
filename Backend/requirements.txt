@@ -27,3 +27,5 @@ matplotlib
 moviepy
 mediapipe
 pygame
+pymysql
+cryptography
