@@ -1,8 +1,16 @@
-import mysql.connector
+import pymysql
+import pymysql.cursors
 from connections.functions import *
 import os
-import pymysql
-pymysql.install_as_MySQLdb()
+import time
+import bcrypt
+from fastapi import HTTPException
+
+class MySQLCompat:
+    Error = pymysql.Error
+    IntegrityError = pymysql.err.IntegrityError
+
+pymysql.connector = MySQLCompat
 
 def get_Mysql_db(max_retries=5, retry_delay=2):
     host = os.getenv("MYSQL_HOST", "db")  
@@ -12,15 +20,15 @@ def get_Mysql_db(max_retries=5, retry_delay=2):
     
     for attempt in range(max_retries):
         try:
-            connection = mysql.connector.connect(
+            connection = pymysql.connect(
                 host=host,
                 user=user,
                 password=password,
                 database=database,
-                auth_plugin='mysql_native_password'
+                cursorclass=pymysql.cursors.DictCursor 
             )
             return connection
-        except mysql.connector.Error as err:
+        except Exception as err:
             if attempt < max_retries - 1:
                 print(f"Database connection attempt {attempt+1} failed: {err}. Retrying in {retry_delay} seconds...")
                 time.sleep(retry_delay)
@@ -34,7 +42,8 @@ def Register_User_Web(first_name, last_name, company_email, password):
     hashed_password = bcrypt.hashpw(password.password.encode("utf-8"), bcrypt.gensalt())
     try:
         cursor.execute("SELECT COUNT(*) FROM Therapists WHERE first_name = %s AND last_name = %s", (first_name, last_name))
-        if cursor.fetchone()[0] > 0:
+        count = cursor.fetchone()['COUNT(*)']   
+        if count > 0:
             raise HTTPException(status_code=400, detail="Username or email already exists.")
         cursor.execute(
             "INSERT INTO Therapists (first_name, last_name, company_email, password) VALUES (%s, %s, %s, %s)",
@@ -42,7 +51,7 @@ def Register_User_Web(first_name, last_name, company_email, password):
         )
         db.commit()
         return {"message": "User registered successfully"}
-    except mysql.connector.IntegrityError:
+    except pymysql.err.IntegrityError:  
         return {"error": "Username or email already exists."}
     finally:
         cursor.close()
@@ -53,7 +62,7 @@ async def get_exercise_categories():
     cursor = None
     
     try:
-        cursor = db.cursor(dictionary=True)
+        cursor = db.cursor()  
         cursor.execute("SELECT * FROM ExerciseCategories ORDER BY name")
         return cursor.fetchall()
     except Exception as e:
@@ -69,7 +78,7 @@ async def user_profile(user_id):
     db = get_Mysql_db()
     cursor = None
     try:
-        cursor = db.cursor(dictionary=True)
+        cursor = db.cursor()   
         cursor.execute("SELECT * FROM users WHERE user_id = %s", (user_id,))
         return cursor.fetchall()
     except Exception as e:
@@ -85,7 +94,7 @@ async def user_patient_profile(user_id):
     db = get_Mysql_db()
     cursor = None
     try:
-        cursor = db.cursor(dictionary=True)
+        cursor = db.cursor()  
         cursor.execute("SELECT * FROM Patients WHERE user_id = %s", (user_id,))
         return cursor.fetchall()
     except Exception as e:
@@ -101,7 +110,7 @@ async def get_therapist_data(therapist_id):
     db = get_Mysql_db()
     cursor = None
     try:
-        cursor = db.cursor(dictionary=True)
+        cursor = db.cursor()   
         cursor.execute("SELECT * FROM Therapists WHERE id = %s", (therapist_id,))
         return cursor.fetchall()
     except Exception as e:
@@ -117,7 +126,7 @@ async def get_appointment_data(patient_id):
     db = get_Mysql_db()
     cursor = None
     try:
-        cursor = db.cursor(dictionary=True)
+        cursor = db.cursor()  
         cursor.execute("SELECT * FROM Appointments WHERE patient_id = %s", (patient_id,))
         return cursor.fetchall()
     except Exception as e:
@@ -133,7 +142,7 @@ async def get_treatment_plans(patient_id):
     db = get_Mysql_db()
     cursor = None
     try:
-        cursor = db.cursor(dictionary=True)
+        cursor = db.cursor()
         cursor.execute("SELECT * FROM TreatmentPlans WHERE patient_id = %s", (patient_id,))
         return cursor.fetchall()
     except Exception as e:
@@ -149,7 +158,7 @@ async def get_treatment_plan_exercises(plan_id):
     db = get_Mysql_db()
     cursor = None
     try:
-        cursor = db.cursor(dictionary=True)
+        cursor = db.cursor()  # Remove dictionary=True
         cursor.execute("""
             SELECT * FROM TreatmentPlanExercises 
             WHERE plan_id = %s
@@ -179,7 +188,7 @@ async def get_exercise_details(exercise_id):
     db = get_Mysql_db()
     cursor = None
     try:
-        cursor = db.cursor(dictionary=True)
+        cursor = db.cursor()  
         cursor.execute("SELECT * FROM Exercises WHERE exercise_id = %s", (exercise_id,))
         return cursor.fetchone()
     except Exception as e:
@@ -190,30 +199,3 @@ async def get_exercise_details(exercise_id):
             cursor.close()
         if db:
             db.close()
-            
-async def main(user_id):
-    patient_profile = await user_patient_profile(user_id)
-    if not patient_profile:
-        print("No patient profile found.")
-        return
-    
-    therapist_id = patient_profile[0]['therapist_id']
-    patient_id = patient_profile[0]['patient_id']
-    
-    therapist_data = await get_therapist_data(therapist_id)
-    appointments = await get_appointment_data(patient_id)
-    treatment_plans = await get_treatment_plans(patient_id)
-    
-    print(f"patient_profile: {patient_profile}")
-    print(f"therapist_data: {therapist_data}")
-    print(f"appointments: {appointments}")
-    print(f"treatment_plans: {treatment_plans}")
-    
-    for plan in treatment_plans:
-        plan_exercises = await get_treatment_plan_exercises(plan['plan_id'])
-        print(f"Plan {plan['name']} exercises: {plan_exercises}")
-        
-        for exercise in plan_exercises:
-            exercise_details = await get_exercise_details(exercise['exercise_id'])
-            print(f"Exercise {exercise['exercise_id']} details: {exercise_details}")
-
