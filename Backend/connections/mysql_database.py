@@ -1,26 +1,34 @@
-import mysql.connector
-from mysql.connector import Error
-from mysql.connector.cursor import MySQLCursorDict
+import pymysql
+import pymysql.cursors
 from connections.functions import *
 import os
 import time
 import bcrypt
 from fastapi import HTTPException
 
+class MySQLCompat:
+    Error = pymysql.Error
+    IntegrityError = pymysql.err.IntegrityError
+
+pymysql.connector = MySQLCompat
+
 def get_Mysql_db():
     try:
+        import pymysql
+        
         host = os.getenv("MYSQL_HOST", "mysql.railway.internal")
         port = int(os.getenv("MYSQL_PORT", 3306))
         user = os.getenv("MYSQL_USER", "root")
         password = os.getenv("MYSQL_PASSWORD", "zgOcgtuHZLmHfTBxpxAgCaEzgeVnOEII")
         database = os.getenv("MYSQL_DB", "railway")
         
-        connection = mysql.connector.connect(
+        connection = pymysql.connect(
             host=host,
             port=port,
             user=user,
             password=password,
-            database=database
+            database=database,
+            cursorclass=pymysql.cursors.DictCursor
         )
         return connection
     except Exception as e:
@@ -29,11 +37,11 @@ def get_Mysql_db():
 
 def Register_User_Web(first_name, last_name, company_email, password):
     db = get_Mysql_db()
-    cursor = db.cursor(dictionary=True)
+    cursor = db.cursor()
     hashed_password = bcrypt.hashpw(password.password.encode("utf-8"), bcrypt.gensalt())
     try:
-        cursor.execute("SELECT COUNT(*) AS count FROM Therapists WHERE first_name = %s AND last_name = %s", (first_name, last_name))
-        count = cursor.fetchone()['count']   
+        cursor.execute("SELECT COUNT(*) FROM Therapists WHERE first_name = %s AND last_name = %s", (first_name, last_name))
+        count = cursor.fetchone()['COUNT(*)']   
         if count > 0:
             raise HTTPException(status_code=400, detail="Username or email already exists.")
         cursor.execute(
@@ -42,7 +50,7 @@ def Register_User_Web(first_name, last_name, company_email, password):
         )
         db.commit()
         return {"message": "User registered successfully"}
-    except mysql.connector.errors.IntegrityError:  
+    except pymysql.err.IntegrityError:  
         return {"error": "Username or email already exists."}
     finally:
         cursor.close()
@@ -53,7 +61,7 @@ async def get_exercise_categories():
     cursor = None
     
     try:
-        cursor = db.cursor(dictionary=True)
+        cursor = db.cursor()  
         cursor.execute("SELECT * FROM ExerciseCategories ORDER BY name")
         return cursor.fetchall()
     except Exception as e:
@@ -69,7 +77,7 @@ async def user_profile(user_id):
     db = get_Mysql_db()
     cursor = None
     try:
-        cursor = db.cursor(dictionary=True)
+        cursor = db.cursor()   
         cursor.execute("SELECT * FROM users WHERE user_id = %s", (user_id,))
         return cursor.fetchall()
     except Exception as e:
@@ -85,7 +93,7 @@ async def user_patient_profile(user_id):
     db = get_Mysql_db()
     cursor = None
     try:
-        cursor = db.cursor(dictionary=True)
+        cursor = db.cursor()  
         cursor.execute("SELECT * FROM Patients WHERE user_id = %s", (user_id,))
         return cursor.fetchall()
     except Exception as e:
@@ -101,7 +109,7 @@ async def get_therapist_data(therapist_id):
     db = get_Mysql_db()
     cursor = None
     try:
-        cursor = db.cursor(dictionary=True)
+        cursor = db.cursor()   
         cursor.execute("SELECT * FROM Therapists WHERE id = %s", (therapist_id,))
         return cursor.fetchall()
     except Exception as e:
@@ -117,7 +125,7 @@ async def get_appointment_data(patient_id):
     db = get_Mysql_db()
     cursor = None
     try:
-        cursor = db.cursor(dictionary=True)
+        cursor = db.cursor()  
         cursor.execute("SELECT * FROM Appointments WHERE patient_id = %s", (patient_id,))
         return cursor.fetchall()
     except Exception as e:
@@ -133,7 +141,7 @@ async def get_treatment_plans(patient_id):
     db = get_Mysql_db()
     cursor = None
     try:
-        cursor = db.cursor(dictionary=True)
+        cursor = db.cursor()
         cursor.execute("SELECT * FROM TreatmentPlans WHERE patient_id = %s", (patient_id,))
         return cursor.fetchall()
     except Exception as e:
@@ -149,7 +157,7 @@ async def get_treatment_plan_exercises(plan_id):
     db = get_Mysql_db()
     cursor = None
     try:
-        cursor = db.cursor(dictionary=True)
+        cursor = db.cursor()  # Remove dictionary=True
         cursor.execute("""
             SELECT * FROM TreatmentPlanExercises 
             WHERE plan_id = %s
@@ -179,7 +187,7 @@ async def get_exercise_details(exercise_id):
     db = get_Mysql_db()
     cursor = None
     try:
-        cursor = db.cursor(dictionary=True)
+        cursor = db.cursor()  
         cursor.execute("SELECT * FROM Exercises WHERE exercise_id = %s", (exercise_id,))
         return cursor.fetchone()
     except Exception as e:
