@@ -17,12 +17,14 @@ def get_Mysql_db():
         import pymysql
         
         host = os.getenv("MYSQL_HOST", "mysql.railway.internal")
+        port = int(os.getenv("MYSQL_PORT", 3306))
         user = os.getenv("MYSQL_USER", "root")
-        password = os.getenv("MYSQL_PASSWORD", "aPEoDFprMBfSmzewrBvKJViriSHQxgKP")
-        database = os.getenv("MYSQL_DB", "perceptronx")
+        password = os.getenv("MYSQL_PASSWORD", "zgOcgtuHZLmHfTBxpxAgCaEzgeVnOEII")
+        database = os.getenv("MYSQL_DB", "railway")
         
         connection = pymysql.connect(
             host=host,
+            port=port,
             user=user,
             password=password,
             database=database,
