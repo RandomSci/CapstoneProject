@@ -12,54 +12,19 @@ class MySQLCompat:
 
 pymysql.connector = MySQLCompat
 
-def get_Mysql_db(max_retries=5, retry_delay=2):
-    host = os.getenv("MYSQL_HOST", "mysql.railway.internal")
-    user = os.getenv("MYSQL_USER", "root")
-    password = os.getenv("MYSQL_PASSWORD", "yjjwIasbqHWwyKrbdmNRCWHVBGMgNMNG")
-    database = os.getenv("MYSQL_DB", "perceptronx")
-    port = int(os.getenv("MYSQL_PORT", "3306"))
-    
-    print(f"Connecting to MySQL at {host}:{port} as {user}")
-    
-    connection_configs = [
-        {"ssl": True},
-        {"ssl": {}},
-        {},
-        {"client_flag": pymysql.constants.CLIENT.SSL},
-        {"ssl": {"ca": None}}
-    ]
-    
-    for config in connection_configs:
-        for attempt in range(max_retries // len(connection_configs) + 1):
-            try:
-                print(f"Trying connection config: {config}")
-                
-                connection_params = {
-                    "host": host,
-                    "user": user,
-                    "password": password,
-                    "database": database,
-                    "port": port,
-                    "cursorclass": pymysql.cursors.DictCursor,
-                    "charset": 'utf8mb4'
-                }
-                
-                connection_params.update(config)
-                
-                connection = pymysql.connect(**connection_params)
-                print("MySQL connection successful!")
-                return connection
-            except Exception as err:
-                print(f"Connection attempt failed with config {config}: {err}")
-                if attempt < max_retries // len(connection_configs):
-                    print(f"Retrying with same config in {retry_delay} seconds...")
-                    time.sleep(retry_delay)
-                else:
-                    print(f"Moving to next configuration...")
-                    break
-    
-    print("All connection configurations failed")
-    raise Exception("Could not establish database connection after trying all configurations")
+def get_Mysql_db():
+    try:
+        connection = pymysql.connect(
+            host="mysql.railway.internal",
+            user="root",
+            password="yjjwIasbqHWwyKrbdmNRCWHVBGMgNMNG",
+            database="perceptronx",
+            cursorclass=pymysql.cursors.DictCursor
+        )
+        return connection
+    except Exception as e:
+        print(f"Database connection failed: {e}")
+        raise
 
 def Register_User_Web(first_name, last_name, company_email, password):
     db = get_Mysql_db()
