@@ -295,7 +295,7 @@ def Routes():
                 return RedirectResponse(url="/Therapist_Login")
 
             db = get_Mysql_db()
-            cursor = db.cursor()
+            cursor = db.cursor(dictionary=True)
             try:
  
                 cursor.execute(
@@ -767,7 +767,7 @@ def Routes():
                 return RedirectResponse(url="/Therapist_Login")
 
             db = get_Mysql_db()
-            cursor = db.cursor()
+            cursor = db.cursor(dictionary=True)
             try:
 
                 cursor.execute(
@@ -861,7 +861,7 @@ def Routes():
                 return RedirectResponse(url="/Therapist_Login")
 
             db = get_Mysql_db()
-            cursor = db.cursor()
+            cursor = db.cursor(dictionary=True)
 
             try:
  
@@ -1053,7 +1053,7 @@ def Routes():
                 return RedirectResponse(url="/Therapist_Login")
 
             db = get_Mysql_db()
-            cursor = db.cursor()
+            cursor = db.cursor(dictionary=True)
 
             try:
  
@@ -1180,7 +1180,7 @@ def Routes():
                 return {"success": False, "message": "Recipient and message content are required"}
 
             db = get_Mysql_db()
-            cursor = db.cursor()
+            cursor = db.cursor(dictionary=True)
 
             try:
  
@@ -1254,7 +1254,7 @@ def Routes():
                 return {"success": False, "message": "Message content is required"}
 
             db = get_Mysql_db()
-            cursor = db.cursor()
+            cursor = db.cursor(dictionary=True)
 
             try:
  
@@ -1368,7 +1368,7 @@ def Routes():
                 return {"count": 0}
 
             db = get_Mysql_db()
-            cursor = db.cursor()
+            cursor = db.cursor(dictionary=True)
 
             try:
                 cursor.execute(
@@ -1400,7 +1400,7 @@ def Routes():
                 return RedirectResponse(url="/Therapist_Login")
 
             db = get_Mysql_db()
-            cursor = db.cursor()
+            cursor = db.cursor(dictionary=True)
 
             try:
                 cursor.execute(
@@ -1512,7 +1512,7 @@ def Routes():
     async def get_therapist_api(therapist_id: int):
         """API endpoint to get therapist information"""
         db = get_Mysql_db()
-        cursor = db.cursor()
+        cursor = db.cursor(dictionary=True)
 
         try:
             cursor.execute(
@@ -1581,7 +1581,7 @@ def Routes():
             if not session_data:
                 return RedirectResponse(url="/Therapist_Login")
             db = get_Mysql_db()
-            cursor = db.cursor()
+            cursor = db.cursor(dictionary=True)
             try:
                 cursor.execute(
                     """SELECT id, first_name, last_name, company_email, profile_image, 
@@ -1640,7 +1640,7 @@ def Routes():
             if not session_data:
                 return RedirectResponse(url="/Therapist_Login")
             db = get_Mysql_db()
-            cursor = db.cursor()
+            cursor = db.cursor(dictionary=True)
             try:
                 cursor.execute(
                     """SELECT id, first_name, last_name, company_email, profile_image, 
@@ -1808,7 +1808,7 @@ def Routes():
     async def get_therapist_data(db, user_id):
         """Retrieve therapist data from database"""
         try:
-            cursor = db.cursor()
+            cursor = db.cursor(dictionary=True)
             cursor.execute(
                 """SELECT id, first_name, last_name, company_email, profile_image, 
                         bio, experience_years, specialties, education, languages, 
@@ -1849,7 +1849,7 @@ def Routes():
     async def get_unread_messages_count(db, user_id):
         """Get count of unread messages"""
         try:
-            cursor = db.cursor()
+            cursor = db.cursor(dictionary=True)
             cursor.execute(
                 "SELECT COUNT(*) as count FROM Messages WHERE recipient_id = %s AND recipient_type = 'therapist' AND is_read = FALSE",
                 (user_id,)
@@ -1883,7 +1883,7 @@ def Routes():
     async def get_therapist_api(therapist_id: int):
             """API endpoint to get therapist information"""
             db = get_Mysql_db()
-            cursor = db.cursor()
+            cursor = db.cursor(dictionary=True)
 
             try:
                 cursor.execute(
@@ -1949,7 +1949,7 @@ def Routes():
     async def get_therapist_reviews(therapist_id: int, limit: int = 10, offset: int = 0):
         """API endpoint to get therapist reviews"""
         db = get_Mysql_db()
-        cursor = db.cursor()
+        cursor = db.cursor(dictionary=True)
 
         try:
  
@@ -2097,7 +2097,7 @@ def Routes():
                 return RedirectResponse(url="/Therapist_Login")
 
             db = get_Mysql_db()
-            cursor = db.cursor()
+            cursor = db.cursor(dictionary=True)
 
             try:
  
@@ -2205,7 +2205,7 @@ def Routes():
                 return JSONResponse(status_code=401, content={"success": False, "message": "Not authenticated"})
 
             db = get_Mysql_db()
-            cursor = db.cursor()
+            cursor = db.cursor(dictionary=True)
 
             try:
  
@@ -2260,7 +2260,7 @@ def Routes():
             )
             db.commit()
             return RedirectResponse(url="/", status_code=303)
-        except pymysql.err.IntegrityError:
+        except mysql.connector.IntegrityError:
             return {"error": "Username or email already exists."}
         finally:
             cursor.close()
@@ -2292,7 +2292,7 @@ def Routes():
             )
             db.commit()
             return RedirectResponse(url="/", status_code=303)
-        except pymysql.err.IntegrityError:
+        except mysql.connector.IntegrityError:
             return templates.TemplateResponse("dist/pages/register.html", {
                 "request": request,
                 "error": "Therapist with this email already exists."
@@ -2307,30 +2307,34 @@ def Routes():
     async def loginUser(result: Login, response: Response):
         db = get_Mysql_db()
         cursor = db.cursor()
+
         try:
             cursor.execute(
                 "SELECT user_id, password_hash FROM users WHERE username = %s",
                 (result.username,)
             )
             user = cursor.fetchone()
+
             if user is None:
                 raise HTTPException(status_code=401, detail="Invalid username or password")
-            
-            user_id, stored_password_hash = user['user_id'], user['password_hash'].encode("utf-8")
-            
+
+            user_id, stored_password_hash = user[0], user[1].encode("utf-8")
+
             if bcrypt.checkpw(result.password.encode("utf-8"), stored_password_hash):
                 session_id = await create_session(
-                    user_id=user_id,
+                    user_id=user_id, 
                     email=result.username,
                 )
+
                 response.set_cookie(
-                    key="session_id",
-                    value=session_id,
+                    key="session_id", 
+                    value=session_id, 
                     httponly=True,
                     samesite="lax",
                     path="/"
                 )
                 print("response 152", response)
+
                 return {"status": "valid"}
             else:
                 raise HTTPException(status_code=401, detail="Invalid username or password")
@@ -2448,7 +2452,7 @@ def Routes():
         remember: bool = Form(False)
     ):
         db = get_Mysql_db()
-        cursor = db.cursor()
+        cursor = db.cursor(dictionary=True)
 
         try:
             cursor.execute(
@@ -2517,7 +2521,7 @@ def Routes():
                 return RedirectResponse(url="/Therapist_Login")
             
             db = get_Mysql_db()
-            cursor = db.cursor()
+            cursor = db.cursor(dictionary=True)
             try:
                 cursor.execute(
                     """SELECT id, first_name, last_name, profile_image
@@ -2615,7 +2619,7 @@ def Routes():
                 return RedirectResponse(url="/Therapist_Login")
 
             db = get_Mysql_db()
-            cursor = db.cursor()
+            cursor = db.cursor(dictionary=True)
 
             try:
                 cursor.execute(
@@ -2878,7 +2882,7 @@ def Routes():
             print(f"Session data: {session_data}")
             
             db = get_Mysql_db()
-            cursor = db.cursor()
+            cursor = db.cursor(dictionary=True)
             try:
                 cursor.execute(
                     """SELECT id, first_name, last_name, profile_image
@@ -3000,7 +3004,7 @@ def Routes():
                 return RedirectResponse(url="/Therapist_Login")
             
             db = get_Mysql_db()
-            cursor = db.cursor()
+            cursor = db.cursor(dictionary=True)
             try:
                 cursor.execute(
                     """SELECT id, first_name, last_name, profile_image
@@ -3098,7 +3102,7 @@ def Routes():
                 return RedirectResponse(url="/Therapist_Login")
 
             db = get_Mysql_db()
-            cursor = db.cursor()
+            cursor = db.cursor(dictionary=True)
 
             try:
 
@@ -3150,7 +3154,7 @@ def Routes():
                 return RedirectResponse(url="/Therapist_Login")
 
             db = get_Mysql_db()
-            cursor = db.cursor()
+            cursor = db.cursor(dictionary=True)
 
             try:
 
@@ -3230,7 +3234,7 @@ def Routes():
         cursor = None
         
         try:
-            cursor = db.cursor()
+            cursor = db.cursor(dictionary=True)
             
             cursor.execute("SELECT * FROM Exercises WHERE exercise_id = %s", (exercise_id,))
             exercise = cursor.fetchone()
@@ -3285,7 +3289,7 @@ def Routes():
         cursor = None
         
         try:
-            cursor = db.cursor()
+            cursor = db.cursor(dictionary=True)
             
             cursor.execute("SELECT * FROM Exercises WHERE exercise_id = %s", (exercise_id,))
             exercise = cursor.fetchone()
@@ -3412,7 +3416,7 @@ def Routes():
         cursor = None
         
         try:
-            cursor = db.cursor()
+            cursor = db.cursor(dictionary=True)
             
             cursor.execute(
                 "SELECT video_url, video_type FROM Exercises WHERE exercise_id = %s", 
@@ -3471,7 +3475,7 @@ def Routes():
                 return JSONResponse(status_code=400, content={"success": False, "message": "Rating must be between 1 and 5"})
 
             db = get_Mysql_db()
-            cursor = db.cursor()
+            cursor = db.cursor(dictionary=True)
 
             try:
  
@@ -3514,7 +3518,7 @@ def Routes():
     @app.get("/patients")
     async def get_patients_page(request: Request, user=Depends(get_current_user)):
         db = get_Mysql_db()
-        cursor = db.cursor()
+        cursor = db.cursor(dictionary=True)
 
         try:
             cursor.execute(
@@ -3610,7 +3614,7 @@ def Routes():
                 return RedirectResponse(url="/Therapist_Login")
 
             db = get_Mysql_db()
-            cursor = db.cursor()
+            cursor = db.cursor(dictionary=True)
 
             try:
 
@@ -3838,7 +3842,7 @@ def Routes():
             cursor = None
             
             try:
-                cursor = db.cursor()
+                cursor = db.cursor(dictionary=True)
                 
                 cursor.execute(
                     "SELECT first_name, last_name FROM Therapists WHERE id = %s", 
@@ -3990,7 +3994,7 @@ def Routes():
     @app.get("/treatment-plans/new")
     async def new_treatment_plan_page(request: Request, user=Depends(get_current_user)):
         db = get_Mysql_db()
-        cursor = db.cursor()
+        cursor = db.cursor(dictionary=True)
 
         try:
             cursor.execute(
@@ -4022,7 +4026,7 @@ def Routes():
 
     async def get_therapist_data(therapist_id):
         db = get_Mysql_db()
-        cursor = db.cursor()
+        cursor = db.cursor(dictionary=True)
 
         try:
             cursor.execute(
@@ -4050,7 +4054,7 @@ def Routes():
             cursor = None
             
             try:
-                cursor = db.cursor()
+                cursor = db.cursor(dictionary=True)
                 
 
                 cursor.execute(
@@ -4227,7 +4231,7 @@ def Routes():
             cursor = None
             
             try:
-                cursor = db.cursor()
+                cursor = db.cursor(dictionary=True)
                 
 
                 cursor.execute(
@@ -4526,7 +4530,7 @@ def Routes():
             cursor = None
             
             try:
-                cursor = db.cursor()
+                cursor = db.cursor(dictionary=True)
                 
                 cursor.execute(
                     "SELECT first_name, last_name FROM Therapists WHERE id = %s", 
@@ -4738,7 +4742,7 @@ def Routes():
             cursor = None
             
             try:
-                cursor = db.cursor()
+                cursor = db.cursor(dictionary=True)
                 
                 cursor.execute(
                     "SELECT first_name, last_name FROM Therapists WHERE id = %s", 
@@ -4888,7 +4892,7 @@ def Routes():
             cursor = None
             
             try:
-                cursor = db.cursor()
+                cursor = db.cursor(dictionary=True)
                 
 
                 cursor.execute(
@@ -5020,7 +5024,7 @@ def Routes():
             cursor = None
             
             try:
-                cursor = db.cursor()
+                cursor = db.cursor(dictionary=True)
                 
                 cursor.execute(
                     "SELECT first_name, last_name FROM Therapists WHERE id = %s", 
@@ -5163,7 +5167,7 @@ def Routes():
             cursor = None
             
             try:
-                cursor = db.cursor()
+                cursor = db.cursor(dictionary=True)
                 
                 cursor.execute(
                     """SELECT appointment_id 
@@ -5453,7 +5457,7 @@ def Routes():
     @app.get("/exercises")
     async def exercises_page(request: Request, user=Depends(get_current_user)):
         db = get_Mysql_db()
-        cursor = db.cursor()
+        cursor = db.cursor(dictionary=True)
 
         try:
             cursor.execute(
@@ -5491,7 +5495,7 @@ def Routes():
     @app.get("/exercises/add")
     async def add_exercise_page(request: Request, user=Depends(get_current_user)):
         db = get_Mysql_db()
-        cursor = db.cursor()
+        cursor = db.cursor(dictionary=True)
 
         try:
             cursor.execute("SELECT * FROM ExerciseCategories")
@@ -5547,7 +5551,7 @@ def Routes():
     @app.get("/treatment-plans")
     async def treatment_plans_page(request: Request, user=Depends(get_current_user)):
         db = get_Mysql_db()
-        cursor = db.cursor()
+        cursor = db.cursor(dictionary=True)
 
         try:
             cursor.execute(
@@ -5647,7 +5651,7 @@ def Routes():
                 
 
                 db = get_Mysql_db()
-                cursor = db.cursor()
+                cursor = db.cursor(dictionary=True)
                 cursor.execute("SELECT patient_id, first_name, last_name FROM Patients WHERE therapist_id = %s", 
                             (session_data["user_id"],))
                 patients = cursor.fetchall()
@@ -5741,7 +5745,7 @@ def Routes():
                 print(f"Traceback: {traceback.format_exc()}")
                 
 
-                cursor = db.cursor()
+                cursor = db.cursor(dictionary=True)
                 cursor.execute("SELECT patient_id, first_name, last_name FROM Patients WHERE therapist_id = %s", 
                             (session_data["user_id"],))
                 patients = cursor.fetchall()
@@ -5778,7 +5782,7 @@ def Routes():
         """API endpoint to get a list of all therapists for the mobile app"""
         try:
             db = get_Mysql_db()
-            cursor = db.cursor()
+            cursor = db.cursor(dictionary=True)
 
             try:
                 cursor.execute(
@@ -5846,7 +5850,7 @@ def Routes():
         """API endpoint to get detailed information about a specific therapist"""
         try:
             db = get_Mysql_db()
-            cursor = db.cursor()
+            cursor = db.cursor(dictionary=True)
             try:
                 print(f"Looking up therapist with ID: {id}")
                 
@@ -5940,7 +5944,7 @@ def Routes():
                 date = datetime.datetime.now().strftime("%Y-%m-%d")
             
             db = get_Mysql_db()
-            cursor = db.cursor()
+            cursor = db.cursor(dictionary=True)
 
             try:
                 cursor.execute(
@@ -6436,7 +6440,7 @@ def Routes():
             user_id = session_data["user_id"]
             
             db = get_Mysql_db()
-            cursor = db.cursor()
+            cursor = db.cursor(dictionary=True)
 
             try:
  
@@ -6631,7 +6635,7 @@ def Routes():
             cursor = None
             
             try:
-                cursor = db.cursor()
+                cursor = db.cursor(dictionary=True)
                 
                 cursor.execute(
                     """SELECT p.therapist_id, t.* 
@@ -6722,7 +6726,7 @@ def Routes():
             cursor = None
             
             try:
-                cursor = db.cursor()
+                cursor = db.cursor(dictionary=True)
                 cursor.execute(
                     "SELECT patient_id FROM Patients WHERE user_id = %s",
                     (user_id,)
@@ -6823,7 +6827,7 @@ def Routes():
             cursor = None
             
             try:
-                cursor = db.cursor()
+                cursor = db.cursor(dictionary=True)
                 
 
                 cursor.execute(
@@ -6978,7 +6982,7 @@ def Routes():
             cursor = None
             
             try:
-                cursor = db.cursor()
+                cursor = db.cursor(dictionary=True)
                 
 
                 cursor.execute(
@@ -7162,7 +7166,7 @@ def Routes():
             cursor = None
             
             try:
-                cursor = db.cursor()
+                cursor = db.cursor(dictionary=True)
                 
 
                 cursor.execute(
@@ -7283,7 +7287,7 @@ def Routes():
             cursor = None
             
             try:
-                cursor = db.cursor()
+                cursor = db.cursor(dictionary=True)
                 
                 cursor.execute(
                     "SELECT patient_id FROM Patients WHERE user_id = %s",
@@ -7427,7 +7431,7 @@ def Routes():
             cursor = None
             
             try:
-                cursor = db.cursor()
+                cursor = db.cursor(dictionary=True)
                 
 
                 cursor.execute(
@@ -7593,7 +7597,7 @@ def Routes():
             cursor = None
             
             try:
-                cursor = db.cursor()
+                cursor = db.cursor(dictionary=True)
                 
 
                 cursor.execute(
@@ -7813,7 +7817,7 @@ def Routes():
             cursor = None
             
             try:
-                cursor = db.cursor()
+                cursor = db.cursor(dictionary=True)
                 
 
                 cursor.execute(
@@ -7950,7 +7954,7 @@ def Routes():
             cursor = None
             
             try:
-                cursor = db.cursor()
+                cursor = db.cursor(dictionary=True)
                 
 
                 cursor.execute(
@@ -8121,7 +8125,7 @@ def Routes():
             cursor = None
             
             try:
-                cursor = db.cursor()
+                cursor = db.cursor(dictionary=True)
                 
 
                 cursor.execute(
@@ -8358,7 +8362,7 @@ def Routes():
             cursor = None
             
             try:
-                cursor = db.cursor()
+                cursor = db.cursor(dictionary=True)
                 
 
                 cursor.execute(
@@ -8514,7 +8518,7 @@ def Routes():
             cursor = None
             
             try:
-                cursor = db.cursor()
+                cursor = db.cursor(dictionary=True)
                 cursor.execute(
                     """SELECT id, first_name, last_name, company_email, profile_image, 
                             bio, experience_years, specialties, education, languages, 
@@ -8607,7 +8611,7 @@ def Routes():
             cursor = None
             
             try:
-                cursor = db.cursor()
+                cursor = db.cursor(dictionary=True)
                 cursor.execute(
                     "SELECT * FROM Patients WHERE user_id = %s",
                     (user_id,)
@@ -8692,7 +8696,7 @@ def Routes():
             cursor = None
             
             try:
-                cursor = db.cursor()
+                cursor = db.cursor(dictionary=True)
                 
                 cursor.execute(
                     "SELECT * FROM Appointments WHERE appointment_id = %s",
@@ -8770,7 +8774,7 @@ def Routes():
             cursor = None
             
             try:
-                cursor = db.cursor()
+                cursor = db.cursor(dictionary=True)
                 
                 cursor.execute(
                     "SELECT patient_id FROM Patients WHERE patient_id = %s",
@@ -8896,7 +8900,7 @@ def Routes():
             cursor = None
             
             try:
-                cursor = db.cursor()
+                cursor = db.cursor(dictionary=True)
                 
                 print(f"Checking if user {user_id} has a patient record")
                 cursor.execute(
@@ -9032,7 +9036,7 @@ def Routes():
             try:
                 db.autocommit = True
                 
-                cursor = db.cursor()
+                cursor = db.cursor(dictionary=True)
                 
                 sender_id = int(user_id)
                 sender_type = "user"
@@ -9103,7 +9107,7 @@ def Routes():
             cursor = None
             
             try:
-                cursor = db.cursor()
+                cursor = db.cursor(dictionary=True)
                 
 
                 cursor.execute(
@@ -9320,7 +9324,7 @@ def Routes():
             cursor = None
             
             try:
-                cursor = db.cursor()
+                cursor = db.cursor(dictionary=True)
                 
                 cursor.execute(
                     """SELECT tp.plan_id, tp.name, 
@@ -9350,7 +9354,7 @@ def Routes():
     @app.get("/patients")
     async def get_patients_page(request: Request, user=Depends(get_current_user)):
         db = get_Mysql_db()
-        cursor = db.cursor()
+        cursor = db.cursor(dictionary=True)
 
         try:
             cursor.execute(
@@ -9401,7 +9405,7 @@ def Routes():
                 return RedirectResponse(url="/Therapist_Login")
 
             db = get_Mysql_db()
-            cursor = db.cursor()
+            cursor = db.cursor(dictionary=True)
 
             try:
                 now = datetime.datetime.now()
@@ -9631,7 +9635,7 @@ def Routes():
                 return RedirectResponse(url="/Therapist_Login")
 
             db = get_Mysql_db()
-            cursor = db.cursor()
+            cursor = db.cursor(dictionary=True)
 
             try:
 
@@ -9711,7 +9715,7 @@ def Routes():
                 return RedirectResponse(url="/Therapist_Login")
 
             db = get_Mysql_db()
-            cursor = db.cursor()
+            cursor = db.cursor(dictionary=True)
 
             try:
 
@@ -9969,7 +9973,7 @@ def Routes():
                 return RedirectResponse(url="/Therapist_Login")
 
             db = get_Mysql_db()
-            cursor = db.cursor()
+            cursor = db.cursor(dictionary=True)
 
             try:
 
@@ -10036,7 +10040,7 @@ def Routes():
             cursor = None
             
             try:
-                cursor = db.cursor()
+                cursor = db.cursor(dictionary=True)
                 
 
                 cursor.execute(
@@ -10154,7 +10158,7 @@ def Routes():
                     content={"detail": f"Invalid ID format: {str(e)}"}
                 )
             db = get_Mysql_db()
-            cursor = db.cursor()
+            cursor = db.cursor(dictionary=True)
             cursor.execute(
                 "SELECT patient_id FROM Patients WHERE user_id = %s",
                 (user_id,)
@@ -10337,7 +10341,7 @@ def Routes():
             cursor = None
             
             try:
-                cursor = db.cursor()
+                cursor = db.cursor(dictionary=True)
                 
                 cursor.execute(
                     "SELECT patient_id FROM Patients WHERE user_id = %s",
@@ -10441,7 +10445,7 @@ def Routes():
             cursor = None
             
             try:
-                cursor = db.cursor()
+                cursor = db.cursor(dictionary=True)
                 
 
                 cursor.execute(
@@ -10543,7 +10547,7 @@ def Routes():
             cursor = None
             
             try:
-                cursor = db.cursor()
+                cursor = db.cursor(dictionary=True)
                 
 
                 cursor.execute(
@@ -10732,7 +10736,7 @@ def Routes():
             cursor = None
             
             try:
-                cursor = db.cursor()
+                cursor = db.cursor(dictionary=True)
                 
 
                 cursor.execute(
@@ -10814,7 +10818,7 @@ def Routes():
             print(f"Session data: {session_data}")
             
             db = get_Mysql_db()
-            cursor = db.cursor()
+            cursor = db.cursor(dictionary=True)
             try:
                 cursor.execute(
                     """SELECT evs.video_url
@@ -10956,7 +10960,7 @@ def Routes():
             
 
             db = get_Mysql_db()
-            cursor = db.cursor()
+            cursor = db.cursor(dictionary=True)
             try:
                 cursor.execute(
                     """SELECT evs.video_url
@@ -11045,7 +11049,7 @@ def Routes():
             
 
             db = get_Mysql_db()
-            cursor = db.cursor()
+            cursor = db.cursor(dictionary=True)
             try:
                 cursor.execute(
                     """SELECT evs.video_url
@@ -11324,7 +11328,7 @@ def Routes():
             
 
             db = get_Mysql_db()
-            cursor = db.cursor()
+            cursor = db.cursor(dictionary=True)
             try:
                 cursor.execute(
                     """SELECT 1
@@ -11380,7 +11384,7 @@ def Routes():
             
 
             db = get_Mysql_db()
-            cursor = db.cursor()
+            cursor = db.cursor(dictionary=True)
             try:
                 cursor.execute(
                     """SELECT evs.video_url
