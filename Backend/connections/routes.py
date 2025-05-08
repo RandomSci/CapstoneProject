@@ -3312,40 +3312,46 @@ def Routes():
         session_id = request.cookies.get("session_id")
         if not session_id:
             return RedirectResponse(url="/Therapist_Login")
-
         try:
             session_data = await get_redis_session(session_id)
             if not session_data:
                 return RedirectResponse(url="/Therapist_Login")
-
             db = get_Mysql_db()
-            cursor = db.cursor()
-
+            cursor = db.cursor(pymysql.cursors.DictCursor)  
             try:
-
                 cursor.execute(
                     """SELECT id, first_name, last_name, profile_image
-                    FROM Therapists 
-                    WHERE id = %s""", 
+                    FROM Therapists
+                    WHERE id = %s""",
                     (session_data["user_id"],)
                 )
-                therapist = cursor.fetchone()
-
-                if not therapist:
+                therapist_result = cursor.fetchone()
+                if not therapist_result:
                     return RedirectResponse(url="/Therapist_Login")
-
-
+                    
+                therapist = {}
+                for key, value in therapist_result.items():
+                    if isinstance(value, bytes):
+                        therapist[key] = value.decode('utf-8')
+                    else:
+                        therapist[key] = value
+                        
                 cursor.execute(
-                    """SELECT * FROM Patients 
+                    """SELECT * FROM Patients
                     WHERE patient_id = %s AND therapist_id = %s""",
                     (patient_id, session_data["user_id"])
                 )
-                patient = cursor.fetchone()
-                
-                if not patient:
+                patient_result = cursor.fetchone()
+                if not patient_result:
                     return RedirectResponse(url="/patients")
-
-
+                    
+                patient = {}
+                for key, value in patient_result.items():
+                    if isinstance(value, bytes):
+                        patient[key] = value.decode('utf-8')
+                    else:
+                        patient[key] = value
+                        
                 cursor.execute(
                     """SELECT evs.*, e.name as exercise_name, tp.name as plan_name
                     FROM ExerciseVideoSubmissions evs
@@ -3355,37 +3361,47 @@ def Routes():
                     ORDER BY evs.submission_date DESC""",
                     (patient_id,)
                 )
-                submissions = cursor.fetchall()
-
-
+                submissions_result = cursor.fetchall()
+                
+                submissions = []
+                for submission in submissions_result:
+                    clean_submission = {}
+                    for key, value in submission.items():
+                        if isinstance(value, bytes):
+                            clean_submission[key] = value.decode('utf-8')
+                        else:
+                            clean_submission[key] = value
+                    submissions.append(clean_submission)
+                    
                 cursor.execute(
                     "SELECT COUNT(*) as count FROM Messages WHERE recipient_id = %s AND recipient_type = 'therapist' AND is_read = FALSE",
                     (session_data["user_id"],)
                 )
                 unread_count_result = cursor.fetchone()
-                unread_messages_count = unread_count_result['count'] if unread_count_result else 0
-
+                unread_messages_count = unread_count_result.get('count', 0) if unread_count_result else 0
+                
                 return templates.TemplateResponse(
                     "dist/exercises/patient_submissions.html",
                     {
                         "request": request,
                         "therapist": therapist,
-                        "first_name": therapist["first_name"],
-                        "last_name": therapist["last_name"],
+                        "first_name": therapist.get("first_name", ""),
+                        "last_name": therapist.get("last_name", ""),
                         "unread_messages_count": unread_messages_count,
                         "patient": patient,
                         "submissions": submissions
                     }
                 )
-
             except Exception as e:
                 print(f"Database error in patient exercise submissions: {e}")
+                print(f"Traceback: {traceback.format_exc()}")  
                 return RedirectResponse(url="/patients")
             finally:
                 cursor.close()
                 db.close()
         except Exception as e:
             print(f"Error in patient exercise submissions: {e}")
+            print(f"Traceback: {traceback.format_exc()}")  
             return RedirectResponse(url="/Therapist_Login")
                 
     @app.get("/exercises/{exercise_id}/edit")
@@ -5668,7 +5684,7 @@ def Routes():
     @app.get("/exercises")
     async def exercises_page(request: Request, user=Depends(get_current_user)):
         db = get_Mysql_db()
-        cursor = db.cursor()
+        cursor = db.cursor(pymysql.cursors.DictCursor)  
 
         try:
             cursor.execute(
@@ -5677,15 +5693,53 @@ def Routes():
                 LEFT JOIN ExerciseCategories c ON e.category_id = c.category_id
                 """
             )
-            exercises = cursor.fetchall()
+            exercises_result = cursor.fetchall()
+            
+            exercises = []
+            for exercise in exercises_result:
+                clean_exercise = {}
+                for key, value in exercise.items():
+                    if isinstance(value, bytes):
+                        clean_exercise[key] = value.decode('utf-8')
+                    else:
+                        clean_exercise[key] = value
+                exercises.append(clean_exercise)
 
             cursor.execute("SELECT * FROM ExerciseCategories")
-            categories = cursor.fetchall()
+            categories_result = cursor.fetchall()
+            
+            categories = []
+            for category in categories_result:
+                clean_category = {}
+                for key, value in category.items():
+                    if isinstance(value, bytes):
+                        clean_category[key] = value.decode('utf-8')
+                    else:
+                        clean_category[key] = value
+                categories.append(clean_category)
             
             cursor.execute("SELECT * FROM TreatmentPlans")
-            treatment_plans = cursor.fetchall()
+            treatment_plans_result = cursor.fetchall()
+            
+            treatment_plans = []
+            for plan in treatment_plans_result:
+                clean_plan = {}
+                for key, value in plan.items():
+                    if isinstance(value, bytes):
+                        clean_plan[key] = value.decode('utf-8')
+                    else:
+                        clean_plan[key] = value
+                treatment_plans.append(clean_plan)
             
             therapist_data = await get_therapist_data(user["user_id"])
+            
+            if isinstance(therapist_data, tuple):
+                therapist_dict = {
+                    "first_name": therapist_data[0] if len(therapist_data) > 0 else "",
+                    "last_name": therapist_data[1] if len(therapist_data) > 1 else "",
+                    "profile_image": therapist_data[2] if len(therapist_data) > 2 else ""
+                }
+                therapist_data = therapist_dict
 
             return templates.TemplateResponse(
                 "dist/exercises/exercise_list.html", 
@@ -5695,10 +5749,14 @@ def Routes():
                     "exercises": exercises,
                     "categories": categories,
                     "therapist": therapist_data,
-                    "first_name": therapist_data["first_name"],
-                    "last_name": therapist_data["last_name"]
+                    "first_name": therapist_data.get("first_name", "") if isinstance(therapist_data, dict) else "",
+                    "last_name": therapist_data.get("last_name", "") if isinstance(therapist_data, dict) else ""
                 }
             )
+        except Exception as e:
+            print(f"Error loading exercises page: {e}")
+            print(f"Traceback: {traceback.format_exc()}")
+            return RedirectResponse(url="/front-page")
         finally:
             cursor.close()
             db.close()
@@ -5706,13 +5764,31 @@ def Routes():
     @app.get("/exercises/add")
     async def add_exercise_page(request: Request, user=Depends(get_current_user)):
         db = get_Mysql_db()
-        cursor = db.cursor()
+        cursor = db.cursor(pymysql.cursors.DictCursor)  
 
         try:
             cursor.execute("SELECT * FROM ExerciseCategories")
-            categories = cursor.fetchall()
+            categories_result = cursor.fetchall()
+            
+            categories = []
+            for category in categories_result:
+                clean_category = {}
+                for key, value in category.items():
+                    if isinstance(value, bytes):
+                        clean_category[key] = value.decode('utf-8')
+                    else:
+                        clean_category[key] = value
+                categories.append(clean_category)
 
             therapist_data = await get_therapist_data(user["user_id"])
+            
+            if isinstance(therapist_data, tuple):
+                therapist_dict = {
+                    "first_name": therapist_data[0] if len(therapist_data) > 0 else "",
+                    "last_name": therapist_data[1] if len(therapist_data) > 1 else "",
+                    "profile_image": therapist_data[2] if len(therapist_data) > 2 else ""
+                }
+                therapist_data = therapist_dict
 
             return templates.TemplateResponse(
                 "dist/exercises/add_exercise.html", 
@@ -5720,10 +5796,14 @@ def Routes():
                     "request": request,
                     "categories": categories,
                     "therapist": therapist_data,
-                    "first_name": therapist_data["first_name"],
-                    "last_name": therapist_data["last_name"]
+                    "first_name": therapist_data.get("first_name", "") if isinstance(therapist_data, dict) else "",
+                    "last_name": therapist_data.get("last_name", "") if isinstance(therapist_data, dict) else ""
                 }
             )
+        except Exception as e:
+            print(f"Error loading add exercise page: {e}")
+            print(f"Traceback: {traceback.format_exc()}")
+            return RedirectResponse(url="/exercises")
         finally:
             cursor.close()
             db.close()
@@ -5741,7 +5821,7 @@ def Routes():
         user=Depends(get_current_user)
     ):
         db = get_Mysql_db()
-        cursor = db.cursor()
+        cursor = db.cursor(pymysql.cursors.DictCursor)  # Use DictCursor
 
         try:
             cursor.execute(
@@ -5754,6 +5834,7 @@ def Routes():
             return RedirectResponse(url="/exercises", status_code=303)
         except Exception as e:
             print(f"Error adding exercise: {e}")
+            print(f"Traceback: {traceback.format_exc()}")
             return RedirectResponse(url="/exercises/add", status_code=303)
         finally:
             cursor.close()
@@ -5762,7 +5843,7 @@ def Routes():
     @app.get("/treatment-plans")
     async def treatment_plans_page(request: Request, user=Depends(get_current_user)):
         db = get_Mysql_db()
-        cursor = db.cursor()
+        cursor = db.cursor(pymysql.cursors.DictCursor)  # Use DictCursor
 
         try:
             cursor.execute(
@@ -5773,9 +5854,29 @@ def Routes():
                 ORDER BY tp.created_at DESC""", 
                 (user["user_id"],)
             )
-            treatment_plans = cursor.fetchall()
+            treatment_plans_result = cursor.fetchall()
+            
+            # Clean up treatment plans data
+            treatment_plans = []
+            for plan in treatment_plans_result:
+                clean_plan = {}
+                for key, value in plan.items():
+                    if isinstance(value, bytes):
+                        clean_plan[key] = value.decode('utf-8')
+                    else:
+                        clean_plan[key] = value
+                treatment_plans.append(clean_plan)
 
             therapist_data = await get_therapist_data(user["user_id"])
+            
+            # Handle the case where therapist_data might be a tuple
+            if isinstance(therapist_data, tuple):
+                therapist_dict = {
+                    "first_name": therapist_data[0] if len(therapist_data) > 0 else "",
+                    "last_name": therapist_data[1] if len(therapist_data) > 1 else "",
+                    "profile_image": therapist_data[2] if len(therapist_data) > 2 else ""
+                }
+                therapist_data = therapist_dict
 
             return templates.TemplateResponse(
                 "dist/treatment_plans/plan_list.html", 
@@ -5783,10 +5884,14 @@ def Routes():
                     "request": request,
                     "treatment_plans": treatment_plans,
                     "therapist": therapist_data,
-                    "first_name": therapist_data["first_name"],
-                    "last_name": therapist_data["last_name"]
+                    "first_name": therapist_data.get("first_name", "") if isinstance(therapist_data, dict) else "",
+                    "last_name": therapist_data.get("last_name", "") if isinstance(therapist_data, dict) else ""
                 }
             )
+        except Exception as e:
+            print(f"Error loading treatment plans page: {e}")
+            print(f"Traceback: {traceback.format_exc()}")
+            return RedirectResponse(url="/front-page")
         finally:
             cursor.close()
             db.close()
