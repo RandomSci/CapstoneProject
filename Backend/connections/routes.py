@@ -386,7 +386,7 @@ def Routes():
                 appointments_result = cursor.fetchone()
                 appointments_count = appointments_result.get('count', 0) if appointments_result else 0
 
-                last_month = datetime.datetime.now() - timedelta(days=30)
+                last_month = (datetime.datetime.now() - timedelta(days=30))
                 cursor.execute(
                     "SELECT COUNT(*) as count FROM Appointments WHERE therapist_id = %s AND created_at < %s", 
                     (user_id, last_month)
@@ -454,7 +454,7 @@ def Routes():
                     """SELECT AVG(adherence_rate) as avg_rate 
                     FROM PatientMetrics 
                     WHERE therapist_id = %s AND measurement_date BETWEEN %s AND %s""", 
-                    (user_id, last_month_start, this_month_start)
+                    (user_id, last_month_start.date(), this_month_start.date())  
                 )
                 last_month_adherence = cursor.fetchone()
                 last_month_adherence_rate = last_month_adherence.get('avg_rate', 0) if last_month_adherence and last_month_adherence.get('avg_rate') is not None else 0
@@ -471,18 +471,19 @@ def Routes():
                     adherence_trend_color = "warning"
                     adherence_direction = "Down"
 
-                week_ago = datetime.datetime.now() - timedelta(days=7)
+                week_ago_date = (datetime.datetime.now() - timedelta(days=7)).date()
                 cursor.execute(
                     """SELECT AVG(
                         CASE 
-                            WHEN repetitions IS NOT NULL THEN (repetitions_completed / repetitions) * 100
-                            ELSE (sets_completed / sets) * 100
+                            WHEN tpe.repetitions IS NOT NULL AND tpe.repetitions > 0 THEN (pep.repetitions_completed / tpe.repetitions) * 100
+                            WHEN tpe.sets IS NOT NULL AND tpe.sets > 0 THEN (pep.sets_completed / tpe.sets) * 100
+                            ELSE 0
                         END
                     ) as completion_rate
                     FROM PatientExerciseProgress pep
                     JOIN TreatmentPlanExercises tpe ON pep.plan_exercise_id = tpe.plan_exercise_id
                     WHERE pep.completion_date >= %s""", 
-                    (week_ago,)
+                    (week_ago_date,)  
                 )
                 completion_result = cursor.fetchone()
                 weekly_completion_rate = round(completion_result.get('completion_rate', 0), 0) if completion_result and completion_result.get('completion_rate') is not None else 0
@@ -523,8 +524,9 @@ def Routes():
                 cursor.execute(
                     """SELECT AVG(
                         CASE 
-                            WHEN repetitions IS NOT NULL THEN (repetitions_completed / repetitions) * 100
-                            ELSE (sets_completed / sets) * 100
+                            WHEN tpe.repetitions IS NOT NULL AND tpe.repetitions > 0 THEN (pep.repetitions_completed / tpe.repetitions) * 100
+                            WHEN tpe.sets IS NOT NULL AND tpe.sets > 0 THEN (pep.sets_completed / tpe.sets) * 100
+                            ELSE 0
                         END
                     ) as completion_rate
                     FROM PatientExerciseProgress pep
@@ -664,14 +666,16 @@ def Routes():
                         CASE 
                             WHEN (
                                 CASE 
-                                    WHEN repetitions IS NOT NULL THEN (repetitions_completed / repetitions) * 100
-                                    ELSE (sets_completed / sets) * 100
+                                    WHEN tpe.repetitions IS NOT NULL AND tpe.repetitions > 0 THEN (pep.repetitions_completed / tpe.repetitions) * 100
+                                    WHEN tpe.sets IS NOT NULL AND tpe.sets > 0 THEN (pep.sets_completed / tpe.sets) * 100
+                                    ELSE 0
                                 END
                             ) >= 90 THEN 'Completed'
                             WHEN (
                                 CASE 
-                                    WHEN repetitions IS NOT NULL THEN (repetitions_completed / repetitions) * 100
-                                    ELSE (sets_completed / sets) * 100
+                                    WHEN tpe.repetitions IS NOT NULL AND tpe.repetitions > 0 THEN (pep.repetitions_completed / tpe.repetitions) * 100
+                                    WHEN tpe.sets IS NOT NULL AND tpe.sets > 0 THEN (pep.sets_completed / tpe.sets) * 100
+                                    ELSE 0
                                 END
                             ) >= 50 THEN 'Partial'
                             ELSE 'Missed'
@@ -679,7 +683,7 @@ def Routes():
                         COUNT(*) as count
                     FROM PatientExerciseProgress pep
                     JOIN TreatmentPlanExercises tpe ON pep.plan_exercise_id = tpe.plan_exercise_id
-                    WHERE completion_date >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
+                    WHERE pep.completion_date >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
                     GROUP BY status"""
                 )
                 completion_breakdown = cursor.fetchall()
