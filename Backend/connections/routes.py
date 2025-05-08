@@ -2603,7 +2603,7 @@ def Routes():
                 return RedirectResponse(url="/Therapist_Login")
             
             db = get_Mysql_db()
-            cursor = db.cursor(pymysql.cursors.DictCursor) 
+            cursor = db.cursor(pymysql.cursors.DictCursor)
             try:
                 cursor.execute(
                     """SELECT id, first_name, last_name, profile_image
@@ -2724,7 +2724,7 @@ def Routes():
                 return RedirectResponse(url="/Therapist_Login")
 
             db = get_Mysql_db()
-            cursor = db.cursor()
+            cursor = db.cursor(pymysql.cursors.DictCursor)  
 
             try:
                 cursor.execute(
@@ -2733,20 +2733,34 @@ def Routes():
                     WHERE id = %s""", 
                     (session_data["user_id"],)
                 )
-                therapist = cursor.fetchone()
+                therapist_result = cursor.fetchone()
 
-                if not therapist:
+                if not therapist_result:
                     return RedirectResponse(url="/Therapist_Login")
+                    
+                therapist = {}
+                for key, value in therapist_result.items():
+                    if isinstance(value, bytes):
+                        therapist[key] = value.decode('utf-8')
+                    else:
+                        therapist[key] = value
 
                 cursor.execute(
                     """SELECT * FROM Patients 
                     WHERE patient_id = %s AND therapist_id = %s""",
                     (patient_id, session_data["user_id"])
                 )
-                patient = cursor.fetchone()
+                patient_result = cursor.fetchone()
 
-                if not patient:
+                if not patient_result:
                     return RedirectResponse(url="/reports/patients")
+                    
+                patient = {}
+                for key, value in patient_result.items():
+                    if isinstance(value, bytes):
+                        patient[key] = value.decode('utf-8')
+                    else:
+                        patient[key] = value
 
                 cursor.execute(
                     """SELECT 
@@ -2770,19 +2784,26 @@ def Routes():
                         ORDER BY pep.completion_date DESC, pep.created_at DESC""",
                     (patient_id,)
                 )
-                exercise_history = cursor.fetchall()
+                exercise_history_result = cursor.fetchall()
 
+                exercise_history = []
+                for exercise in exercise_history_result:
+                    clean_exercise = {}
+                    for key, value in exercise.items():
+                        if isinstance(value, bytes):
+                            clean_exercise[key] = value.decode('utf-8')
+                        else:
+                            clean_exercise[key] = value
+                    exercise_history.append(clean_exercise)
 
                 for exercise in exercise_history:
-
                     if exercise.get('submission_video_url'):
-                        filename = os.path.basename(exercise['submission_video_url'])
+                        filename = os.path.basename(exercise.get('submission_video_url', ''))
                         token = await generate_video_token(session_data["user_id"], filename)
                         exercise['tokenized_submission_url'] = f"/api/uploads/exercise_videos/{filename}?token={token}"
                     
-
                     if exercise.get('exercise_video_url'):
-                        filename = os.path.basename(exercise['exercise_video_url'])
+                        filename = os.path.basename(exercise.get('exercise_video_url', ''))
                         token = await generate_video_token(session_data["user_id"], filename)
                         exercise['tokenized_exercise_url'] = f"/api/uploads/exercise_videos/{filename}?token={token}"
 
@@ -2792,7 +2813,17 @@ def Routes():
                     ORDER BY created_at DESC""",
                     (patient_id,)
                 )
-                treatment_plans = cursor.fetchall()
+                treatment_plans_result = cursor.fetchall()
+                
+                treatment_plans = []
+                for plan in treatment_plans_result:
+                    clean_plan = {}
+                    for key, value in plan.items():
+                        if isinstance(value, bytes):
+                            clean_plan[key] = value.decode('utf-8')
+                        else:
+                            clean_plan[key] = value
+                    treatment_plans.append(clean_plan)
 
                 cursor.execute(
                     """SELECT * FROM PatientMetrics
@@ -2800,11 +2831,22 @@ def Routes():
                     ORDER BY measurement_date DESC""",
                     (patient_id,)
                 )
-                patient_metrics = cursor.fetchall()
+                patient_metrics_result = cursor.fetchall()
+                
+                patient_metrics = []
+                for metric in patient_metrics_result:
+                    clean_metric = {}
+                    for key, value in metric.items():
+                        if isinstance(value, bytes):
+                            clean_metric[key] = value.decode('utf-8')
+                        else:
+                            clean_metric[key] = value
+                    patient_metrics.append(clean_metric)
                 
                 for metric in patient_metrics:
-                    if 'measurement_date' in metric and metric['measurement_date']:
-                        metric['measurement_date'] = metric['measurement_date'].strftime('%Y-%m-%d')
+                    if metric.get('measurement_date'):
+                        if isinstance(metric['measurement_date'], (datetime.date, datetime.datetime)):
+                            metric['measurement_date'] = metric['measurement_date'].strftime('%Y-%m-%d')
 
                 cursor.execute(
                     """SELECT f.* FROM feedback f
@@ -2814,7 +2856,17 @@ def Routes():
                     ORDER BY f.created_at DESC""",
                     (patient_id,)
                 )
-                patient_feedback = cursor.fetchall()
+                patient_feedback_result = cursor.fetchall()
+                
+                patient_feedback = []
+                for feedback in patient_feedback_result:
+                    clean_feedback = {}
+                    for key, value in feedback.items():
+                        if isinstance(value, bytes):
+                            clean_feedback[key] = value.decode('utf-8')
+                        else:
+                            clean_feedback[key] = value
+                    patient_feedback.append(clean_feedback)
 
                 cursor.execute(
                     """SELECT evs.*, e.name as exercise_name, tp.name as plan_name, evs.video_url
@@ -2826,12 +2878,21 @@ def Routes():
                     LIMIT 6""",
                     (patient_id,)
                 )
-                video_submissions = cursor.fetchall()
+                video_submissions_result = cursor.fetchall()
                 
-
+                video_submissions = []
+                for submission in video_submissions_result:
+                    clean_submission = {}
+                    for key, value in submission.items():
+                        if isinstance(value, bytes):
+                            clean_submission[key] = value.decode('utf-8')
+                        else:
+                            clean_submission[key] = value
+                    video_submissions.append(clean_submission)
+                
                 for submission in video_submissions:
                     if submission.get('video_url'):
-                        filename = os.path.basename(submission['video_url'])
+                        filename = os.path.basename(submission.get('video_url', ''))
                         token = await generate_video_token(session_data["user_id"], filename)
                         submission['tokenized_video_url'] = f"/api/uploads/exercise_videos/{filename}?token={token}"
 
@@ -2840,8 +2901,7 @@ def Routes():
                     (session_data["user_id"],)
                 )
                 unread_count_result = cursor.fetchone()
-                unread_messages_count = unread_count_result['count'] if unread_count_result else 0
-
+                unread_messages_count = unread_count_result.get('count', 0) if unread_count_result else 0
 
                 print(f"Found {len(exercise_history)} exercise history records")
                 print(f"Found {len(video_submissions)} video submissions")
@@ -2851,8 +2911,8 @@ def Routes():
                     {
                         "request": request,
                         "therapist": therapist,
-                        "first_name": therapist["first_name"],
-                        "last_name": therapist["last_name"],
+                        "first_name": therapist.get("first_name", ""),
+                        "last_name": therapist.get("last_name", ""),
                         "unread_messages_count": unread_messages_count,
                         "patient": patient,
                         "exercise_history": exercise_history,
