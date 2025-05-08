@@ -899,6 +899,8 @@ def Routes():
 
     @app.get("/messages")
     async def messages_page(request: Request, search: str = None):
+        import traceback
+        
         session_id = request.cookies.get("session_id")
         if not session_id:
             return RedirectResponse(url="/Therapist_Login")
@@ -908,20 +910,27 @@ def Routes():
             if not session_data:
                 return RedirectResponse(url="/Therapist_Login")
 
+            try:
+                user_id = int(session_data["user_id"])
+                print(f"User ID (int): {user_id}")
+            except (ValueError, TypeError):
+                user_id = session_data["user_id"]
+                print(f"User ID (original): {user_id}")
+
             db = get_Mysql_db()
-            cursor = db.cursor()
+            cursor = None
 
             try:
- 
+                cursor = db.cursor(pymysql.cursors.DictCursor)
+
                 cursor.execute(
                     "SELECT first_name, last_name, profile_image FROM Therapists WHERE id = %s", 
-                    (session_data["user_id"],)
+                    (user_id,)
                 )
                 therapist = cursor.fetchone()
                 if not therapist:
                     return RedirectResponse(url="/Therapist_Login")
 
- 
                 search_condition = ""
                 search_params = []
                 if search:
@@ -936,7 +945,6 @@ def Routes():
                     search_term = f"%{search}%"
                     search_params = [search_term, search_term, search_term, search_term]
 
- 
                 inbox_query = f"""
                     SELECT 
                         m.message_id, m.subject, m.content, m.created_at, m.is_read,
@@ -965,11 +973,10 @@ def Routes():
                     ORDER BY m.created_at DESC
                 """
 
-                inbox_params = [session_data["user_id"]] + search_params if search else [session_data["user_id"]]
+                inbox_params = [user_id] + search_params if search else [user_id]
                 cursor.execute(inbox_query, inbox_params)
                 inbox_messages = cursor.fetchall()
 
- 
                 sent_query = f"""
                     SELECT 
                         m.message_id, m.subject, m.content, m.created_at, m.is_read,
@@ -998,15 +1005,13 @@ def Routes():
                     ORDER BY m.created_at DESC
                 """
 
-                sent_params = [session_data["user_id"]] + search_params if search else [session_data["user_id"]]
+                sent_params = [user_id] + search_params if search else [user_id]
                 cursor.execute(sent_query, sent_params)
                 sent_messages = cursor.fetchall()
 
- 
                 for messages_list in [inbox_messages, sent_messages]:
                     for message in messages_list:
- 
-                        timestamp = message['created_at']
+                        timestamp = message.get('created_at')
                         now = datetime.datetime.now()
                         if isinstance(timestamp, datetime.datetime):
                             diff = now - timestamp
@@ -1028,46 +1033,42 @@ def Routes():
                                 message['formatted_date'] = timestamp.strftime('%d %b')
                                 message['time_ago'] = timestamp.strftime('%Y')
 
- 
-                        if message['content'] and len(message['content']) > 100:
-                            message['short_content'] = message['content'][:100] + '...'
+                        content = message.get('content', '')
+                        if content and len(content) > 100:
+                            message['short_content'] = content[:100] + '...'
                         else:
-                            message['short_content'] = message['content']
+                            message['short_content'] = content
 
- 
                 cursor.execute(
                     "SELECT id, first_name, last_name, profile_image FROM Therapists WHERE id != %s",
-                    (session_data["user_id"],)
+                    (user_id,)
                 )
                 therapists = cursor.fetchall()
 
- 
                 cursor.execute(
                     "SELECT patient_id, first_name, last_name FROM Patients"
                 )
                 patients = cursor.fetchall()
 
- 
                 cursor.execute(
                     "SELECT user_id, username FROM users"
                 )
                 users = cursor.fetchall()
 
- 
                 cursor.execute(
                     "SELECT COUNT(*) as count FROM Messages WHERE recipient_id = %s AND recipient_type = 'therapist' AND is_read = FALSE",
-                    (session_data["user_id"],)
+                    (user_id,)
                 )
                 unread_count_result = cursor.fetchone()
-                unread_messages_count = unread_count_result['count'] if unread_count_result else 0
+                unread_messages_count = unread_count_result.get('count', 0) if unread_count_result else 0
 
                 return templates.TemplateResponse(
                     "dist/messages/index.html", 
                     {
                         "request": request,
-                        "profile_image": therapist["profile_image"],
-                        "first_name": therapist["first_name"],
-                        "last_name": therapist["last_name"],
+                        "profile_image": therapist.get("profile_image", ""),
+                        "first_name": therapist.get("first_name", ""),
+                        "last_name": therapist.get("last_name", ""),
                         "inbox_messages": inbox_messages,
                         "sent_messages": sent_messages,
                         "therapists": therapists,
@@ -1080,17 +1081,22 @@ def Routes():
 
             except Exception as e:
                 print(f"Database error in messages page: {e}")
+                print(f"Traceback: {traceback.format_exc()}")
                 return RedirectResponse(url="/front-page")
             finally:
-                cursor.close()
-                db.close()
+                if cursor:
+                    cursor.close()
+                if db:
+                    db.close()
         except Exception as e:
             print(f"Error in messages page: {e}")
+            print(f"Traceback: {traceback.format_exc()}")
             return RedirectResponse(url="/Therapist_Login")
-        
     
     @app.get("/messages/{message_id}")
     async def view_message(request: Request, message_id: int):
+        import traceback
+        
         session_id = request.cookies.get("session_id")
         if not session_id:
             return RedirectResponse(url="/Therapist_Login")
@@ -1100,20 +1106,27 @@ def Routes():
             if not session_data:
                 return RedirectResponse(url="/Therapist_Login")
 
+            try:
+                user_id = int(session_data["user_id"])
+                print(f"User ID (int): {user_id}")
+            except (ValueError, TypeError):
+                user_id = session_data["user_id"]
+                print(f"User ID (original): {user_id}")
+
             db = get_Mysql_db()
-            cursor = db.cursor()
+            cursor = None
 
             try:
- 
+                cursor = db.cursor(pymysql.cursors.DictCursor)
+
                 cursor.execute(
                     "SELECT first_name, last_name, profile_image FROM Therapists WHERE id = %s", 
-                    (session_data["user_id"],)
+                    (user_id,)
                 )
                 therapist = cursor.fetchone()
                 if not therapist:
                     return RedirectResponse(url="/Therapist_Login")
 
- 
                 cursor.execute(
                     """SELECT 
                         m.message_id, m.subject, m.content, m.created_at, m.is_read,
@@ -1145,25 +1158,25 @@ def Routes():
                     FROM Messages m
                     WHERE m.message_id = %s
                     AND ((m.sender_id = %s AND m.sender_type = 'therapist') 
-                         OR (m.recipient_id = %s AND m.recipient_type = 'therapist'))""", 
-                    (message_id, session_data["user_id"], session_data["user_id"])
+                        OR (m.recipient_id = %s AND m.recipient_type = 'therapist'))""", 
+                    (message_id, user_id, user_id)
                 )
                 message = cursor.fetchone()
 
                 if not message:
- 
                     return RedirectResponse(url="/messages")
 
- 
-                if message['recipient_id'] == int(session_data["user_id"]) and message['recipient_type'] == 'therapist' and not message['is_read']:
+                recipient_id_from_message = message.get('recipient_id')
+                if (recipient_id_from_message == user_id and 
+                    message.get('recipient_type') == 'therapist' and 
+                    not message.get('is_read', True)):
                     cursor.execute(
                         "UPDATE Messages SET is_read = TRUE WHERE message_id = %s",
                         (message_id,)
                     )
                     db.commit()
 
- 
-                timestamp = message['created_at']
+                timestamp = message.get('created_at')
                 if isinstance(timestamp, datetime.datetime):
                     now = datetime.datetime.now()
                     if timestamp.date() == now.date():
@@ -1173,24 +1186,25 @@ def Routes():
                     else:
                         message['formatted_date'] = timestamp.strftime('%b %d, %Y at %I:%M %p')
 
- 
-                message['direction'] = 'received' if message['recipient_id'] == int(session_data["user_id"]) and message['recipient_type'] == 'therapist' else 'sent'
+                message['direction'] = 'received' if (
+                    message.get('recipient_id') == user_id and 
+                    message.get('recipient_type') == 'therapist'
+                ) else 'sent'
 
- 
                 cursor.execute(
                     "SELECT COUNT(*) as count FROM Messages WHERE recipient_id = %s AND recipient_type = 'therapist' AND is_read = FALSE",
-                    (session_data["user_id"],)
+                    (user_id,)
                 )
                 unread_count_result = cursor.fetchone()
-                unread_messages_count = unread_count_result['count'] if unread_count_result else 0
+                unread_messages_count = unread_count_result.get('count', 0) if unread_count_result else 0
 
                 return templates.TemplateResponse(
                     "dist/messages/view.html",
                     {
                         "request": request,
-                        "profile_image": therapist["profile_image"],
-                        "first_name": therapist["first_name"],
-                        "last_name": therapist["last_name"],
+                        "profile_image": therapist.get("profile_image", ""),
+                        "first_name": therapist.get("first_name", ""),
+                        "last_name": therapist.get("last_name", ""),
                         "message": message,
                         "unread_messages_count": unread_messages_count
                     }
@@ -1198,14 +1212,18 @@ def Routes():
 
             except Exception as e:
                 print(f"Database error in view message: {e}")
+                print(f"Traceback: {traceback.format_exc()}")
                 return RedirectResponse(url="/messages")
             finally:
-                cursor.close()
-                db.close()
+                if cursor:
+                    cursor.close()
+                if db:
+                    db.close()
         except Exception as e:
             print(f"Error in view message: {e}")
+            print(f"Traceback: {traceback.format_exc()}")
             return RedirectResponse(url="/Therapist_Login")
-
+    
     @app.post("/messages/send")
     async def send_message(request: Request):
         session_id = request.cookies.get("session_id")
@@ -5182,18 +5200,23 @@ def Routes():
             cursor = None
             
             try:
-                cursor = db.cursor()
+                cursor = db.cursor(pymysql.cursors.DictCursor)  
                 
-
                 cursor.execute(
                     "SELECT first_name, last_name FROM Therapists WHERE id = %s", 
                     (session_data["user_id"],)
                 )
-                therapist = cursor.fetchone()
+                therapist_result = cursor.fetchone()
                 
-                if not therapist:
+                if not therapist_result:
                     return RedirectResponse(url="/Therapist_Login")
                 
+                therapist = {}
+                for key, value in therapist_result.items():
+                    if isinstance(value, bytes):
+                        therapist[key] = value.decode('utf-8')
+                    else:
+                        therapist[key] = value
 
                 cursor.execute(
                     """SELECT a.*, p.first_name as patient_first_name, p.last_name as patient_last_name,
@@ -5203,23 +5226,27 @@ def Routes():
                     WHERE a.appointment_id = %s AND a.therapist_id = %s""", 
                     (appointment_id, session_data["user_id"])
                 )
-                appointment = cursor.fetchone()
+                appointment_result = cursor.fetchone()
                 
-                if not appointment:
+                if not appointment_result:
                     return RedirectResponse(url="/appointments?error=not_found")
                 
+                appointment = {}
+                for key, value in appointment_result.items():
+                    if isinstance(value, bytes):
+                        appointment[key] = value.decode('utf-8')
+                    else:
+                        appointment[key] = value
 
                 processed_appointment = process_appointment_for_calendar(appointment)
                 
-
                 cursor.execute(
                     "SELECT COUNT(*) as count FROM Messages WHERE recipient_id = %s AND recipient_type = 'therapist' AND is_read = FALSE",
                     (session_data["user_id"],)
                 )
                 unread_count_result = cursor.fetchone()
-                unread_messages_count = unread_count_result['count'] if unread_count_result else 0
+                unread_messages_count = unread_count_result.get('count', 0) if unread_count_result else 0
                 
-
                 cursor.execute(
                     """SELECT m.message_id, m.subject, m.content, m.created_at, 
                             t.first_name, t.last_name, COALESCE(t.profile_image, 'avatar-1.jpg') as profile_image
@@ -5234,9 +5261,16 @@ def Routes():
 
                 recent_messages = []
                 for message in messages_result:
-                    message_with_time = message.copy()
+                    clean_message = {}
+                    for key, value in message.items():
+                        if isinstance(value, bytes):
+                            clean_message[key] = value.decode('utf-8')
+                        else:
+                            clean_message[key] = value
                     
-                    timestamp = message['created_at']
+                    message_with_time = dict(clean_message)
+                    
+                    timestamp = clean_message.get('created_at')
                     now = datetime.datetime.now()
                     if isinstance(timestamp, datetime.datetime):
                         diff = now - timestamp
@@ -5259,23 +5293,32 @@ def Routes():
                             
                     recent_messages.append(message_with_time)
                 
-
                 cursor.execute(
                     """SELECT plan_id, name, status 
                     FROM TreatmentPlans 
                     WHERE patient_id = %s 
                     ORDER BY start_date DESC""",
-                    (appointment['patient_id'],)
+                    (appointment.get('patient_id'),)
                 )
-                treatment_plans = cursor.fetchall()
+                treatment_plans_result = cursor.fetchall()
+                
+                treatment_plans = []
+                for plan in treatment_plans_result:
+                    clean_plan = {}
+                    for key, value in plan.items():
+                        if isinstance(value, bytes):
+                            clean_plan[key] = value.decode('utf-8')
+                        else:
+                            clean_plan[key] = value
+                    treatment_plans.append(clean_plan)
                 
                 return templates.TemplateResponse(
                     "dist/appointments/view_appointment.html",
                     {
                         "request": request,
                         "therapist": therapist_data,
-                        "first_name": therapist["first_name"],
-                        "last_name": therapist["last_name"],
+                        "first_name": therapist_data.get("first_name", ""),
+                        "last_name": therapist_data.get("last_name", ""),
                         "appointment": processed_appointment,
                         "treatment_plans": treatment_plans,
                         "unread_messages_count": unread_messages_count,
@@ -9542,18 +9585,23 @@ def Routes():
             cursor = None
             
             try:
-                cursor = db.cursor()
+                cursor = db.cursor(pymysql.cursors.DictCursor) 
                 
-
                 cursor.execute(
                     "SELECT id, first_name, last_name FROM Therapists WHERE id = %s", 
                     (session_data["user_id"],)
                 )
-                therapist = cursor.fetchone()
+                therapist_result = cursor.fetchone()
                 
-                if not therapist:
+                if not therapist_result:
                     return RedirectResponse(url="/Therapist_Login")
                 
+                therapist = {}
+                for key, value in therapist_result.items():
+                    if isinstance(value, bytes):
+                        therapist[key] = value.decode('utf-8')
+                    else:
+                        therapist[key] = value
 
                 cursor.execute(
                     """SELECT e.*, c.name as category_name 
@@ -9562,20 +9610,25 @@ def Routes():
                     WHERE e.exercise_id = %s""", 
                     (exercise_id,)
                 )
-                exercise = cursor.fetchone()
+                exercise_result = cursor.fetchone()
                 
-                if not exercise:
+                if not exercise_result:
                     return RedirectResponse(url="/exercises?error=not_found")
                 
+                exercise = {}
+                for key, value in exercise_result.items():
+                    if isinstance(value, bytes):
+                        exercise[key] = value.decode('utf-8')
+                    else:
+                        exercise[key] = value
 
                 cursor.execute(
                     "SELECT COUNT(*) as count FROM Messages WHERE recipient_id = %s AND recipient_type = 'therapist' AND is_read = FALSE",
                     (session_data["user_id"],)
                 )
                 unread_count_result = cursor.fetchone()
-                unread_messages_count = unread_count_result['count'] if unread_count_result else 0
+                unread_messages_count = unread_count_result.get('count', 0) if unread_count_result else 0
                 
-
                 cursor.execute(
                     """SELECT tpe.*, tp.name, tp.plan_id,
                             CONCAT(p.first_name, ' ', p.last_name) as patient_name
@@ -9586,8 +9639,17 @@ def Routes():
                     ORDER BY tp.created_at DESC""",
                     (exercise_id,)
                 )
-                plans_using_exercise = cursor.fetchall()
+                plans_using_exercise_result = cursor.fetchall()
                 
+                plans_using_exercise = []
+                for plan in plans_using_exercise_result:
+                    clean_plan = {}
+                    for key, value in plan.items():
+                        if isinstance(value, bytes):
+                            clean_plan[key] = value.decode('utf-8')
+                        else:
+                            clean_plan[key] = value
+                    plans_using_exercise.append(clean_plan)
 
                 cursor.execute(
                     """SELECT tp.plan_id, tp.name, 
@@ -9598,28 +9660,32 @@ def Routes():
                     ORDER BY tp.name""",
                     (session_data["user_id"],)
                 )
-                treatment_plans = cursor.fetchall()
+                treatment_plans_result = cursor.fetchall()
                 
+                treatment_plans = []
+                for plan in treatment_plans_result:
+                    clean_plan = {}
+                    for key, value in plan.items():
+                        if isinstance(value, bytes):
+                            clean_plan[key] = value.decode('utf-8')
+                        else:
+                            clean_plan[key] = value
+                    treatment_plans.append(clean_plan)
 
-                if exercise['instructions'] and isinstance(exercise['instructions'], str):
-                    exercise['instructions'] = exercise['instructions'].strip()
+                if exercise.get('instructions') and isinstance(exercise.get('instructions'), str):
+                    exercise['instructions'] = exercise.get('instructions').strip()
                 
-
-
                 exercise['recommendations'] = []
                 
-
-                if exercise['video_url'] and 'youtube.com' in exercise['video_url']:
-
-                    if 'watch?v=' in exercise['video_url']:
-                        video_id = exercise['video_url'].split('watch?v=')[1].split('&')[0]
+                if exercise.get('video_url') and 'youtube.com' in exercise.get('video_url', ''):
+                    if 'watch?v=' in exercise.get('video_url', ''):
+                        video_id = exercise.get('video_url').split('watch?v=')[1].split('&')[0]
                         exercise['video_url'] = f"https://www.youtube.com/embed/{video_id}"
                 
-                category_name = exercise['category_name'] if 'category_name' in exercise else None
+                category_name = exercise.get('category_name')
                 
                 therapist_data = await get_therapist_data(user["user_id"])
 
-                
                 return templates.TemplateResponse(
                     "dist/exercises/view_exercise.html",
                     {
@@ -9627,8 +9693,8 @@ def Routes():
                         "exercise": exercise,
                         "therapist": therapist_data,
                         "category_name": category_name,
-                        "first_name": therapist["first_name"],
-                        "last_name": therapist["last_name"],
+                        "first_name": therapist_data.get("first_name", ""),
+                        "last_name": therapist_data.get("last_name", ""),
                         "unread_messages_count": unread_messages_count,
                         "plans_using_exercise": plans_using_exercise,
                         "treatment_plans": treatment_plans
