@@ -296,6 +296,13 @@ def Routes():
                 print("Session data is None")
                 return RedirectResponse(url="/Therapist_Login")
 
+            user_id = int(session_data["user_id"]) if session_data.get("user_id") else None
+            print(f"User ID (converted to int): {user_id}")
+            
+            if not user_id:
+                print("Invalid user ID")
+                return RedirectResponse(url="/Therapist_Login")
+
             db = get_Mysql_db()
             cursor = None
             try:
@@ -303,12 +310,12 @@ def Routes():
                 
                 cursor.execute(
                     "SELECT first_name, last_name, profile_image FROM Therapists WHERE id = %s", 
-                    (session_data["user_id"],)
+                    (user_id,)
                 )
                 therapist = cursor.fetchone()
                 print(f"Therapist data: {therapist}")
                 if not therapist:
-                    print(f"No therapist found for ID: {session_data['user_id']}")
+                    print(f"No therapist found for ID: {user_id}")
                     return RedirectResponse(url="/Therapist_Login")
 
                 cursor.execute(
@@ -333,7 +340,7 @@ def Routes():
                         WHERE m.recipient_id = %s AND m.is_read = FALSE
                         ORDER BY m.created_at DESC
                         LIMIT 4""",
-                    (session_data["user_id"],)
+                    (user_id,)
                 )
                 
                 messages_result = cursor.fetchall()
@@ -367,14 +374,14 @@ def Routes():
 
                 cursor.execute(
                     "SELECT COUNT(*) as count FROM Messages WHERE recipient_id = %s AND is_read = FALSE",
-                    (session_data["user_id"],)
+                    (user_id,)
                 )
                 unread_count_result = cursor.fetchone()
                 unread_messages_count = unread_count_result.get('count', 0) if unread_count_result else 0
 
                 cursor.execute(
                     "SELECT COUNT(*) as count FROM Appointments WHERE therapist_id = %s", 
-                    (session_data["user_id"],)
+                    (user_id,)
                 )
                 appointments_result = cursor.fetchone()
                 appointments_count = appointments_result.get('count', 0) if appointments_result else 0
@@ -382,7 +389,7 @@ def Routes():
                 last_month = datetime.datetime.now() - timedelta(days=30)
                 cursor.execute(
                     "SELECT COUNT(*) as count FROM Appointments WHERE therapist_id = %s AND created_at < %s", 
-                    (session_data["user_id"], last_month)
+                    (user_id, last_month)
                 )
                 last_month_appointments = cursor.fetchone()
                 last_month_count = last_month_appointments.get('count', 0) if last_month_appointments else 0
@@ -392,7 +399,7 @@ def Routes():
 
                 cursor.execute(
                     "SELECT COUNT(*) as count FROM Patients WHERE therapist_id = %s AND status = 'Active'", 
-                    (session_data["user_id"],)
+                    (user_id,)
                 )
                 active_patients_result = cursor.fetchone()
                 active_patients_count = active_patients_result.get('count', 0) if active_patients_result else 0
@@ -400,7 +407,7 @@ def Routes():
                 this_month_start = datetime.datetime.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
                 cursor.execute(
                     "SELECT COUNT(*) as count FROM Patients WHERE therapist_id = %s AND created_at >= %s", 
-                    (session_data["user_id"], this_month_start)
+                    (user_id, this_month_start)
                 )
                 new_patients_result = cursor.fetchone()
                 new_patients_monthly = new_patients_result.get('count', 0) if new_patients_result else 0
@@ -408,7 +415,7 @@ def Routes():
                 last_month_start = (this_month_start - timedelta(days=1)).replace(day=1)
                 cursor.execute(
                     "SELECT COUNT(*) as count FROM Patients WHERE therapist_id = %s AND created_at BETWEEN %s AND %s", 
-                    (session_data["user_id"], last_month_start, this_month_start)
+                    (user_id, last_month_start, this_month_start)
                 )
                 last_month_new_patients = cursor.fetchone()
                 last_month_new_count = last_month_new_patients.get('count', 1) if last_month_new_patients else 1
@@ -416,21 +423,21 @@ def Routes():
 
                 cursor.execute(
                     "SELECT COUNT(*) as count FROM TreatmentPlans WHERE therapist_id = %s", 
-                    (session_data["user_id"],)
+                    (user_id,)
                 )
                 treatment_plans_result = cursor.fetchone()
                 treatment_plans_count = treatment_plans_result.get('count', 0) if treatment_plans_result else 0
 
                 cursor.execute(
                     "SELECT COUNT(*) as count FROM TreatmentPlans WHERE therapist_id = %s AND created_at >= %s", 
-                    (session_data["user_id"], this_month_start)
+                    (user_id, this_month_start)
                 )
                 new_plans_result = cursor.fetchone()
                 new_plans_monthly = new_plans_result.get('count', 0) if new_plans_result else 0
 
                 cursor.execute(
                     "SELECT COUNT(*) as count FROM TreatmentPlans WHERE therapist_id = %s AND created_at BETWEEN %s AND %s", 
-                    (session_data["user_id"], last_month_start, this_month_start)
+                    (user_id, last_month_start, this_month_start)
                 )
                 last_month_plans = cursor.fetchone()
                 last_month_plans_count = last_month_plans.get('count', 1) if last_month_plans else 1
@@ -438,7 +445,7 @@ def Routes():
 
                 cursor.execute(
                     "SELECT AVG(adherence_rate) as avg_rate FROM PatientMetrics WHERE therapist_id = %s", 
-                    (session_data["user_id"],)
+                    (user_id,)
                 )
                 adherence_result = cursor.fetchone()
                 average_adherence_rate = round(adherence_result.get('avg_rate', 0), 1) if adherence_result and adherence_result.get('avg_rate') is not None else 0
@@ -447,7 +454,7 @@ def Routes():
                     """SELECT AVG(adherence_rate) as avg_rate 
                     FROM PatientMetrics 
                     WHERE therapist_id = %s AND measurement_date BETWEEN %s AND %s""", 
-                    (session_data["user_id"], last_month_start, this_month_start)
+                    (user_id, last_month_start, this_month_start)
                 )
                 last_month_adherence = cursor.fetchone()
                 last_month_adherence_rate = last_month_adherence.get('avg_rate', 0) if last_month_adherence and last_month_adherence.get('avg_rate') is not None else 0
@@ -489,7 +496,7 @@ def Routes():
                     GROUP BY p.patient_id
                     ORDER BY p.created_at DESC
                     LIMIT 5""", 
-                    (session_data["user_id"],)
+                    (user_id,)
                 )
                 recent_patients_result = cursor.fetchall()
 
@@ -508,7 +515,7 @@ def Routes():
 
                 cursor.execute(
                     "SELECT AVG(recovery_progress) as avg_recovery FROM PatientMetrics WHERE therapist_id = %s", 
-                    (session_data["user_id"],)
+                    (user_id,)
                 )
                 recovery_result = cursor.fetchone()
                 avg_recovery_rate = round(recovery_result.get('avg_recovery', 0), 1) if recovery_result and recovery_result.get('avg_recovery') is not None else 0
@@ -541,7 +548,7 @@ def Routes():
 
                 cursor.execute(
                     "SELECT AVG(functionality_score) as avg_score FROM PatientMetrics WHERE therapist_id = %s", 
-                    (session_data["user_id"],)
+                    (user_id,)
                 )
                 progress_result = cursor.fetchone()
                 progress_metric_value = progress_result.get('avg_score', 0) if progress_result and progress_result.get('avg_score') is not None else 0
@@ -576,7 +583,7 @@ def Routes():
                     LIMIT 3)
                     ORDER BY timestamp DESC
                     LIMIT 3""", 
-                    (session_data["user_id"], session_data["user_id"], session_data["user_id"])
+                    (user_id, user_id, user_id)
                 )
                 activities_result = cursor.fetchall()
 
@@ -647,7 +654,7 @@ def Routes():
                     AND therapist_id = %s
                     GROUP BY DATE_FORMAT(measurement_date, '%d %b')
                     ORDER BY measurement_date""", 
-                    (session_data["user_id"],)
+                    (user_id,)
                 )
                 progress_chart_data = cursor.fetchall()
                 progress_data = [{'date': record.get('date'), 'score': float(record.get('score', 0)) if record.get('score') is not None else 0} for record in progress_chart_data]
