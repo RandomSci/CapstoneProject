@@ -1299,76 +1299,94 @@ def Routes():
 
     @app.post("/messages/reply/{message_id}")
     async def reply_to_message(request: Request, message_id: int):
+        import traceback
+        
         session_id = request.cookies.get("session_id")
         if not session_id:
             return {"success": False, "message": "Not authenticated"}
-
         try:
             session_data = await get_redis_session(session_id)
             if not session_data:
                 return {"success": False, "message": "Not authenticated"}
-
+            
+            try:
+                user_id = int(session_data["user_id"])
+                print(f"User ID (int): {user_id}")
+            except (ValueError, TypeError):
+                user_id = session_data["user_id"]
+                print(f"User ID (original): {user_id}")
+                
             form_data = await request.form()
             content = form_data.get("content")
-
- 
             if not content:
                 return {"success": False, "message": "Message content is required"}
-
+                
             db = get_Mysql_db()
-            cursor = db.cursor()
-
+            cursor = None
             try:
- 
+                cursor = db.cursor(pymysql.cursors.DictCursor)
+                
                 cursor.execute(
                     """SELECT sender_id, recipient_id, subject, sender_type, recipient_type
-                        FROM Messages 
-                        WHERE message_id = %s 
-                        AND ((sender_id = %s AND sender_type = 'therapist') 
-                             OR (recipient_id = %s AND recipient_type = 'therapist'))""",
-                    (message_id, session_data["user_id"], session_data["user_id"])
+                    FROM Messages
+                    WHERE message_id = %s
+                    AND ((sender_id = %s AND sender_type = 'therapist')
+                    OR (recipient_id = %s AND recipient_type = 'therapist'))""",
+                    (message_id, user_id, user_id)
                 )
                 original_message = cursor.fetchone()
-
+                
                 if not original_message:
                     return {"success": False, "message": "Original message not found"}
-
- 
-                if int(original_message['recipient_id']) == int(session_data["user_id"]) and original_message['recipient_type'] == 'therapist':
-                    reply_to_id = original_message['sender_id']
-                    reply_to_type = original_message['sender_type']
+                    
+                sender_id = original_message.get('sender_id')
+                recipient_id = original_message.get('recipient_id')
+                sender_type = original_message.get('sender_type')
+                recipient_type = original_message.get('recipient_type')
+                subject = original_message.get('subject', '')
+                
+                try:
+                    recipient_id_int = int(recipient_id) if recipient_id is not None else None
+                    sender_id_int = int(sender_id) if sender_id is not None else None
+                except (ValueError, TypeError):
+                    print(f"Warning: Could not convert IDs to integers. sender_id: {sender_id}, recipient_id: {recipient_id}")
+                    recipient_id_int = recipient_id
+                    sender_id_int = sender_id
+                
+                if recipient_id_int == user_id and recipient_type == 'therapist':
+                    reply_to_id = sender_id_int
+                    reply_to_type = sender_type
                 else:
-                    reply_to_id = original_message['recipient_id']
-                    reply_to_type = original_message['recipient_type']
-
- 
-                subject = original_message['subject']
+                    reply_to_id = recipient_id_int
+                    reply_to_type = recipient_type
+                    
                 if not subject.startswith("Re:"):
                     subject = f"Re: {subject}"
-
- 
+                    
                 cursor.execute(
-                    """INSERT INTO Messages 
-                        (sender_id, sender_type, recipient_id, recipient_type, subject, content) 
-                        VALUES (%s, %s, %s, %s, %s, %s)""",
-                    (session_data["user_id"], "therapist", reply_to_id, reply_to_type, subject, content)
+                    """INSERT INTO Messages
+                    (sender_id, sender_type, recipient_id, recipient_type, subject, content)
+                    VALUES (%s, %s, %s, %s, %s, %s)""",
+                    (user_id, "therapist", reply_to_id, reply_to_type, subject, content)
                 )
                 db.commit()
-
- 
+                
                 new_message_id = cursor.lastrowid
-
                 return {"success": True, "message_id": new_message_id}
-
+                
             except Exception as e:
                 print(f"Database error sending reply: {e}")
-                return {"success": False, "message": "Error sending reply"}
+                print(f"Traceback: {traceback.format_exc()}")
+                return {"success": False, "message": f"Error sending reply: {str(e)}"}
             finally:
-                cursor.close()
-                db.close()
+                if cursor:
+                    cursor.close()
+                if db:
+                    db.close()
         except Exception as e:
             print(f"Error sending reply: {e}")
-            return {"success": False, "message": "Error processing request"}
+            print(f"Traceback: {traceback.format_exc()}")
+            return {"success": False, "message": f"Error processing request: {str(e)}"}
 
     @app.delete("/messages/{message_id}")
     async def delete_message(request: Request, message_id: int):
@@ -1430,7 +1448,7 @@ def Routes():
                 return {"count": 0}
 
             db = get_Mysql_db()
-            cursor = db.cursor(pymysql.cursors.DictCursor)  # Use DictCursor here
+            cursor = db.cursor(pymysql.cursors.DictCursor)  
 
             try:
                 cursor.execute(
@@ -1438,7 +1456,7 @@ def Routes():
                     (session_data["user_id"],)
                 )
                 result = cursor.fetchone()
-                return {"count": result.get('count', 0) if result else 0}  # Use .get() for safety
+                return {"count": result.get('count', 0) if result else 0}  
 
             except Exception as e:
                 print(f"Error fetching unread count: {e}")
