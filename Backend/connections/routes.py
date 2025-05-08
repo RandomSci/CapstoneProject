@@ -1921,22 +1921,24 @@ def Routes():
         finally:
             cursor.close()
             db.close()
-        async def get_unread_messages_count(db, user_id):
-            """Get count of unread messages"""
-            try:
-                cursor = db.cursor()
-                cursor.execute(
-                    "SELECT COUNT(*) as count FROM Messages WHERE recipient_id = %s AND recipient_type = 'therapist' AND is_read = FALSE",
-                    (user_id,)
-                )
-                result = cursor.fetchone()
-                return result['count'] if result else 0
-            except Exception as e:
-                print(f"Error counting unread messages: {e}")
-                return 0
-            finally:
-                if cursor:
-                    cursor.close()
+            
+            
+    async def get_unread_messages_count(db, user_id):
+        """Get count of unread messages"""
+        try:
+            cursor = db.cursor()
+            cursor.execute(
+                "SELECT COUNT(*) as count FROM Messages WHERE recipient_id = %s AND recipient_type = 'therapist' AND is_read = FALSE",
+                (user_id,)
+            )
+            result = cursor.fetchone()
+            return result['count'] if result else 0
+        except Exception as e:
+            print(f"Error counting unread messages: {e}")
+            return 0
+        finally:
+            if cursor:
+                cursor.close()
 
     def get_all_specialties():
         """Return list of all specialties"""
@@ -4139,15 +4141,27 @@ def Routes():
             db.close()
 
     async def get_therapist_data(therapist_id):
+        print(f"NEW get_therapist_data called with id: {therapist_id}")
         db = get_Mysql_db()
-        cursor = db.cursor()
-
+        cursor = db.cursor(pymysql.cursors.DictCursor)
         try:
             cursor.execute(
-                "SELECT first_name, last_name, profile_image FROM Therapists WHERE id = %s", 
+                "SELECT first_name, last_name, profile_image FROM Therapists WHERE id = %s",
                 (therapist_id,)
             )
-            return cursor.fetchone()
+            therapist_data = cursor.fetchone()
+            print(f"Therapist data type: {type(therapist_data)}")
+            
+            if therapist_data:
+                clean_data = {}
+                for key, value in therapist_data.items():
+                    if isinstance(value, bytes):
+                        clean_data[key] = value.decode('utf-8')
+                    else:
+                        clean_data[key] = value
+                print(f"Returning clean data: {clean_data}")
+                return clean_data
+            return {}
         finally:
             cursor.close()
             db.close()
@@ -9487,6 +9501,7 @@ def Routes():
             
     @app.get("/patients")
     async def get_patients_page(request: Request, user=Depends(get_current_user)):
+        print(f"get_patients_page called with user: {user}")
         db = get_Mysql_db()
         cursor = db.cursor()
 
@@ -9498,6 +9513,7 @@ def Routes():
             patients = cursor.fetchall()
 
             therapist_data = await get_therapist_data(user["user_id"])
+            print(f"Got therapist_data: {therapist_data}, type: {type(therapist_data)}")
 
             return templates.TemplateResponse(
                 "dist/dashboard/patient_directory.html", 
