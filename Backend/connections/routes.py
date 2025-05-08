@@ -748,7 +748,6 @@ def Routes():
                     print(f"Error in progress chart data query: {e}")
                     progress_data = []
 
-                # Hardcoded donut data
                 print("Setting hardcoded values for donut data")
                 donut_data = {'Completed': 65, 'Partial': 25, 'Missed': 10}
 
@@ -3211,6 +3210,8 @@ def Routes():
     
     @app.get("/exercises/submissions/{submission_id}")
     async def view_exercise_submission(request: Request, submission_id: int):
+        import traceback
+        
         session_id = request.cookies.get("session_id")
         if not session_id:
             return RedirectResponse(url="/Therapist_Login")
@@ -3219,14 +3220,23 @@ def Routes():
             if not session_data:
                 return RedirectResponse(url="/Therapist_Login")
             
-            db = get_Mysql_db()
-            cursor = db.cursor()
             try:
+                user_id = int(session_data["user_id"])
+                print(f"User ID (int): {user_id}")
+            except (ValueError, TypeError):
+                user_id = session_data["user_id"]
+                print(f"User ID (original): {user_id}")
+            
+            db = get_Mysql_db()
+            cursor = None
+            try:
+                cursor = db.cursor(pymysql.cursors.DictCursor)
+                
                 cursor.execute(
                     """SELECT id, first_name, last_name, profile_image
                     FROM Therapists
                     WHERE id = %s""",
-                    (session_data["user_id"],)
+                    (user_id,)
                 )
                 therapist = cursor.fetchone()
                 if not therapist:
@@ -3240,21 +3250,15 @@ def Routes():
                     JOIN Exercises e ON evs.exercise_id = e.exercise_id
                     JOIN TreatmentPlans tp ON evs.treatment_plan_id = tp.plan_id
                     WHERE evs.submission_id = %s AND p.therapist_id = %s""",
-                    (submission_id, session_data["user_id"])
+                    (submission_id, user_id)
                 )
                 submission = cursor.fetchone()
                 if not submission:
                     return RedirectResponse(url="/exercises/submissions")
                 
-
-                if submission and "video_url" in submission and submission["video_url"]:
-
-                    filename = os.path.basename(submission["video_url"])
-                    
-
-                    token = await generate_video_token(session_data["user_id"], filename)
-                    
-
+                if submission and submission.get("video_url"):
+                    filename = os.path.basename(submission.get("video_url"))
+                    token = await generate_video_token(user_id, filename)
                     query_params = urlencode({"token": token})
                     submission["video_url"] = f"/api/uploads/exercise_videos/{filename}?{query_params}"
                 
@@ -3267,24 +3271,24 @@ def Routes():
                     AND evs.submission_id != %s
                     ORDER BY evs.submission_date DESC
                     LIMIT 5""",
-                    (submission['patient_id'], submission['exercise_id'], submission_id)
+                    (submission.get('patient_id'), submission.get('exercise_id'), submission_id)
                 )
                 previous_submissions = cursor.fetchall()
                 
                 cursor.execute(
                     "SELECT COUNT(*) as count FROM Messages WHERE recipient_id = %s AND recipient_type = 'therapist' AND is_read = FALSE",
-                    (session_data["user_id"],)
+                    (user_id,)
                 )
                 unread_count_result = cursor.fetchone()
-                unread_messages_count = unread_count_result['count'] if unread_count_result else 0
+                unread_messages_count = unread_count_result.get('count', 0) if unread_count_result else 0
                 
                 return templates.TemplateResponse(
                     "dist/exercises/submission_detail.html",
                     {
                         "request": request,
                         "therapist": therapist,
-                        "first_name": therapist["first_name"],
-                        "last_name": therapist["last_name"],
+                        "first_name": therapist.get("first_name", ""),
+                        "last_name": therapist.get("last_name", ""),
                         "unread_messages_count": unread_messages_count,
                         "submission": submission,
                         "previous_submissions": previous_submissions
@@ -3292,14 +3296,17 @@ def Routes():
                 )
             except Exception as e:
                 print(f"Database error in submission detail: {e}")
+                print(f"Traceback: {traceback.format_exc()}")
                 return RedirectResponse(url="/exercises/submissions")
             finally:
-                cursor.close()
-                db.close()
+                if cursor:
+                    cursor.close()
+                if db:
+                    db.close()
         except Exception as e:
             print(f"Error in submission detail: {e}")
+            print(f"Traceback: {traceback.format_exc()}")
             return RedirectResponse(url="/Therapist_Login")
-
 
     @app.post("/exercises/submissions/{submission_id}/feedback")
     async def provide_submission_feedback(
@@ -3308,6 +3315,8 @@ def Routes():
         feedback: str = Form(...),
         rating: str = Form(...)
     ):
+        import traceback
+        
         session_id = request.cookies.get("session_id")
         if not session_id:
             return RedirectResponse(url="/Therapist_Login")
@@ -3317,22 +3326,31 @@ def Routes():
             if not session_data:
                 return RedirectResponse(url="/Therapist_Login")
 
+            try:
+                user_id = int(session_data["user_id"])
+                print(f"User ID (int): {user_id}")
+            except (ValueError, TypeError):
+                user_id = session_data["user_id"]
+                print(f"User ID (original): {user_id}")
+
             db = get_Mysql_db()
-            cursor = db.cursor()
+            cursor = None
 
             try:
+                cursor = db.cursor(pymysql.cursors.DictCursor)
 
                 cursor.execute(
                     """SELECT evs.submission_id 
                     FROM ExerciseVideoSubmissions evs
                     JOIN Patients p ON evs.patient_id = p.patient_id
                     WHERE evs.submission_id = %s AND p.therapist_id = %s""",
-                    (submission_id, session_data["user_id"])
+                    (submission_id, user_id)
                 )
                 
-                if not cursor.fetchone():
+                result = cursor.fetchone()
+                if not result:
+                    print(f"Therapist {user_id} does not have access to submission {submission_id}")
                     return RedirectResponse(url="/exercises/submissions")
-
 
                 cursor.execute(
                     """UPDATE ExerciseVideoSubmissions 
@@ -3345,21 +3363,28 @@ def Routes():
                 )
                 
                 db.commit()
+                print(f"Feedback saved for submission {submission_id}")
                 
                 return RedirectResponse(url=f"/exercises/submissions/{submission_id}", status_code=303)
 
             except Exception as e:
                 print(f"Database error in providing feedback: {e}")
+                print(f"Traceback: {traceback.format_exc()}")
                 return RedirectResponse(url=f"/exercises/submissions/{submission_id}")
             finally:
-                cursor.close()
-                db.close()
+                if cursor:
+                    cursor.close()
+                if db:
+                    db.close()
         except Exception as e:
             print(f"Error in providing feedback: {e}")
+            print(f"Traceback: {traceback.format_exc()}")
             return RedirectResponse(url="/Therapist_Login")
         
     @app.get("/exercises/patient-submissions/{patient_id}")
     async def patient_exercise_submissions(request: Request, patient_id: int):
+        import traceback
+        
         session_id = request.cookies.get("session_id")
         if not session_id:
             return RedirectResponse(url="/Therapist_Login")
@@ -3367,14 +3392,24 @@ def Routes():
             session_data = await get_redis_session(session_id)
             if not session_data:
                 return RedirectResponse(url="/Therapist_Login")
-            db = get_Mysql_db()
-            cursor = db.cursor(pymysql.cursors.DictCursor)  
+            
             try:
+                user_id = int(session_data["user_id"])
+                print(f"User ID (int): {user_id}")
+            except (ValueError, TypeError):
+                user_id = session_data["user_id"]
+                print(f"User ID (original): {user_id}")
+                
+            db = get_Mysql_db()
+            cursor = None
+            try:
+                cursor = db.cursor(pymysql.cursors.DictCursor)
+                
                 cursor.execute(
                     """SELECT id, first_name, last_name, profile_image
                     FROM Therapists
                     WHERE id = %s""",
-                    (session_data["user_id"],)
+                    (user_id,)
                 )
                 therapist_result = cursor.fetchone()
                 if not therapist_result:
@@ -3390,7 +3425,7 @@ def Routes():
                 cursor.execute(
                     """SELECT * FROM Patients
                     WHERE patient_id = %s AND therapist_id = %s""",
-                    (patient_id, session_data["user_id"])
+                    (patient_id, user_id)
                 )
                 patient_result = cursor.fetchone()
                 if not patient_result:
@@ -3426,7 +3461,7 @@ def Routes():
                     
                 cursor.execute(
                     "SELECT COUNT(*) as count FROM Messages WHERE recipient_id = %s AND recipient_type = 'therapist' AND is_read = FALSE",
-                    (session_data["user_id"],)
+                    (user_id,)
                 )
                 unread_count_result = cursor.fetchone()
                 unread_messages_count = unread_count_result.get('count', 0) if unread_count_result else 0
@@ -3448,8 +3483,10 @@ def Routes():
                 print(f"Traceback: {traceback.format_exc()}")  
                 return RedirectResponse(url="/patients")
             finally:
-                cursor.close()
-                db.close()
+                if cursor:
+                    cursor.close()
+                if db:
+                    db.close()
         except Exception as e:
             print(f"Error in patient exercise submissions: {e}")
             print(f"Traceback: {traceback.format_exc()}")  
@@ -7959,9 +7996,8 @@ def Routes():
             cursor = None
             
             try:
-                cursor = db.cursor()
+                cursor = db.cursor(pymysql.cursors.DictCursor)
                 
-
                 cursor.execute(
                     "SELECT patient_id FROM Patients WHERE user_id = %s",
                     (user_id,)
@@ -7972,10 +8008,9 @@ def Routes():
                     print(f"Patient not found for user_id: {user_id}")
                     return JSONResponse(status_code=404, content={"detail": "Patient profile not found"})
                 
-                patient_id = patient["patient_id"]
+                patient_id = patient.get("patient_id")
                 print(f"Found patient_id: {patient_id}")
                 
-
                 cursor.execute(
                     """
                     SELECT tpe.*, tp.patient_id, e.name as exercise_name
@@ -7995,16 +8030,15 @@ def Routes():
                         content={"detail": "Exercise not found"}
                     )
                 
-                if exercise["patient_id"] != patient_id:
-                    print(f"Permission denied: Exercise belongs to patient {exercise['patient_id']}, not {patient_id}")
+                if exercise.get("patient_id") != patient_id:
+                    print(f"Permission denied: Exercise belongs to patient {exercise.get('patient_id')}, not {patient_id}")
                     return JSONResponse(
                         status_code=403, 
                         content={"detail": "You don't have permission to update this exercise"}
                     )
                 
-                print(f"Found exercise: {exercise['exercise_name']}, plan_id: {exercise['plan_id']}, exercise_id: {exercise['exercise_id']}")
+                print(f"Found exercise: {exercise.get('exercise_name')}, plan_id: {exercise.get('plan_id')}, exercise_id: {exercise.get('exercise_id')}")
                 
-
                 cursor.execute(
                     """
                     SELECT progress_id FROM PatientExerciseProgress
@@ -8017,7 +8051,6 @@ def Routes():
                 print(f"Existing progress for today: {existing_progress}")
                 
                 if existing_progress:
-
                     cursor.execute(
                         """
                         UPDATE PatientExerciseProgress 
@@ -8036,13 +8069,12 @@ def Routes():
                             progress_request.pain_level,
                             progress_request.difficulty_level,
                             progress_request.notes,
-                            existing_progress["progress_id"]
+                            existing_progress.get("progress_id")
                         )
                     )
-                    progress_id = existing_progress["progress_id"]
+                    progress_id = existing_progress.get("progress_id")
                     print(f"Updated existing progress entry: {progress_id}, rows affected: {cursor.rowcount}")
                 else:
-
                     cursor.execute(
                         """
                         INSERT INTO PatientExerciseProgress 
@@ -8067,11 +8099,10 @@ def Routes():
                 db.commit()
                 print(f"Database transaction committed")
                 
-
                 return {
                     "detail": "Exercise progress recorded successfully",
                     "progressId": progress_id,
-                    "exerciseName": exercise["exercise_name"]
+                    "exerciseName": exercise.get("exercise_name")
                 }
                 
             except Exception as e:
