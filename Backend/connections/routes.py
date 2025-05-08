@@ -1899,63 +1899,44 @@ def Routes():
             return RedirectResponse(url="/Therapist_Login", status_code=303)
  
 
-    async def get_therapist_data(db, user_id):
-        """Retrieve therapist data from database"""
+    async def get_therapist_data(therapist_id):
+        db = get_Mysql_db()
+        cursor = db.cursor(pymysql.cursors.DictCursor)  
         try:
-            cursor = db.cursor()
             cursor.execute(
-                """SELECT id, first_name, last_name, company_email, profile_image, 
-                        bio, experience_years, specialties, education, languages, 
-                        address, rating, review_count, 
-                        is_accepting_new_patients, average_session_length
-                FROM Therapists 
-                WHERE id = %s""", 
-                (user_id,)
+                "SELECT first_name, last_name, profile_image FROM Therapists WHERE id = %s",
+                (therapist_id,)
             )
-            therapist = cursor.fetchone()
+            therapist_data = cursor.fetchone()
             
- 
-            for field in ['specialties', 'education', 'languages']:
-                if therapist[field] and isinstance(therapist[field], str):
-                    try:
-                        therapist[field] = json.loads(therapist[field])
-                    except:
-                        therapist[field] = []
-                elif therapist[field] is None:
-                    therapist[field] = []
-                    
-            return therapist
-        except Exception as e:
-            print(f"Error retrieving therapist data: {e}")
-            return {
-                "first_name": "",
-                "last_name": "",
-                "company_email": "",
-                "profile_image": "avatar-1.jpg",
-                "specialties": [],
-                "education": [],
-                "languages": []
-            }
+            if therapist_data:
+                clean_data = {}
+                for key, value in therapist_data.items():
+                    if isinstance(value, bytes):
+                        clean_data[key] = value.decode('utf-8')
+                    else:
+                        clean_data[key] = value
+                return clean_data
+            return {} 
         finally:
-            if cursor:
-                cursor.close()
-
-    async def get_unread_messages_count(db, user_id):
-        """Get count of unread messages"""
-        try:
-            cursor = db.cursor()
-            cursor.execute(
-                "SELECT COUNT(*) as count FROM Messages WHERE recipient_id = %s AND recipient_type = 'therapist' AND is_read = FALSE",
-                (user_id,)
-            )
-            result = cursor.fetchone()
-            return result['count'] if result else 0
-        except Exception as e:
-            print(f"Error counting unread messages: {e}")
-            return 0
-        finally:
-            if cursor:
-                cursor.close()
+            cursor.close()
+            db.close()
+        async def get_unread_messages_count(db, user_id):
+            """Get count of unread messages"""
+            try:
+                cursor = db.cursor()
+                cursor.execute(
+                    "SELECT COUNT(*) as count FROM Messages WHERE recipient_id = %s AND recipient_type = 'therapist' AND is_read = FALSE",
+                    (user_id,)
+                )
+                result = cursor.fetchone()
+                return result['count'] if result else 0
+            except Exception as e:
+                print(f"Error counting unread messages: {e}")
+                return 0
+            finally:
+                if cursor:
+                    cursor.close()
 
     def get_all_specialties():
         """Return list of all specialties"""
