@@ -4224,17 +4224,37 @@ def Routes():
     @app.get("/treatment-plans/new")
     async def new_treatment_plan_page(request: Request, user=Depends(get_current_user)):
         db = get_Mysql_db()
-        cursor = db.cursor()
+        cursor = db.cursor(pymysql.cursors.DictCursor)  
 
         try:
             cursor.execute(
                 "SELECT patient_id, first_name, last_name FROM Patients WHERE therapist_id = %s", 
                 (user["user_id"],)
             )
-            patients = cursor.fetchall()
+            patients_result = cursor.fetchall()
+            
+            patients = []
+            for patient in patients_result:
+                clean_patient = {}
+                for key, value in patient.items():
+                    if isinstance(value, bytes):
+                        clean_patient[key] = value.decode('utf-8')
+                    else:
+                        clean_patient[key] = value
+                patients.append(clean_patient)
 
             cursor.execute("SELECT * FROM Exercises")
-            exercises = cursor.fetchall()
+            exercises_result = cursor.fetchall()
+            
+            exercises = []
+            for exercise in exercises_result:
+                clean_exercise = {}
+                for key, value in exercise.items():
+                    if isinstance(value, bytes):
+                        clean_exercise[key] = value.decode('utf-8')
+                    else:
+                        clean_exercise[key] = value
+                exercises.append(clean_exercise)
 
             therapist_data = await get_therapist_data(user["user_id"])
             print(f"exercises: {exercises}")
@@ -4245,15 +4265,19 @@ def Routes():
                     "request": request,
                     "patients": patients,
                     "exercises": exercises,
-                    "therapist":therapist_data,
-                    "first_name": therapist_data["first_name"],
-                    "last_name": therapist_data["last_name"],
+                    "therapist": therapist_data,
+                    "first_name": therapist_data.get("first_name", ""),
+                    "last_name": therapist_data.get("last_name", ""),
                 }
             )
+        except Exception as e:
+            print(f"Error loading new treatment plan page: {e}")
+            print(f"Traceback: {traceback.format_exc()}")
+            return RedirectResponse(url="/treatment-plans")
         finally:
             cursor.close()
             db.close()
-
+        
     async def get_therapist_data(therapist_id):
         print(f"NEW get_therapist_data called with id: {therapist_id}")
         db = get_Mysql_db()
@@ -4296,18 +4320,23 @@ def Routes():
             cursor = None
             
             try:
-                cursor = db.cursor()
+                cursor = db.cursor(pymysql.cursors.DictCursor)  
                 
-
                 cursor.execute(
                     "SELECT id, first_name, last_name, profile_image FROM Therapists WHERE id = %s", 
                     (session_data["user_id"],)
                 )
-                therapist = cursor.fetchone()
+                therapist_result = cursor.fetchone()
                 
-                if not therapist:
+                if not therapist_result:
                     return RedirectResponse(url="/Therapist_Login")
                 
+                therapist = {}
+                for key, value in therapist_result.items():
+                    if isinstance(value, bytes):
+                        therapist[key] = value.decode('utf-8')
+                    else:
+                        therapist[key] = value
 
                 cursor.execute(
                     """SELECT tp.*, p.first_name as patient_first_name, p.last_name as patient_last_name 
@@ -4316,18 +4345,30 @@ def Routes():
                     WHERE tp.plan_id = %s AND tp.therapist_id = %s""", 
                     (plan_id, session_data["user_id"])
                 )
-                plan = cursor.fetchone()
+                plan_result = cursor.fetchone()
                 
-                if not plan:
+                if not plan_result:
                     return RedirectResponse(url="/treatment-plans?error=not_found")
                 
+                plan = {}
+                for key, value in plan_result.items():
+                    if isinstance(value, bytes):
+                        plan[key] = value.decode('utf-8')
+                    else:
+                        plan[key] = value
 
                 cursor.execute(
                     "SELECT * FROM Patients WHERE patient_id = %s AND therapist_id = %s",
-                    (plan["patient_id"], session_data["user_id"])
+                    (plan.get("patient_id"), session_data["user_id"])
                 )
-                patient = cursor.fetchone()
+                patient_result = cursor.fetchone()
                 
+                patient = {}
+                for key, value in patient_result.items():
+                    if isinstance(value, bytes):
+                        patient[key] = value.decode('utf-8')
+                    else:
+                        patient[key] = value
 
                 cursor.execute(
                     """SELECT tpe.*, e.name as exercise_name, e.difficulty, e.duration as exercise_duration,
@@ -4338,49 +4379,64 @@ def Routes():
                     ORDER BY tpe.plan_exercise_id""",
                     (plan_id,)
                 )
-                plan_exercises = cursor.fetchall()
+                plan_exercises_result = cursor.fetchall()
                 
-
+                plan_exercises = []
+                for exercise in plan_exercises_result:
+                    clean_exercise = {}
+                    for key, value in exercise.items():
+                        if isinstance(value, bytes):
+                            clean_exercise[key] = value.decode('utf-8')
+                        else:
+                            clean_exercise[key] = value
+                    plan_exercises.append(clean_exercise)
+                
                 for exercise in plan_exercises:
-                    if exercise["notes"]:
-                        exercise["notes"] = exercise["notes"]
-                    elif exercise["instructions"]:
-                        exercise["notes"] = exercise["instructions"]
+                    if exercise.get("notes"):
+                        exercise["notes"] = exercise.get("notes")
+                    elif exercise.get("instructions"):
+                        exercise["notes"] = exercise.get("instructions")
                     else:
                         exercise["notes"] = "No specific instructions provided for this exercise."
-                
 
                 cursor.execute(
                     """SELECT * FROM PatientMetrics 
                     WHERE patient_id = %s 
                     ORDER BY measurement_date DESC
                     LIMIT 1""",
-                    (plan["patient_id"],)
+                    (plan.get("patient_id"),)
                 )
-                patient_progress = cursor.fetchone()
+                patient_progress_result = cursor.fetchone()
                 
-
-                if not patient_progress:
+                if patient_progress_result:
+                    patient_progress = {}
+                    for key, value in patient_progress_result.items():
+                        if isinstance(value, bytes):
+                            patient_progress[key] = value.decode('utf-8')
+                        else:
+                            patient_progress[key] = value
+                else:
                     patient_progress = {
                         'adherence_rate': 0,
                         'recovery_progress': 0,
                         'functionality_score': 0
                     }
-                
 
                 cursor.execute(
                     """SELECT 
                         CASE 
                             WHEN (
                                 CASE 
-                                    WHEN repetitions IS NOT NULL THEN (repetitions_completed / repetitions) * 100
-                                    ELSE (sets_completed / sets) * 100
+                                    WHEN tpe.repetitions IS NOT NULL AND tpe.repetitions > 0 THEN (pep.repetitions_completed / tpe.repetitions) * 100
+                                    WHEN tpe.sets IS NOT NULL AND tpe.sets > 0 THEN (pep.sets_completed / tpe.sets) * 100
+                                    ELSE 0
                                 END
                             ) >= 90 THEN 'complete'
                             WHEN (
                                 CASE 
-                                    WHEN repetitions IS NOT NULL THEN (repetitions_completed / repetitions) * 100
-                                    ELSE (sets_completed / sets) * 100
+                                    WHEN tpe.repetitions IS NOT NULL AND tpe.repetitions > 0 THEN (pep.repetitions_completed / tpe.repetitions) * 100
+                                    WHEN tpe.sets IS NOT NULL AND tpe.sets > 0 THEN (pep.sets_completed / tpe.sets) * 100
+                                    ELSE 0
                                 END
                             ) >= 50 THEN 'partial'
                             ELSE 'missed'
@@ -4394,7 +4450,6 @@ def Routes():
                 )
                 exercise_completion_raw = cursor.fetchall()
                 
-
                 exercise_completion = {
                     'complete_count': 0, 
                     'partial_count': 0, 
@@ -4406,34 +4461,33 @@ def Routes():
                 
                 total_exercises = 0
                 for ec in exercise_completion_raw:
-                    total_exercises += ec['count']
-                    if ec['status'] == 'complete':
-                        exercise_completion['complete_count'] = ec['count']
-                    elif ec['status'] == 'partial':
-                        exercise_completion['partial_count'] = ec['count']
-                    elif ec['status'] == 'missed':
-                        exercise_completion['missed_count'] = ec['count']
+                    total_exercises += ec.get('count', 0)
+                    if ec.get('status') == 'complete':
+                        exercise_completion['complete_count'] = ec.get('count', 0)
+                    elif ec.get('status') == 'partial':
+                        exercise_completion['partial_count'] = ec.get('count', 0)
+                    elif ec.get('status') == 'missed':
+                        exercise_completion['missed_count'] = ec.get('count', 0)
                 
                 if total_exercises > 0:
                     exercise_completion['complete_percentage'] = round((exercise_completion['complete_count'] / total_exercises) * 100)
                     exercise_completion['partial_percentage'] = round((exercise_completion['partial_count'] / total_exercises) * 100)
                     exercise_completion['missed_percentage'] = round((exercise_completion['missed_count'] / total_exercises) * 100)
-                
 
                 cursor.execute(
                     "SELECT COUNT(*) as count FROM Messages WHERE recipient_id = %s AND recipient_type = 'therapist' AND is_read = FALSE",
                     (session_data["user_id"],)
                 )
                 unread_count_result = cursor.fetchone()
-                unread_messages_count = unread_count_result['count'] if unread_count_result else 0
+                unread_messages_count = unread_count_result.get('count', 0) if unread_count_result else 0
                 
                 return templates.TemplateResponse(
                     "dist/treatment_plans/view_plan.html",
                     {
                         "request": request,
                         "therapist": therapist,
-                        "first_name": therapist["first_name"],
-                        "last_name": therapist["last_name"],
+                        "first_name": therapist.get("first_name", ""),
+                        "last_name": therapist.get("last_name", ""),
                         "plan": plan,
                         "patient": patient,
                         "plan_exercises": plan_exercises,
@@ -4473,9 +4527,8 @@ def Routes():
             cursor = None
             
             try:
-                cursor = db.cursor()
+                cursor = db.cursor(pymysql.cursors.DictCursor) 
                 
-
                 cursor.execute(
                     """SELECT tp.*, p.first_name as patient_first_name, p.last_name as patient_last_name
                     FROM TreatmentPlans tp
@@ -4483,11 +4536,17 @@ def Routes():
                     WHERE tp.plan_id = %s AND tp.therapist_id = %s""",
                     (plan_id, session_data["user_id"])
                 )
-                plan = cursor.fetchone()
+                plan_result = cursor.fetchone()
                 
-                if not plan:
+                if not plan_result:
                     return RedirectResponse(url="/treatment-plans", status_code=303)
                 
+                plan = {}
+                for key, value in plan_result.items():
+                    if isinstance(value, bytes):
+                        plan[key] = value.decode('utf-8')
+                    else:
+                        plan[key] = value
 
                 cursor.execute(
                     """SELECT tpe.*, e.name as exercise_name, e.difficulty, e.duration as exercise_duration
@@ -4497,19 +4556,46 @@ def Routes():
                     ORDER BY tpe.plan_exercise_id""",
                     (plan_id,)
                 )
-                plan_exercises = cursor.fetchall()
+                plan_exercises_result = cursor.fetchall()
                 
+                plan_exercises = []
+                for exercise in plan_exercises_result:
+                    clean_exercise = {}
+                    for key, value in exercise.items():
+                        if isinstance(value, bytes):
+                            clean_exercise[key] = value.decode('utf-8')
+                        else:
+                            clean_exercise[key] = value
+                    plan_exercises.append(clean_exercise)
 
                 cursor.execute(
                     "SELECT patient_id, first_name, last_name FROM Patients WHERE therapist_id = %s",
                     (session_data["user_id"],)
                 )
-                patients = cursor.fetchall()
+                patients_result = cursor.fetchall()
                 
+                patients = []
+                for patient in patients_result:
+                    clean_patient = {}
+                    for key, value in patient.items():
+                        if isinstance(value, bytes):
+                            clean_patient[key] = value.decode('utf-8')
+                        else:
+                            clean_patient[key] = value
+                    patients.append(clean_patient)
 
                 cursor.execute("SELECT * FROM Exercises ORDER BY name")
-                exercises = cursor.fetchall()
+                exercises_result = cursor.fetchall()
                 
+                exercises = []
+                for exercise in exercises_result:
+                    clean_exercise = {}
+                    for key, value in exercise.items():
+                        if isinstance(value, bytes):
+                            clean_exercise[key] = value.decode('utf-8')
+                        else:
+                            clean_exercise[key] = value
+                    exercises.append(clean_exercise)
 
                 therapist_data = await get_therapist_data(session_data["user_id"])
                 
@@ -4522,8 +4608,8 @@ def Routes():
                         "patients": patients,
                         "exercises": exercises,
                         "therapist": therapist_data,
-                        "first_name": therapist_data["first_name"],
-                        "last_name": therapist_data["last_name"]
+                        "first_name": therapist_data.get("first_name", ""),
+                        "last_name": therapist_data.get("last_name", "")
                     }
                 )
             except Exception as e:
@@ -4542,7 +4628,6 @@ def Routes():
 
     @app.post("/treatment-plans/{plan_id}/edit")
     async def update_treatment_plan(request: Request, plan_id: int):
-        """Route to handle updating a treatment plan"""
         session_id = request.cookies.get("session_id")
         if not session_id:
             return RedirectResponse(url="/Therapist_Login")
@@ -4552,11 +4637,9 @@ def Routes():
             if not session_data:
                 return RedirectResponse(url="/Therapist_Login")
             
-
             form = await request.form()
             print("RECEIVED FORM DATA FOR UPDATE:", dict(form))
             
-
             patient_id = form.get("patient_id")
             plan_name = form.get("plan_name")
             description = form.get("description", "")
@@ -4566,7 +4649,6 @@ def Routes():
             
             print(f"Plan update details: ID={plan_id}, patient={patient_id}, name={plan_name}")
             
-
             if not patient_id or not plan_name or not start_date:
                 print("Missing required fields in update")
                 return RedirectResponse(f"/treatment-plans/{plan_id}/edit?error=missing_fields", status_code=303)
@@ -4575,9 +4657,8 @@ def Routes():
             cursor = None
             
             try:
-                cursor = db.cursor()
+                cursor = db.cursor(pymysql.cursors.DictCursor)  
                 
-
                 cursor.execute(
                     "SELECT plan_id FROM TreatmentPlans WHERE plan_id = %s AND therapist_id = %s",
                     (plan_id, session_data["user_id"])
@@ -4585,7 +4666,6 @@ def Routes():
                 if not cursor.fetchone():
                     return RedirectResponse(url="/treatment-plans", status_code=303)
                 
-
                 cursor.execute(
                     """UPDATE TreatmentPlans 
                     SET patient_id = %s, name = %s, description = %s, 
@@ -4594,28 +4674,32 @@ def Routes():
                     (patient_id, plan_name, description, start_date, end_date, status, plan_id)
                 )
                 
-
-                existing_exercise_ids = form.getlist("existing_exercise_id")
-                keep_exercises = form.getlist("keep_exercise")
+                existing_exercise_ids = []
+                keep_exercises = []
                 
-
+                for key in form.keys():
+                    if key.startswith("existing_exercise_id"):
+                        existing_exercise_ids.append(form.get(key))
+                    elif key == "keep_exercise":
+                        keep_exercise_values = form.getlist("keep_exercise")
+                        keep_exercises.extend(keep_exercise_values)
+                
                 cursor.execute(
                     "SELECT plan_exercise_id FROM TreatmentPlanExercises WHERE plan_id = %s",
                     (plan_id,)
                 )
-                current_exercise_ids = [row[0] for row in cursor.fetchall()]
+                current_exercise_ids_result = cursor.fetchall()
+                current_exercise_ids = [str(row.get('plan_exercise_id')) for row in current_exercise_ids_result]
                 
-
                 for ex_id in current_exercise_ids:
-                    if str(ex_id) not in keep_exercises:
+                    if ex_id not in keep_exercises:
                         cursor.execute(
                             "DELETE FROM TreatmentPlanExercises WHERE plan_exercise_id = %s",
                             (ex_id,)
                         )
                         print(f"Deleted exercise ID: {ex_id}")
                 
-
-                for i, ex_id in enumerate(keep_exercises):
+                for ex_id in keep_exercises:
                     if not ex_id:
                         continue
                         
@@ -4635,7 +4719,6 @@ def Routes():
                     )
                     print(f"Updated exercise ID: {ex_id}")
                 
-
                 new_exercises = form.getlist("new_exercise_id")
                 new_sets = form.getlist("new_sets")
                 new_reps = form.getlist("new_repetitions")
@@ -4680,85 +4763,9 @@ def Routes():
             print(f"Unexpected error in update treatment plan: {e}")
             print(f"Traceback: {traceback.format_exc()}")
             return RedirectResponse(url="/front-page", status_code=303)
-
-    @app.post("/treatment-plans/delete")
-    async def delete_treatment_plan(request: Request):
-        """Route to delete a treatment plan"""
-        session_id = request.cookies.get("session_id")
-        if not session_id:
-            return RedirectResponse(url="/Therapist_Login")
-        
-        try:
-            session_data = await get_redis_session(session_id)
-            if not session_data:
-                return RedirectResponse(url="/Therapist_Login")
-            
-
-            form = await request.form()
-            plan_id_str = form.get("plan_id")
-            
-            print(f"Delete request for plan ID: {plan_id_str}")
-            
-            if not plan_id_str:
-                return RedirectResponse(url="/treatment-plans?error=no_plan_id", status_code=303)
-            
-            try:
-                plan_id = int(plan_id_str)
-            except ValueError:
-                return RedirectResponse(url="/treatment-plans?error=invalid_plan_id", status_code=303)
-            
-            db = get_Mysql_db()
-            cursor = None
-            
-            try:
-                cursor = db.cursor()
-                
-
-                cursor.execute(
-                    "SELECT plan_id FROM TreatmentPlans WHERE plan_id = %s AND therapist_id = %s",
-                    (plan_id, session_data["user_id"])
-                )
-                if not cursor.fetchone():
-                    return RedirectResponse(url="/treatment-plans?error=not_found", status_code=303)
-                
-
-
-                cursor.execute(
-                    "DELETE FROM TreatmentPlanExercises WHERE plan_id = %s",
-                    (plan_id,)
-                )
-                
-
-                cursor.execute(
-                    "DELETE FROM TreatmentPlans WHERE plan_id = %s",
-                    (plan_id,)
-                )
-                
-                db.commit()
-                print(f"Treatment plan {plan_id} deleted successfully")
-                
-                return RedirectResponse(url="/treatment-plans?success=deleted", status_code=303)
-            except Exception as e:
-                if db:
-                    db.rollback()
-                print(f"Database error in delete treatment plan: {e}")
-                print(f"Traceback: {traceback.format_exc()}")
-                return RedirectResponse(url="/treatment-plans?error=db_error", status_code=303)
-            finally:
-                if cursor:
-                    cursor.close()
-                if db:
-                    db.close()
-        except Exception as e:
-            print(f"Unexpected error in delete treatment plan: {e}")
-            print(f"Traceback: {traceback.format_exc()}")
-            return RedirectResponse(url="/front-page", status_code=303)
-
-    
     
     @app.get("/appointments/new")
     async def new_appointment_form(request: Request, user=Depends(get_current_user)):
-        """Display the new appointment form"""
         session_id = request.cookies.get("session_id")
         if not session_id:
             return RedirectResponse(url="/Therapist_Login")
@@ -5912,38 +5919,72 @@ def Routes():
             db.close()
     
     @app.post("/treatment-plans/delete")
-    async def delete_treatment_plan(request: Request, user=Depends(get_current_user)):
-        form_data = await request.form()
-        plan_id = form_data.get("plan_id")
+    async def delete_treatment_plan(request: Request):
+        """Route to delete a treatment plan"""
+        session_id = request.cookies.get("session_id")
+        if not session_id:
+            return RedirectResponse(url="/Therapist_Login")
         
-        if not plan_id:
-            return RedirectResponse(url="/treatment-plans", status_code=303)
-        
-        db = get_Mysql_db()
-        cursor = db.cursor()
         try:
-            cursor.execute(
-                "SELECT therapist_id FROM TreatmentPlans WHERE plan_id = %s",
-                (plan_id,)
-            )
-            result = cursor.fetchone()
+            session_data = await get_redis_session(session_id)
+            if not session_data:
+                return RedirectResponse(url="/Therapist_Login")
             
-            if not result or result[0] != user["user_id"]:
-                return RedirectResponse(url="/treatment-plans", status_code=303)
+            form = await request.form()
+            plan_id_str = form.get("plan_id")
             
-            cursor.execute(
-                "DELETE FROM TreatmentPlans WHERE plan_id = %s AND therapist_id = %s",
-                (plan_id, user["user_id"])
-            )
-            db.commit()
+            print(f"Delete request for plan ID: {plan_id_str}")
             
-            return RedirectResponse(url="/treatment-plans", status_code=303)
+            if not plan_id_str:
+                return RedirectResponse(url="/treatment-plans?error=no_plan_id", status_code=303)
+            
+            try:
+                plan_id = int(plan_id_str)
+            except ValueError:
+                return RedirectResponse(url="/treatment-plans?error=invalid_plan_id", status_code=303)
+            
+            db = get_Mysql_db()
+            cursor = None
+            
+            try:
+                cursor = db.cursor(pymysql.cursors.DictCursor)  
+                
+                cursor.execute(
+                    "SELECT plan_id FROM TreatmentPlans WHERE plan_id = %s AND therapist_id = %s",
+                    (plan_id, session_data["user_id"])
+                )
+                if not cursor.fetchone():
+                    return RedirectResponse(url="/treatment-plans?error=not_found", status_code=303)
+                
+                cursor.execute(
+                    "DELETE FROM TreatmentPlanExercises WHERE plan_id = %s",
+                    (plan_id,)
+                )
+                
+                cursor.execute(
+                    "DELETE FROM TreatmentPlans WHERE plan_id = %s",
+                    (plan_id,)
+                )
+                
+                db.commit()
+                print(f"Treatment plan {plan_id} deleted successfully")
+                
+                return RedirectResponse(url="/treatment-plans?success=deleted", status_code=303)
+            except Exception as e:
+                if db:
+                    db.rollback()
+                print(f"Database error in delete treatment plan: {e}")
+                print(f"Traceback: {traceback.format_exc()}")
+                return RedirectResponse(url="/treatment-plans?error=db_error", status_code=303)
+            finally:
+                if cursor:
+                    cursor.close()
+                if db:
+                    db.close()
         except Exception as e:
-            print(f"Error deleting treatment plan: {e}")
-            return RedirectResponse(url="/treatment-plans", status_code=303)
-        finally:
-            cursor.close()
-            db.close()
+            print(f"Unexpected error in delete treatment plan: {e}")
+            print(f"Traceback: {traceback.format_exc()}")
+            return RedirectResponse(url="/front-page", status_code=303)
     
     @app.post("/treatment-plans/new")
     async def create_treatment_plan(request: Request):
@@ -9007,31 +9048,6 @@ def Routes():
                 content={"detail": f"Server error: {str(e)}"}
             )
             
-    @app.post("/treatment-plans/delete")
-    async def delete_treatment_plan(request: Request, user=Depends(get_current_user)):
-        form_data = await request.form()
-        plan_id = form_data.get("plan_id")
-        
-        if not plan_id:
-            return RedirectResponse(url="/treatment-plans", status_code=303)
-        
-        db = get_Mysql_db()
-        cursor = db.cursor()
-        try:
-            cursor.execute(
-                "DELETE FROM TreatmentPlans WHERE plan_id = %s AND therapist_id = %s",
-                (plan_id, user["user_id"])
-            )
-            db.commit()
-            
-            return RedirectResponse(url="/treatment-plans", status_code=303)
-        except Exception as e:
-            print(f"Error deleting treatment plan: {e}")
-            return RedirectResponse(url="/treatment-plans", status_code=303)
-        finally:
-            cursor.close()
-            db.close()
-
     @app.get("/api/appointments/{appointment_id}")
     async def get_appointment_details(appointment_id: int ):
         """API endpoint to get detailed information about a specific appointment"""
