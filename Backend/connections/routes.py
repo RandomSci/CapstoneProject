@@ -2603,7 +2603,7 @@ def Routes():
                 return RedirectResponse(url="/Therapist_Login")
             
             db = get_Mysql_db()
-            cursor = db.cursor()
+            cursor = db.cursor(pymysql.cursors.DictCursor)  
             try:
                 cursor.execute(
                     """SELECT id, first_name, last_name, profile_image
@@ -2611,10 +2611,16 @@ def Routes():
                     WHERE id = %s""",
                     (session_data["user_id"],)
                 )
-                therapist = cursor.fetchone()
-                if not therapist:
+                therapist_result = cursor.fetchone()
+                if not therapist_result:
                     return RedirectResponse(url="/Therapist_Login")
                 
+                therapist = {}
+                for key, value in therapist_result.items():
+                    if isinstance(value, bytes):
+                        therapist[key] = value.decode('utf-8')
+                    else:
+                        therapist[key] = value
 
                 cursor.execute(
                     """SELECT patient_id, first_name, last_name, diagnosis, status
@@ -2623,8 +2629,17 @@ def Routes():
                     ORDER BY last_name, first_name""",
                     (session_data["user_id"],)
                 )
-                patients = cursor.fetchall()
+                patients_result = cursor.fetchall()
                 
+                patients = []
+                for patient in patients_result:
+                    clean_patient = {}
+                    for key, value in patient.items():
+                        if isinstance(value, bytes):
+                            clean_patient[key] = value.decode('utf-8')
+                        else:
+                            clean_patient[key] = value
+                    patients.append(clean_patient)
 
                 cursor.execute(
                     """SELECT COUNT(*) as pending_count
@@ -2634,9 +2649,8 @@ def Routes():
                     (session_data["user_id"],)
                 )
                 pending_count_result = cursor.fetchone()
-                pending_count = pending_count_result['pending_count'] if pending_count_result else 0
+                pending_count = pending_count_result.get('pending_count', 0) if pending_count_result else 0
                 
-
                 cursor.execute(
                     """SELECT 
                         evs.submission_id, 
@@ -2655,23 +2669,32 @@ def Routes():
                     LIMIT 3""",
                     (session_data["user_id"],)
                 )
-                submissions = cursor.fetchall()
+                submissions_result = cursor.fetchall()
                 
+                submissions = []
+                for submission in submissions_result:
+                    clean_submission = {}
+                    for key, value in submission.items():
+                        if isinstance(value, bytes):
+                            clean_submission[key] = value.decode('utf-8')
+                        else:
+                            clean_submission[key] = value
+                    submissions.append(clean_submission)
 
                 cursor.execute(
                     "SELECT COUNT(*) as count FROM Messages WHERE recipient_id = %s AND recipient_type = 'therapist' AND is_read = FALSE",
                     (session_data["user_id"],)
                 )
                 unread_count_result = cursor.fetchone()
-                unread_messages_count = unread_count_result['count'] if unread_count_result else 0
+                unread_messages_count = unread_count_result.get('count', 0) if unread_count_result else 0
                 
                 return templates.TemplateResponse(
                     "dist/reports/patient_reports.html",
                     {
                         "request": request,
                         "therapist": therapist,
-                        "first_name": therapist["first_name"],
-                        "last_name": therapist["last_name"],
+                        "first_name": therapist.get("first_name", ""),
+                        "last_name": therapist.get("last_name", ""),
                         "unread_messages_count": unread_messages_count,
                         "patients": patients,
                         "submissions": submissions,
