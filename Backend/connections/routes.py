@@ -5314,16 +5314,23 @@ def Routes():
             cursor = None
             
             try:
-                cursor = db.cursor()
+                cursor = db.cursor(pymysql.cursors.DictCursor)  
                 
                 cursor.execute(
                     "SELECT first_name, last_name FROM Therapists WHERE id = %s", 
                     (session_data["user_id"],)
                 )
-                therapist = cursor.fetchone()
+                therapist_result = cursor.fetchone()
                 
-                if not therapist:
+                if not therapist_result:
                     return RedirectResponse(url="/Therapist_Login")
+                
+                therapist = {}
+                for key, value in therapist_result.items():
+                    if isinstance(value, bytes):
+                        therapist[key] = value.decode('utf-8')
+                    else:
+                        therapist[key] = value
                 
                 cursor.execute(
                     """SELECT a.*, p.first_name as patient_first_name, p.last_name as patient_last_name 
@@ -5332,10 +5339,17 @@ def Routes():
                     WHERE a.appointment_id = %s AND a.therapist_id = %s""", 
                     (appointment_id, session_data["user_id"])
                 )
-                appointment = cursor.fetchone()
+                appointment_result = cursor.fetchone()
                 
-                if not appointment:
+                if not appointment_result:
                     return RedirectResponse(url="/appointments?error=not_found")
+                
+                appointment = {}
+                for key, value in appointment_result.items():
+                    if isinstance(value, bytes):
+                        appointment[key] = value.decode('utf-8')
+                    else:
+                        appointment[key] = value
                 
                 processed_appointment = process_appointment_for_calendar(appointment)
                 
@@ -5346,14 +5360,24 @@ def Routes():
                     ORDER BY last_name, first_name""", 
                     (session_data["user_id"],)
                 )
-                patients = cursor.fetchall()
+                patients_result = cursor.fetchall()
+                
+                patients = []
+                for patient in patients_result:
+                    clean_patient = {}
+                    for key, value in patient.items():
+                        if isinstance(value, bytes):
+                            clean_patient[key] = value.decode('utf-8')
+                        else:
+                            clean_patient[key] = value
+                    patients.append(clean_patient)
                 
                 cursor.execute(
                     "SELECT COUNT(*) as count FROM Messages WHERE recipient_id = %s AND recipient_type = 'therapist' AND is_read = FALSE",
                     (session_data["user_id"],)
                 )
                 unread_count_result = cursor.fetchone()
-                unread_messages_count = unread_count_result['count'] if unread_count_result else 0
+                unread_messages_count = unread_count_result.get('count', 0) if unread_count_result else 0
                 
                 cursor.execute(
                     """SELECT m.message_id, m.subject, m.content, m.created_at, 
@@ -5369,9 +5393,16 @@ def Routes():
 
                 recent_messages = []
                 for message in messages_result:
-                    message_with_time = message.copy()
+                    clean_message = {}
+                    for key, value in message.items():
+                        if isinstance(value, bytes):
+                            clean_message[key] = value.decode('utf-8')
+                        else:
+                            clean_message[key] = value
                     
-                    timestamp = message['created_at']
+                    message_with_time = dict(clean_message)
+                    
+                    timestamp = clean_message.get('created_at')
                     now = datetime.datetime.now()
                     if isinstance(timestamp, datetime.datetime):
                         diff = now - timestamp
@@ -5394,10 +5425,10 @@ def Routes():
                             
                     recent_messages.append(message_with_time)
                 
-                appointment_date = appointment['appointment_date']
+                appointment_date = appointment.get('appointment_date')
                 formatted_date = appointment_date.strftime('%Y-%m-%d') if isinstance(appointment_date, datetime.date) else appointment_date
                 
-                appointment_time = appointment['appointment_time']
+                appointment_time = appointment.get('appointment_time')
                 if isinstance(appointment_time, datetime.time):
                     formatted_time = appointment_time.strftime('%H:%M')
                 elif isinstance(appointment_time, datetime.timedelta):
@@ -5415,8 +5446,8 @@ def Routes():
                     {
                         "request": request,
                         "therapist": therapist_data,
-                        "first_name": therapist["first_name"],
-                        "last_name": therapist["last_name"],
+                        "first_name": therapist_data.get("first_name", ""),
+                        "last_name": therapist_data.get("last_name", ""),
                         "appointment": processed_appointment,
                         "appointment_date": formatted_date,
                         "appointment_time": formatted_time,
@@ -5439,7 +5470,7 @@ def Routes():
             print(f"Error in edit appointment form: {e}")
             print(f"Traceback: {traceback.format_exc()}")
             return RedirectResponse(url="/Therapist_Login")
-        
+            
     @app.get("/appointments/{appointment_id}/delete")
     async def delete_appointment(request: Request, appointment_id: int, user=Depends(get_current_user)):
         """Delete an appointment"""
@@ -5457,7 +5488,7 @@ def Routes():
             cursor = None
             
             try:
-                cursor = db.cursor()
+                cursor = db.cursor(pymysql.cursors.DictCursor)  
                 
                 cursor.execute(
                     """SELECT appointment_id 
@@ -5526,9 +5557,8 @@ def Routes():
             cursor = None
             
             try:
-                cursor = db.cursor()
+                cursor = db.cursor(pymysql.cursors.DictCursor) 
                 
-
                 cursor.execute(
                     """SELECT appointment_id 
                     FROM Appointments 
@@ -5540,7 +5570,6 @@ def Routes():
                     print(f"Appointment {appointment_id} does not belong to therapist {session_data['user_id']}")
                     return RedirectResponse(url="/appointments?error=unauthorized")
                 
-
                 cursor.execute(
                     "SELECT patient_id FROM Patients WHERE patient_id = %s AND therapist_id = %s",
                     (patient_id, session_data["user_id"])
@@ -5551,7 +5580,6 @@ def Routes():
                     return RedirectResponse(url=f"/appointments/{appointment_id}/edit?error=invalid_patient")
                 
                 try:
-
                     try:
                         time_obj = datetime.datetime.strptime(appointment_time, "%H:%M").time()
                     except ValueError:
@@ -5560,7 +5588,6 @@ def Routes():
                         except ValueError:
                             time_obj = datetime.datetime.strptime(appointment_time, "%I:%M%p").time()
                     
-
                     cursor.execute(
                         """UPDATE Appointments 
                         SET patient_id = %s, 
@@ -5623,7 +5650,7 @@ def Routes():
             cursor = None
             
             try:
-                cursor = db.cursor()
+                cursor = db.cursor(pymysql.cursors.DictCursor) 
                 
                 cursor.execute(
                     "SELECT patient_id FROM Patients WHERE patient_id = %s AND therapist_id = %s",
@@ -5694,7 +5721,7 @@ def Routes():
             cursor = None
             
             try:
-                cursor = db.cursor()
+                cursor = db.cursor(pymysql.cursors.DictCursor)  
                 
                 cursor.execute(
                     """SELECT appointment_id FROM Appointments 
@@ -5710,7 +5737,8 @@ def Routes():
                 
                 notes_update = ""
                 if session_notes:
-                    notes_update = f", notes = CONCAT(COALESCE(notes, ''), '\n\n{session_notes}')"
+                    safe_notes = session_notes.replace("'", "''")
+                    notes_update = f", notes = CONCAT(COALESCE(notes, ''), '\n\n{safe_notes}')"
                 
                 cursor.execute(
                     f"UPDATE Appointments SET status = %s{notes_update} WHERE appointment_id = %s",
@@ -5742,7 +5770,6 @@ def Routes():
                 status_code=500, 
                 content={"success": False, "message": "Server error"}
             )
-
 
     @app.get("/exercises")
     async def exercises_page(request: Request, user=Depends(get_current_user)):
