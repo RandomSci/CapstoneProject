@@ -4991,16 +4991,23 @@ def Routes():
             cursor = None
             
             try:
-                cursor = db.cursor()
+                cursor = db.cursor(pymysql.cursors.DictCursor)  
                 
                 cursor.execute(
                     "SELECT first_name, last_name FROM Therapists WHERE id = %s", 
                     (session_data["user_id"],)
                 )
-                therapist = cursor.fetchone()
+                therapist_result = cursor.fetchone()
                 
-                if not therapist:
+                if not therapist_result:
                     return RedirectResponse(url="/Therapist_Login")
+                
+                therapist = {}
+                for key, value in therapist_result.items():
+                    if isinstance(value, bytes):
+                        therapist[key] = value.decode('utf-8')
+                    else:
+                        therapist[key] = value
                 
                 cursor.execute(
                     """SELECT a.*, p.first_name as patient_first_name, p.last_name as patient_last_name 
@@ -5010,7 +5017,17 @@ def Routes():
                     ORDER BY a.appointment_date, a.appointment_time""", 
                     (session_data["user_id"],)
                 )
-                upcoming_appointments_raw = cursor.fetchall()
+                upcoming_appointments_raw_result = cursor.fetchall()
+                
+                upcoming_appointments_raw = []
+                for appt in upcoming_appointments_raw_result:
+                    clean_appt = {}
+                    for key, value in appt.items():
+                        if isinstance(value, bytes):
+                            clean_appt[key] = value.decode('utf-8')
+                        else:
+                            clean_appt[key] = value
+                    upcoming_appointments_raw.append(clean_appt)
 
                 cursor.execute(
                     """SELECT a.*, p.first_name as patient_first_name, p.last_name as patient_last_name 
@@ -5021,20 +5038,40 @@ def Routes():
                     LIMIT 10""", 
                     (session_data["user_id"],)
                 )
-                past_appointments_raw = cursor.fetchall()
+                past_appointments_raw_result = cursor.fetchall()
+                
+                past_appointments_raw = []
+                for appt in past_appointments_raw_result:
+                    clean_appt = {}
+                    for key, value in appt.items():
+                        if isinstance(value, bytes):
+                            clean_appt[key] = value.decode('utf-8')
+                        else:
+                            clean_appt[key] = value
+                    past_appointments_raw.append(clean_appt)
                 
                 cursor.execute(
                     "SELECT patient_id, first_name, last_name, diagnosis FROM Patients WHERE therapist_id = %s", 
                     (session_data["user_id"],)
                 )
-                patients = cursor.fetchall()
+                patients_result = cursor.fetchall()
+                
+                patients = []
+                for patient in patients_result:
+                    clean_patient = {}
+                    for key, value in patient.items():
+                        if isinstance(value, bytes):
+                            clean_patient[key] = value.decode('utf-8')
+                        else:
+                            clean_patient[key] = value
+                    patients.append(clean_patient)
                 
                 cursor.execute(
                     "SELECT COUNT(*) as count FROM Messages WHERE recipient_id = %s AND recipient_type = 'therapist' AND is_read = FALSE",
                     (session_data["user_id"],)
                 )
                 unread_count_result = cursor.fetchone()
-                unread_messages_count = unread_count_result['count'] if unread_count_result else 0
+                unread_messages_count = unread_count_result.get('count', 0) if unread_count_result else 0
                 
                 cursor.execute(
                     """SELECT m.message_id, m.subject, m.content, m.created_at, 
@@ -5050,11 +5087,18 @@ def Routes():
 
                 recent_messages = []
                 for message in messages_result:
-                    message_with_time = message.copy()
+                    clean_message = {}
+                    for key, value in message.items():
+                        if isinstance(value, bytes):
+                            clean_message[key] = value.decode('utf-8')
+                        else:
+                            clean_message[key] = value
                     
-                    timestamp = message['created_at']
+                    message_with_time = dict(clean_message)
+                    
+                    timestamp = clean_message.get('created_at')
                     now = datetime.datetime.now()
-                    if isinstance(timestamp, datetime):
+                    if isinstance(timestamp, datetime.datetime):
                         diff = now - timestamp
                         if timestamp.date() == now.date():
                             message_with_time['time_display'] = timestamp.strftime('%I:%M %p')
@@ -5077,7 +5121,6 @@ def Routes():
                 
                 today = datetime.datetime.now().strftime('%Y-%m-%d')
 
-
                 upcoming_appointments = []
                 for appt in upcoming_appointments_raw:
                     processed_appt = process_appointment_for_calendar(appt)
@@ -5088,18 +5131,16 @@ def Routes():
                     processed_appt = process_appointment_for_calendar(appt)
                     past_appointments.append(processed_appt)
                 
-
                 serialized_upcoming = json.dumps(upcoming_appointments, default=serialize_datetime)
                 therapist_data = await get_therapist_data(user["user_id"])
-
                 
                 return templates.TemplateResponse(
                     "dist/appointments/appointment_list.html",
                     {
                         "request": request,
                         "therapist": therapist_data,
-                        "first_name": therapist["first_name"],
-                        "last_name": therapist["last_name"],
+                        "first_name": therapist_data.get("first_name", ""),
+                        "last_name": therapist_data.get("last_name", ""),
                         "upcoming_appointments": upcoming_appointments,
                         "past_appointments": past_appointments,
                         "patients": patients,
