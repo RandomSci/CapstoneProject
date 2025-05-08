@@ -3617,14 +3617,24 @@ def Routes():
     @app.get("/patients")
     async def get_patients_page(request: Request, user=Depends(get_current_user)):
         db = get_Mysql_db()
-        cursor = db.cursor()
+        cursor = db.cursor(pymysql.cursors.DictCursor) 
 
         try:
             cursor.execute(
                 "SELECT * FROM Patients WHERE therapist_id = %s ORDER BY last_name", 
                 (user["user_id"],)
             )
-            patients = cursor.fetchall()
+            patients_result = cursor.fetchall()
+            
+            patients = []
+            for patient in patients_result:
+                clean_patient = {}
+                for key, value in patient.items():
+                    if isinstance(value, bytes):
+                        clean_patient[key] = value.decode('utf-8')
+                    else:
+                        clean_patient[key] = value
+                patients.append(clean_patient)
 
             therapist_data = await get_therapist_data(user["user_id"])
 
@@ -3634,10 +3644,14 @@ def Routes():
                     "request": request,
                     "patients": patients,
                     "therapist": therapist_data,
-                    "first_name": therapist_data["first_name"],
-                    "last_name": therapist_data["last_name"]
+                    "first_name": therapist_data.get("first_name", ""),
+                    "last_name": therapist_data.get("last_name", "")
                 }
             )
+        except Exception as e:
+            print(f"Error loading patient directory: {e}")
+            print(f"Traceback: {traceback.format_exc()}")
+            return RedirectResponse(url="/front-page")
         finally:
             cursor.close()
             db.close()
@@ -3651,8 +3665,8 @@ def Routes():
             {
                 "request": request,
                 "therapist": therapist_data,
-                "first_name": therapist_data["first_name"],
-                "last_name": therapist_data["last_name"]
+                "first_name": therapist_data.get("first_name", ""),
+                "last_name": therapist_data.get("last_name", "")
             }
         )
 
@@ -3670,7 +3684,7 @@ def Routes():
         user=Depends(get_current_user)
     ):
         db = get_Mysql_db()
-        cursor = db.cursor()
+        cursor = db.cursor(pymysql.cursors.DictCursor)  
 
         try:
             cursor.execute(
@@ -3685,6 +3699,7 @@ def Routes():
             return RedirectResponse(url="/patients", status_code=303)
         except Exception as e:
             print(f"Error adding patient: {e}")
+            print(f"Traceback: {traceback.format_exc()}")
             therapist_data = await get_therapist_data(user["user_id"])
             return templates.TemplateResponse(
                 "dist/dashboard/add_patient.html", 
@@ -3692,8 +3707,8 @@ def Routes():
                     "request": request,
                     "error": f"Error adding patient: {str(e)}",
                     "therapist": therapist_data,
-                    "first_name": therapist_data["first_name"],
-                    "last_name": therapist_data["last_name"],
+                    "first_name": therapist_data.get("first_name", ""),
+                    "last_name": therapist_data.get("last_name", ""),
                     "today": datetime.datetime.now()
                 }
             )
@@ -3713,10 +3728,9 @@ def Routes():
                 return RedirectResponse(url="/Therapist_Login")
 
             db = get_Mysql_db()
-            cursor = db.cursor()
+            cursor = db.cursor(pymysql.cursors.DictCursor)  
 
             try:
-
                 now = datetime.datetime.now()
                 today = datetime.date.today()
                 
@@ -3726,22 +3740,34 @@ def Routes():
                     WHERE id = %s""", 
                     (session_data["user_id"],)
                 )
-                therapist = cursor.fetchone()
-
-                if not therapist:
+                therapist_result = cursor.fetchone()
+                
+                if not therapist_result:
                     return RedirectResponse(url="/Therapist_Login")
-
+                    
+                therapist = {}
+                for key, value in therapist_result.items():
+                    if isinstance(value, bytes):
+                        therapist[key] = value.decode('utf-8')
+                    else:
+                        therapist[key] = value
 
                 cursor.execute(
                     """SELECT * FROM Patients 
                     WHERE patient_id = %s AND therapist_id = %s""",
                     (patient_id, session_data["user_id"])
                 )
-                patient = cursor.fetchone()
-
-                if not patient:
+                patient_result = cursor.fetchone()
+                
+                if not patient_result:
                     return RedirectResponse(url="/patients")
-
+                    
+                patient = {}
+                for key, value in patient_result.items():
+                    if isinstance(value, bytes):
+                        patient[key] = value.decode('utf-8')
+                    else:
+                        patient[key] = value
 
                 cursor.execute(
                     """SELECT * FROM TreatmentPlans
@@ -3749,8 +3775,17 @@ def Routes():
                     ORDER BY created_at DESC""",
                     (patient_id,)
                 )
-                treatment_plans = cursor.fetchall()
-
+                treatment_plans_result = cursor.fetchall()
+                
+                treatment_plans = []
+                for plan in treatment_plans_result:
+                    clean_plan = {}
+                    for key, value in plan.items():
+                        if isinstance(value, bytes):
+                            clean_plan[key] = value.decode('utf-8')
+                        else:
+                            clean_plan[key] = value
+                    treatment_plans.append(clean_plan)
 
                 cursor.execute(
                     """SELECT * FROM Appointments
@@ -3771,11 +3806,12 @@ def Routes():
                             processed_appt[key] = value
                         elif isinstance(value, datetime.timedelta):
                             processed_appt[key] = value
+                        elif isinstance(value, bytes):
+                            processed_appt[key] = value.decode('utf-8')
                         else:
                             processed_appt[key] = value
                     
                     appointments.append(processed_appt)
-
 
                 cursor.execute(
                     """SELECT * FROM PatientMetrics
@@ -3783,8 +3819,17 @@ def Routes():
                     ORDER BY measurement_date DESC""",
                     (patient_id,)
                 )
-                metrics = cursor.fetchall()
-
+                metrics_result = cursor.fetchall()
+                
+                metrics = []
+                for metric in metrics_result:
+                    clean_metric = {}
+                    for key, value in metric.items():
+                        if isinstance(value, bytes):
+                            clean_metric[key] = value.decode('utf-8')
+                        else:
+                            clean_metric[key] = value
+                    metrics.append(clean_metric)
 
                 cursor.execute(
                     """SELECT 
@@ -3804,18 +3849,13 @@ def Routes():
                     (patient_id,)
                 )
                 
-
                 patient_notes_raw = cursor.fetchall()
                 patient_notes = []
                 
-
                 for note in patient_notes_raw:
-
                     processed_note = {}
                     
-
                     for key, value in note.items():
-
                         if isinstance(value, datetime.datetime):
                             processed_note[key] = value.strftime('%Y-%m-%d %H:%M:%S')
                         elif isinstance(value, datetime.date):
@@ -3825,18 +3865,17 @@ def Routes():
                             hours, remainder = divmod(total_seconds, 3600)
                             minutes, seconds = divmod(remainder, 60)
                             processed_note[key] = f"{hours:02d}:{minutes:02d}"
+                        elif isinstance(value, bytes):
+                            processed_note[key] = value.decode('utf-8')
                         else:
                             processed_note[key] = value
                     
-
                     patient_notes.append(processed_note)
                 
-
-                appointment_ids = [note['appointment_id'] for note in patient_notes 
+                appointment_ids = [note.get('appointment_id') for note in patient_notes 
                                 if note.get('appointment_id') is not None]
                 
                 if appointment_ids:
-
                     placeholders = ', '.join(['%s'] * len(appointment_ids))
                     cursor.execute(
                         f"""SELECT 
@@ -3851,12 +3890,10 @@ def Routes():
                     appointments_data = cursor.fetchall()
                     appointments_dict = {}
                     
-
                     for appt in appointments_data:
-                        appt_date = appt['appointment_date']
-                        appt_time = appt['appointment_time']
+                        appt_date = appt.get('appointment_date')
+                        appt_time = appt.get('appointment_time')
                         
-
                         if isinstance(appt_date, (datetime.date, datetime.datetime)):
                             date_str = appt_date.strftime('%Y-%m-%d')
                         else:
@@ -3870,38 +3907,35 @@ def Routes():
                         else:
                             time_str = str(appt_time)
                         
-                        appointments_dict[appt['appointment_id']] = {
+                        appointments_dict[appt.get('appointment_id')] = {
                             'appointment_date': date_str,
                             'appointment_time': time_str
                         }
                     
-
                     for note in patient_notes:
                         if note.get('appointment_id') in appointments_dict:
-                            note['appointment_date'] = appointments_dict[note['appointment_id']]['appointment_date']
-                            note['appointment_time'] = appointments_dict[note['appointment_id']]['appointment_time']
-
+                            note['appointment_date'] = appointments_dict[note.get('appointment_id')]['appointment_date']
+                            note['appointment_time'] = appointments_dict[note.get('appointment_id')]['appointment_time']
 
                 cursor.execute(
                     "SELECT COUNT(*) as count FROM Messages WHERE recipient_id = %s AND recipient_type = 'therapist' AND is_read = FALSE",
                     (session_data["user_id"],)
                 )
                 unread_count_result = cursor.fetchone()
-                unread_messages_count = unread_count_result['count'] if unread_count_result else 0
-
+                unread_messages_count = unread_count_result.get('count', 0) if unread_count_result else 0
 
                 print(f"Patient ID: {patient_id}")
                 print(f"Patient notes count: {len(patient_notes)}")
                 if patient_notes:
-                    print(f"First note: {patient_notes[0]['note_text'][:50]}...")
+                    print(f"First note: {patient_notes[0].get('note_text', '')[:50]}...")
 
                 return templates.TemplateResponse(
                     "dist/dashboard/patient_details.html",  
                     {
                         "request": request,
                         "therapist": therapist,
-                        "first_name": therapist["first_name"],
-                        "last_name": therapist["last_name"],
+                        "first_name": therapist.get("first_name", ""),
+                        "last_name": therapist.get("last_name", ""),
                         "unread_messages_count": unread_messages_count,
                         "patient": patient,
                         "treatment_plans": treatment_plans,
@@ -3924,7 +3958,7 @@ def Routes():
             print(f"Error in patient details: {e}")
             print(traceback.format_exc()) 
             return RedirectResponse(url="/Therapist_Login")
-        
+            
     @app.get("/patients/{patient_id}/edit")
     async def edit_patient_page(request: Request, patient_id: int, user=Depends(get_current_user)):
         """Route to display the edit patient form"""
