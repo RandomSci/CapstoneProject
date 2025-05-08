@@ -2202,6 +2202,7 @@ def Routes():
                 if not therapist:
                     return RedirectResponse(url="/Therapist_Login")
                 
+                # Clean up therapist data
                 clean_therapist = {}
                 for key, value in therapist.items():
                     if isinstance(value, bytes):
@@ -2222,6 +2223,7 @@ def Routes():
                 )
                 reviews_results = cursor.fetchall()
                 
+                # Clean up reviews data
                 reviews = []
                 for review in reviews_results:
                     clean_review = {}
