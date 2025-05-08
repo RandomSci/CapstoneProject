@@ -1227,7 +1227,7 @@ def Routes():
                 return {"success": False, "message": "Recipient and message content are required"}
 
             db = get_Mysql_db()
-            cursor = db.cursor(pymysql.cursors.DictCursor)
+            cursor = db.cursor(pymysql.cursors.DictCursor)  # Use DictCursor here
 
             try:
                 recipient_exists = False
@@ -1708,7 +1708,7 @@ def Routes():
             if not session_data:
                 return RedirectResponse(url="/Therapist_Login")
             db = get_Mysql_db()
-            cursor = db.cursor()
+            cursor = db.cursor(pymysql.cursors.DictCursor) 
             try:
                 cursor.execute(
                     """SELECT id, first_name, last_name, company_email, profile_image, 
@@ -1722,24 +1722,39 @@ def Routes():
                 therapist = cursor.fetchone()
                 if not therapist:
                     return RedirectResponse(url="/Therapist_Login")
+                    
+                clean_therapist = {}
+                for key, value in therapist.items():
+                    if isinstance(value, bytes):
+                        clean_therapist[key] = value.decode('utf-8')
+                    else:
+                        clean_therapist[key] = value
+                
+                therapist = clean_therapist
+                
                 for field in ['specialties', 'education', 'languages']:
-                    therapist[field] = safely_parse_json_field(therapist[field])
+                    if therapist.get(field):
+                        therapist[field] = safely_parse_json_field(therapist[field])
+                    else:
+                        therapist[field] = []  
+                        
                 cursor.execute(
                     "SELECT COUNT(*) as count FROM Messages WHERE recipient_id = %s AND recipient_type = 'therapist' AND is_read = FALSE",
                     (session_data["user_id"],)
                 )
                 unread_count_result = cursor.fetchone()
-                unread_messages_count = unread_count_result['count'] if unread_count_result else 0
+                unread_messages_count = unread_count_result.get('count', 0) if unread_count_result else 0
+                
                 all_specialties = get_all_specialties()
-                existing_specialties = therapist["specialties"]
+                existing_specialties = therapist.get("specialties", [])
                 
                 return templates.TemplateResponse(
                     "dist/dashboard/therapist_edit_profile.html",
                     {
                         "request": request,
                         "therapist": therapist,
-                        "first_name": ensure_str(therapist["first_name"]),
-                        "last_name": ensure_str(therapist["last_name"]),
+                        "first_name": therapist.get("first_name", ""),
+                        "last_name": therapist.get("last_name", ""),
                         "unread_messages_count": unread_messages_count,
                         "all_specialties": all_specialties,
                         "existing_specialties": existing_specialties
@@ -1756,7 +1771,7 @@ def Routes():
             print(f"Error in edit profile form: {e}")
             print(f"Traceback: {traceback.format_exc()}")
             return RedirectResponse(url="/Therapist_Login")
-    
+
     @app.post("/profile/update2")
     async def update_profile_v2(request: Request):
         """
@@ -1799,14 +1814,25 @@ def Routes():
             except ValueError:
                 profile_data["average_session_length"] = 60
             profile_data["is_accepting_new_patients"] = form_data.get("is_accepting_new_patients") == "1"
-            specialties = form_data.getlist("specialties")
+            
+            specialties = []
+            for key, value in form_data.items():
+                if key == "specialties":
+                    specialties.append(value)
             profile_data["specialties"] = json.dumps(specialties)
                 
-            education = form_data.getlist("education")
+            education = []
+            for key, value in form_data.items():
+                if key == "education":
+                    education.append(value)
             profile_data["education"] = json.dumps(education)
                 
-            languages = form_data.getlist("languages")
+            languages = []
+            for key, value in form_data.items():
+                if key == "languages":
+                    languages.append(value)
             profile_data["languages"] = json.dumps(languages)
+            
             profile_image_filename = None
             profile_image = form_data.get("profile_image")
             if profile_image and hasattr(profile_image, "filename") and profile_image.filename:
@@ -1836,10 +1862,11 @@ def Routes():
                 except Exception as img_error:
                     print(f"Error processing image: {img_error}")
                     print(f"Traceback: {traceback.format_exc()}")
+            
             db = get_Mysql_db()
             cursor = None
             try:
-                cursor = db.cursor()
+                cursor = db.cursor(pymysql.cursors.DictCursor)  
                 update_fields = []
                 params = []
                 for field in profile_data:
@@ -1870,7 +1897,6 @@ def Routes():
             print(f"Unexpected error in profile update: {e}")
             print(f"Traceback: {traceback.format_exc()}")
             return RedirectResponse(url="/Therapist_Login", status_code=303)
-
  
 
     async def get_therapist_data(db, user_id):
@@ -2158,55 +2184,67 @@ def Routes():
         session_id = request.cookies.get("session_id")
         if not session_id:
             return RedirectResponse(url="/Therapist_Login")
-
         try:
             session_data = await get_redis_session(session_id)
             if not session_data:
                 return RedirectResponse(url="/Therapist_Login")
-
             db = get_Mysql_db()
-            cursor = db.cursor()
-
+            cursor = db.cursor(pymysql.cursors.DictCursor)  
             try:
- 
                 cursor.execute(
-                    """SELECT id, first_name, last_name, company_email, profile_image, 
-                            rating, review_count
-                       FROM Therapists 
-                       WHERE id = %s""", 
+                    """SELECT id, first_name, last_name, company_email, profile_image,
+                    rating, review_count
+                    FROM Therapists
+                    WHERE id = %s""",
                     (session_data["user_id"],)
                 )
                 therapist = cursor.fetchone()
-
                 if not therapist:
                     return RedirectResponse(url="/Therapist_Login")
-
- 
+                
+                clean_therapist = {}
+                for key, value in therapist.items():
+                    if isinstance(value, bytes):
+                        clean_therapist[key] = value.decode('utf-8')
+                    else:
+                        clean_therapist[key] = value
+                
+                therapist = clean_therapist
+                
                 cursor.execute(
-                    """SELECT r.review_id, r.rating, r.comment, r.created_at, 
-                             p.patient_id, p.first_name, p.last_name
-                       FROM Reviews r
-                       JOIN Patients p ON r.patient_id = p.patient_id
-                       WHERE r.therapist_id = %s
-                       ORDER BY r.created_at DESC""",
+                    """SELECT r.review_id, r.rating, r.comment, r.created_at,
+                    p.patient_id, p.first_name, p.last_name
+                    FROM Reviews r
+                    JOIN Patients p ON r.patient_id = p.patient_id
+                    WHERE r.therapist_id = %s
+                    ORDER BY r.created_at DESC""",
                     (session_data["user_id"],)
                 )
-                reviews = cursor.fetchall()
-
- 
+                reviews_results = cursor.fetchall()
+                
+                reviews = []
+                for review in reviews_results:
+                    clean_review = {}
+                    for key, value in review.items():
+                        if isinstance(value, bytes):
+                            clean_review[key] = value.decode('utf-8')
+                        else:
+                            clean_review[key] = value
+                    reviews.append(clean_review)
+                
                 cursor.execute(
                     "SELECT COUNT(*) as count FROM Messages WHERE recipient_id = %s AND recipient_type = 'therapist' AND is_read = FALSE",
                     (session_data["user_id"],)
                 )
                 unread_count_result = cursor.fetchone()
-                unread_messages_count = unread_count_result['count'] if unread_count_result else 0
-
- 
+                unread_messages_count = unread_count_result.get('count', 0) if unread_count_result else 0
+                
                 for review in reviews:
-                    if isinstance(review['created_at'], datetime.datetime):
+                    if isinstance(review.get('created_at'), datetime.datetime):
                         review['formatted_date'] = review['created_at'].strftime('%B %d, %Y')
-
- 
+                    else:
+                        review['formatted_date'] = "Unknown date"
+                
                 rating_distribution = {
                     5: 0,
                     4: 0,
@@ -2214,16 +2252,15 @@ def Routes():
                     2: 0,
                     1: 0
                 }
-
+                
                 for review in reviews:
-                    rating = int(review['rating'])
+                    rating = int(review.get('rating', 0))
                     if rating < 1:
                         rating = 1
                     elif rating > 5:
                         rating = 5
                     rating_distribution[rating] += 1
-
- 
+                
                 total_reviews = len(reviews)
                 rating_percentages = {}
                 for rating, count in rating_distribution.items():
@@ -2231,14 +2268,14 @@ def Routes():
                         rating_percentages[rating] = (count / total_reviews) * 100
                     else:
                         rating_percentages[rating] = 0
-
+                
                 return templates.TemplateResponse(
                     "dist/dashboard/Therapist_reviews.html",
                     {
                         "request": request,
                         "therapist": therapist,
-                        "first_name": therapist["first_name"],
-                        "last_name": therapist["last_name"],
+                        "first_name": therapist.get("first_name", ""),
+                        "last_name": therapist.get("last_name", ""),
                         "unread_messages_count": unread_messages_count,
                         "reviews": reviews,
                         "rating_distribution": rating_distribution,
@@ -2246,15 +2283,16 @@ def Routes():
                         "total_reviews": total_reviews
                     }
                 )
-
             except Exception as e:
                 print(f"Database error in therapist reviews: {e}")
+                print(f"Traceback: {traceback.format_exc()}")  
                 return RedirectResponse(url="/profile")
             finally:
                 cursor.close()
                 db.close()
         except Exception as e:
             print(f"Error in therapist reviews: {e}")
+            print(f"Traceback: {traceback.format_exc()}") 
             return RedirectResponse(url="/Therapist_Login")
 
     @app.post("/api/reviews/{review_id}/reply")
