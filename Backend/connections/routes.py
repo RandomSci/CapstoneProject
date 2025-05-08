@@ -1223,15 +1223,13 @@ def Routes():
             subject = form_data.get("subject")
             content = form_data.get("content")
 
- 
             if not recipient_type or not recipient_id or not content:
                 return {"success": False, "message": "Recipient and message content are required"}
 
             db = get_Mysql_db()
-            cursor = db.cursor()
+            cursor = db.cursor(pymysql.cursors.DictCursor)
 
             try:
- 
                 recipient_exists = False
 
                 if recipient_type == "therapist":
@@ -1259,7 +1257,6 @@ def Routes():
                 if not recipient_exists:
                     return {"success": False, "message": "Recipient not found"}
 
- 
                 cursor.execute(
                     """INSERT INTO Messages 
                         (sender_id, sender_type, recipient_id, recipient_type, subject, content) 
@@ -1268,7 +1265,6 @@ def Routes():
                 )
                 db.commit()
 
- 
                 new_message_id = cursor.lastrowid
 
                 return {"success": True, "message_id": new_message_id}
@@ -1416,7 +1412,7 @@ def Routes():
                 return {"count": 0}
 
             db = get_Mysql_db()
-            cursor = db.cursor()
+            cursor = db.cursor(pymysql.cursors.DictCursor)  # Use DictCursor here
 
             try:
                 cursor.execute(
@@ -1424,7 +1420,7 @@ def Routes():
                     (session_data["user_id"],)
                 )
                 result = cursor.fetchone()
-                return {"count": result['count'] if result else 0}
+                return {"count": result.get('count', 0) if result else 0}  # Use .get() for safety
 
             except Exception as e:
                 print(f"Error fetching unread count: {e}")
@@ -1448,7 +1444,7 @@ def Routes():
                 return RedirectResponse(url="/Therapist_Login")
 
             db = get_Mysql_db()
-            cursor = db.cursor()
+            cursor = db.cursor(pymysql.cursors.DictCursor)  
 
             try:
                 cursor.execute(
@@ -1466,14 +1462,15 @@ def Routes():
                     return RedirectResponse(url="/Therapist_Login")
 
                 for field in ['specialties', 'education', 'languages']:
-                    therapist[field] = safely_parse_json_field(therapist[field])
+                    if therapist.get(field):  
+                        therapist[field] = safely_parse_json_field(therapist[field])
 
                 cursor.execute(
                     "SELECT COUNT(*) as count FROM Messages WHERE recipient_id = %s AND recipient_type = 'therapist' AND is_read = FALSE",
                     (session_data["user_id"],)
                 )
                 unread_count_result = cursor.fetchone()
-                unread_messages_count = unread_count_result['count'] if unread_count_result else 0
+                unread_messages_count = unread_count_result.get('count', 0) if unread_count_result else 0
 
                 cursor.execute(
                     """SELECT patient_id, first_name, last_name, diagnosis, status 
@@ -1485,17 +1482,24 @@ def Routes():
                 )
                 recent_patients = cursor.fetchall()
                 
+                clean_patients = []
                 for patient in recent_patients:
-                    for key in patient:
-                        if isinstance(patient[key], bytes):
-                            patient[key] = patient[key].decode('utf-8')
+                    clean_patient = {}
+                    for key, value in patient.items():
+                        if isinstance(value, bytes):
+                            clean_patient[key] = value.decode('utf-8')
+                        else:
+                            clean_patient[key] = value
+                    clean_patients.append(clean_patient)
+                
+                recent_patients = clean_patients
 
                 cursor.execute(
                     "SELECT COUNT(*) as count FROM Patients WHERE therapist_id = %s",
                     (session_data["user_id"],)
                 )
                 total_patients_result = cursor.fetchone()
-                total_patients = total_patients_result['count'] if total_patients_result else 0
+                total_patients = total_patients_result.get('count', 0) if total_patients_result else 0
 
                 cursor.execute(
                     """SELECT AVG(rating) as average_rating, COUNT(*) as review_count 
@@ -1504,9 +1508,9 @@ def Routes():
                     (session_data["user_id"],)
                 )
                 reviews_summary = cursor.fetchone()
-                if reviews_summary and reviews_summary['average_rating']:
-                    average_rating = round(reviews_summary['average_rating'], 1)
-                    review_count = reviews_summary['review_count']
+                if reviews_summary and reviews_summary.get('average_rating'):
+                    average_rating = round(reviews_summary.get('average_rating', 0), 1)
+                    review_count = reviews_summary.get('review_count', 0)
                 else:
                     average_rating = 0
                     review_count = 0
@@ -1523,18 +1527,34 @@ def Routes():
                 )
                 recent_reviews = cursor.fetchall()
                 
+                clean_reviews = []
                 for review in recent_reviews:
-                    for key in review:
-                        if isinstance(review[key], bytes):
-                            review[key] = review[key].decode('utf-8')
+                    clean_review = {}
+                    for key, value in review.items():
+                        if isinstance(value, bytes):
+                            clean_review[key] = value.decode('utf-8')
+                        else:
+                            clean_review[key] = value
+                    clean_reviews.append(clean_review)
+                
+                recent_reviews = clean_reviews
+
+                clean_therapist = {}
+                for key, value in therapist.items():
+                    if isinstance(value, bytes):
+                        clean_therapist[key] = value.decode('utf-8')
+                    else:
+                        clean_therapist[key] = value
+
+                therapist = clean_therapist
 
                 return templates.TemplateResponse(
                     "dist/dashboard/therapist_profile.html",
                     {
                         "request": request,
                         "therapist": therapist,
-                        "first_name": ensure_str(therapist["first_name"]),
-                        "last_name": ensure_str(therapist["last_name"]),
+                        "first_name": therapist.get("first_name", ""),
+                        "last_name": therapist.get("last_name", ""),
                         "unread_messages_count": unread_messages_count,
                         "recent_patients": recent_patients,
                         "total_patients": total_patients,
