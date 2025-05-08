@@ -3043,11 +3043,10 @@ def Routes():
             if not session_data:
                 return RedirectResponse(url="/Therapist_Login")
             
-
             print(f"Session data: {session_data}")
             
             db = get_Mysql_db()
-            cursor = db.cursor()
+            cursor = db.cursor(pymysql.cursors.DictCursor)  
             try:
                 cursor.execute(
                     """SELECT id, first_name, last_name, profile_image
@@ -3055,25 +3054,30 @@ def Routes():
                     WHERE id = %s""",
                     (session_data["user_id"],)
                 )
-                therapist = cursor.fetchone()
-                if not therapist:
+                therapist_result = cursor.fetchone()
+                if not therapist_result:
                     print(f"Therapist not found for user_id: {session_data['user_id']}")
                     return RedirectResponse(url="/Therapist_Login")
                 
-
+                therapist = {}
+                for key, value in therapist_result.items():
+                    if isinstance(value, bytes):
+                        therapist[key] = value.decode('utf-8')
+                    else:
+                        therapist[key] = value
+                        
                 print(f"Found therapist: {therapist}")
                 
-
                 cursor.execute(
                     """SELECT COUNT(*) as patient_count 
                     FROM Patients 
                     WHERE therapist_id = %s""",
-                    (therapist["id"],)
+                    (therapist.get("id"),)
                 )
-                patient_count = cursor.fetchone()['patient_count']
+                patient_count_result = cursor.fetchone()
+                patient_count = patient_count_result.get('patient_count', 0) if patient_count_result else 0
                 print(f"Therapist has {patient_count} assigned patients")
                 
-
                 cursor.execute(
                     """SELECT evs.*, p.first_name, p.last_name, e.name as exercise_name, tp.name as plan_name
                     FROM ExerciseVideoSubmissions evs
@@ -3082,12 +3086,21 @@ def Routes():
                     JOIN TreatmentPlans tp ON evs.treatment_plan_id = tp.plan_id
                     WHERE p.therapist_id = %s
                     ORDER BY evs.submission_date DESC""",
-                    (therapist["id"],)  
+                    (therapist.get("id"),)  
                 )
-                submissions = cursor.fetchall()
+                submissions_result = cursor.fetchall()
                 
-
-                print(f"Found {len(submissions)} submissions for therapist_id: {therapist['id']}")
+                submissions = []
+                for submission in submissions_result:
+                    clean_submission = {}
+                    for key, value in submission.items():
+                        if isinstance(value, bytes):
+                            clean_submission[key] = value.decode('utf-8')
+                        else:
+                            clean_submission[key] = value
+                    submissions.append(clean_submission)
+                    
+                print(f"Found {len(submissions)} submissions for therapist_id: {therapist.get('id')}")
                 
                 cursor.execute(
                     """SELECT COUNT(*) as pending_count
@@ -3096,23 +3109,23 @@ def Routes():
                     WHERE p.therapist_id = %s AND evs.status = 'Pending'""",
                     (session_data["user_id"],)
                 )
-                pending_count = cursor.fetchone()['pending_count']
-
+                pending_count_result = cursor.fetchone()
+                pending_count = pending_count_result.get('pending_count', 0) if pending_count_result else 0
 
                 cursor.execute(
                     "SELECT COUNT(*) as count FROM Messages WHERE recipient_id = %s AND recipient_type = 'therapist' AND is_read = FALSE",
                     (session_data["user_id"],)
                 )
                 unread_count_result = cursor.fetchone()
-                unread_messages_count = unread_count_result['count'] if unread_count_result else 0
+                unread_messages_count = unread_count_result.get('count', 0) if unread_count_result else 0
 
                 return templates.TemplateResponse(
                     "dist/exercises/submissions.html",
                     {
                         "request": request,
                         "therapist": therapist,
-                        "first_name": therapist["first_name"],
-                        "last_name": therapist["last_name"],
+                        "first_name": therapist.get("first_name", ""),
+                        "last_name": therapist.get("last_name", ""),
                         "unread_messages_count": unread_messages_count,
                         "submissions": submissions,
                         "pending_count": pending_count
@@ -3121,12 +3134,14 @@ def Routes():
 
             except Exception as e:
                 print(f"Database error in exercise submissions: {e}")
+                print(f"Traceback: {traceback.format_exc()}")  
                 return RedirectResponse(url="/front-page")
             finally:
                 cursor.close()
                 db.close()
         except Exception as e:
             print(f"Error in exercise submissions: {e}")
+            print(f"Traceback: {traceback.format_exc()}") 
             return RedirectResponse(url="/Therapist_Login")
 
 
