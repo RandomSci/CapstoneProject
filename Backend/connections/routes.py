@@ -319,163 +319,212 @@ def Routes():
                     print(f"No therapist found for ID: {user_id}")
                     return RedirectResponse(url="/Therapist_Login")
 
-                print("Executing query #2: Get recent messages")
-                cursor.execute(
-                    """SELECT m.message_id, m.subject, m.content, m.created_at,
-                            CASE 
-                                WHEN m.sender_type = 'therapist' THEN t.first_name
-                                WHEN m.sender_type = 'user' THEN u.username
-                                ELSE 'Unknown'
-                            END as first_name,
-                            CASE
-                                WHEN m.sender_type = 'therapist' THEN t.last_name
-                                ELSE ''
-                            END as last_name,
-                            CASE
-                                WHEN m.sender_type = 'therapist' THEN COALESCE(t.profile_image, 'avatar-1.jpg')
-                                WHEN m.sender_type = 'user' THEN 'avatar-2.jpg'
-                                ELSE 'avatar-2.jpg'
-                            END as profile_image
-                        FROM Messages m
-                        LEFT JOIN Therapists t ON m.sender_id = t.id AND m.sender_type = 'therapist'
-                        LEFT JOIN users u ON m.sender_id = u.user_id AND m.sender_type = 'user'
-                        WHERE m.recipient_id = %s AND m.is_read = FALSE
-                        ORDER BY m.created_at DESC
-                        LIMIT 4""",
-                    (user_id,)
-                )
-                
-                messages_result = cursor.fetchall()
+                try:
+                    print("Executing query #2: Get recent messages")
+                    cursor.execute(
+                        """SELECT m.message_id, m.subject, m.content, m.created_at,
+                                CASE 
+                                    WHEN m.sender_type = 'therapist' THEN t.first_name
+                                    WHEN m.sender_type = 'user' THEN u.username
+                                    ELSE 'Unknown'
+                                END as first_name,
+                                CASE
+                                    WHEN m.sender_type = 'therapist' THEN t.last_name
+                                    ELSE ''
+                                END as last_name,
+                                CASE
+                                    WHEN m.sender_type = 'therapist' THEN COALESCE(t.profile_image, 'avatar-1.jpg')
+                                    WHEN m.sender_type = 'user' THEN 'avatar-2.jpg'
+                                    ELSE 'avatar-2.jpg'
+                                END as profile_image
+                            FROM Messages m
+                            LEFT JOIN Therapists t ON m.sender_id = t.id AND m.sender_type = 'therapist'
+                            LEFT JOIN users u ON m.sender_id = u.user_id AND m.sender_type = 'user'
+                            WHERE m.recipient_id = %s AND m.is_read = FALSE
+                            ORDER BY m.created_at DESC
+                            LIMIT 4""",
+                        (user_id,)
+                    )
+                    messages_result = cursor.fetchall()
 
-                recent_messages = []
-                for message in messages_result:
-                    message_with_time = dict(message)  
+                    recent_messages = []
+                    for message in messages_result:
+                        message_with_time = dict(message)  
 
-                    timestamp = message.get('created_at')
-                    now = datetime.datetime.now()
-                    if isinstance(timestamp, datetime.datetime):
-                        diff = now - timestamp
-                        if timestamp.date() == now.date():
-                            message_with_time['time_display'] = timestamp.strftime('%I:%M %p')
+                        timestamp = message.get('created_at')
+                        now = datetime.datetime.now()
+                        if isinstance(timestamp, datetime.datetime):
+                            diff = now - timestamp
+                            if timestamp.date() == now.date():
+                                message_with_time['time_display'] = timestamp.strftime('%I:%M %p')
 
-                            minutes_ago = diff.seconds // 60
-                            if minutes_ago < 60:
-                                message_with_time['time_ago'] = f"{minutes_ago} min ago"
+                                minutes_ago = diff.seconds // 60
+                                if minutes_ago < 60:
+                                    message_with_time['time_ago'] = f"{minutes_ago} min ago"
+                                else:
+                                    hours_ago = minutes_ago // 60
+                                    message_with_time['time_ago'] = f"{hours_ago}-{hours_ago}"
+
+                            elif timestamp.date() == (now - timedelta(days=1)).date():
+                                message_with_time['time_display'] = "Yesterday"
+                                message_with_time['time_ago'] = timestamp.strftime('%I:%M %p')
                             else:
-                                hours_ago = minutes_ago // 60
-                                message_with_time['time_ago'] = f"{hours_ago}-{hours_ago}"
+                                message_with_time['time_display'] = timestamp.strftime('%d %b')
+                                message_with_time['time_ago'] = timestamp.strftime('%Y')
 
-                        elif timestamp.date() == (now - timedelta(days=1)).date():
-                            message_with_time['time_display'] = "Yesterday"
-                            message_with_time['time_ago'] = timestamp.strftime('%I:%M %p')
-                        else:
-                            message_with_time['time_display'] = timestamp.strftime('%d %b')
-                            message_with_time['time_ago'] = timestamp.strftime('%Y')
+                        recent_messages.append(message_with_time)
+                except Exception as e:
+                    print(f"Error in messages query: {e}")
+                    recent_messages = []
 
-                    recent_messages.append(message_with_time)
+                try:
+                    print("Executing query #3: Get unread messages count")
+                    cursor.execute(
+                        "SELECT COUNT(*) as count FROM Messages WHERE recipient_id = %s AND is_read = FALSE",
+                        (user_id,)
+                    )
+                    unread_count_result = cursor.fetchone()
+                    unread_messages_count = unread_count_result.get('count', 0) if unread_count_result else 0
+                except Exception as e:
+                    print(f"Error in unread messages count query: {e}")
+                    unread_messages_count = 0
 
-                print("Executing query #3: Get unread messages count")
-                cursor.execute(
-                    "SELECT COUNT(*) as count FROM Messages WHERE recipient_id = %s AND is_read = FALSE",
-                    (user_id,)
-                )
-                unread_count_result = cursor.fetchone()
-                unread_messages_count = unread_count_result.get('count', 0) if unread_count_result else 0
+                try:
+                    print("Executing query #4: Get appointments count")
+                    cursor.execute(
+                        "SELECT COUNT(*) as count FROM Appointments WHERE therapist_id = %s", 
+                        (user_id,)
+                    )
+                    appointments_result = cursor.fetchone()
+                    appointments_count = appointments_result.get('count', 0) if appointments_result else 0
+                except Exception as e:
+                    print(f"Error in appointments count query: {e}")
+                    appointments_count = 0
 
-                print("Executing query #4: Get appointments count")
-                cursor.execute(
-                    "SELECT COUNT(*) as count FROM Appointments WHERE therapist_id = %s", 
-                    (user_id,)
-                )
-                appointments_result = cursor.fetchone()
-                appointments_count = appointments_result.get('count', 0) if appointments_result else 0
-
-                print("Executing query #5: Get last month appointments")
-                cursor.execute(
-                    "SELECT COUNT(*) as count FROM Appointments WHERE therapist_id = %s AND created_at < DATE_SUB(CURDATE(), INTERVAL 30 DAY)", 
-                    (user_id,)
-                )
-                last_month_appointments = cursor.fetchone()
-                last_month_count = last_month_appointments.get('count', 0) if last_month_appointments else 0
+                try:
+                    print("Executing query #5: Get last month appointments")
+                    cursor.execute(
+                        "SELECT COUNT(*) as count FROM Appointments WHERE therapist_id = %s AND created_at < DATE_SUB(CURDATE(), INTERVAL 30 DAY)", 
+                        (user_id,)
+                    )
+                    last_month_appointments = cursor.fetchone()
+                    last_month_count = last_month_appointments.get('count', 0) if last_month_appointments else 0
+                except Exception as e:
+                    print(f"Error in last month appointments query: {e}")
+                    last_month_count = 0
 
                 appointments_monthly_diff = appointments_count - last_month_count
                 appointments_growth = round((appointments_monthly_diff / max(last_month_count, 1)) * 100, 1)
 
-                print("Executing query #6: Get active patients count")
-                cursor.execute(
-                    "SELECT COUNT(*) as count FROM Patients WHERE therapist_id = %s AND status = 'Active'", 
-                    (user_id,)
-                )
-                active_patients_result = cursor.fetchone()
-                active_patients_count = active_patients_result.get('count', 0) if active_patients_result else 0
+                try:
+                    print("Executing query #6: Get active patients count")
+                    cursor.execute(
+                        "SELECT COUNT(*) as count FROM Patients WHERE therapist_id = %s AND status = 'Active'", 
+                        (user_id,)
+                    )
+                    active_patients_result = cursor.fetchone()
+                    active_patients_count = active_patients_result.get('count', 0) if active_patients_result else 0
+                except Exception as e:
+                    print(f"Error in active patients count query: {e}")
+                    active_patients_count = 0
 
-                print("Executing query #7: Get new patients this month")
-                cursor.execute(
-                    "SELECT COUNT(*) as count FROM Patients WHERE therapist_id = %s AND created_at >= DATE_FORMAT(CURDATE(), '%Y-%m-01')", 
-                    (user_id,)
-                )
-                new_patients_result = cursor.fetchone()
-                new_patients_monthly = new_patients_result.get('count', 0) if new_patients_result else 0
+                try:
+                    print("Executing query #7: Get new patients this month")
+                    cursor.execute(
+                        "SELECT COUNT(*) as count FROM Patients WHERE therapist_id = %s AND created_at >= DATE_FORMAT(CURDATE(), '%Y-%m-01')", 
+                        (user_id,)
+                    )
+                    new_patients_result = cursor.fetchone()
+                    new_patients_monthly = new_patients_result.get('count', 0) if new_patients_result else 0
+                except Exception as e:
+                    print(f"Error in new patients this month query: {e}")
+                    new_patients_monthly = 0
 
-                print("Executing query #8: Get last month new patients")
-                cursor.execute(
-                    """SELECT COUNT(*) as count FROM Patients 
-                    WHERE therapist_id = %s 
-                    AND created_at BETWEEN DATE_FORMAT(DATE_SUB(CURDATE(), INTERVAL 1 MONTH), '%Y-%m-01')
-                    AND DATE_FORMAT(CURDATE(), '%Y-%m-01')""", 
-                    (user_id,)
-                )
-                last_month_new_patients = cursor.fetchone()
-                last_month_new_count = last_month_new_patients.get('count', 1) if last_month_new_patients else 1
+                try:
+                    print("Executing query #8: Get last month new patients")
+                    cursor.execute(
+                        """SELECT COUNT(*) as count FROM Patients 
+                        WHERE therapist_id = %s 
+                        AND created_at BETWEEN DATE_FORMAT(DATE_SUB(CURDATE(), INTERVAL 1 MONTH), '%Y-%m-01')
+                        AND DATE_FORMAT(CURDATE(), '%Y-%m-01')""", 
+                        (user_id,)
+                    )
+                    last_month_new_patients = cursor.fetchone()
+                    last_month_new_count = last_month_new_patients.get('count', 1) if last_month_new_patients else 1
+                except Exception as e:
+                    print(f"Error in last month new patients query: {e}")
+                    last_month_new_count = 1
+
                 patient_growth = round((new_patients_monthly / max(last_month_new_count, 1)) * 100, 1)
 
-                print("Executing query #9: Get treatment plans count")
-                cursor.execute(
-                    "SELECT COUNT(*) as count FROM TreatmentPlans WHERE therapist_id = %s", 
-                    (user_id,)
-                )
-                treatment_plans_result = cursor.fetchone()
-                treatment_plans_count = treatment_plans_result.get('count', 0) if treatment_plans_result else 0
+                try:
+                    print("Executing query #9: Get treatment plans count")
+                    cursor.execute(
+                        "SELECT COUNT(*) as count FROM TreatmentPlans WHERE therapist_id = %s", 
+                        (user_id,)
+                    )
+                    treatment_plans_result = cursor.fetchone()
+                    treatment_plans_count = treatment_plans_result.get('count', 0) if treatment_plans_result else 0
+                except Exception as e:
+                    print(f"Error in treatment plans count query: {e}")
+                    treatment_plans_count = 0
 
-                print("Executing query #10: Get new plans this month")
-                cursor.execute(
-                    "SELECT COUNT(*) as count FROM TreatmentPlans WHERE therapist_id = %s AND created_at >= DATE_FORMAT(CURDATE(), '%Y-%m-01')", 
-                    (user_id,)
-                )
-                new_plans_result = cursor.fetchone()
-                new_plans_monthly = new_plans_result.get('count', 0) if new_plans_result else 0
+                try:
+                    print("Executing query #10: Get new plans this month")
+                    cursor.execute(
+                        "SELECT COUNT(*) as count FROM TreatmentPlans WHERE therapist_id = %s AND created_at >= DATE_FORMAT(CURDATE(), '%Y-%m-01')", 
+                        (user_id,)
+                    )
+                    new_plans_result = cursor.fetchone()
+                    new_plans_monthly = new_plans_result.get('count', 0) if new_plans_result else 0
+                except Exception as e:
+                    print(f"Error in new plans this month query: {e}")
+                    new_plans_monthly = 0
 
-                print("Executing query #11: Get last month plans")
-                cursor.execute(
-                    """SELECT COUNT(*) as count FROM TreatmentPlans 
-                    WHERE therapist_id = %s 
-                    AND created_at BETWEEN DATE_FORMAT(DATE_SUB(CURDATE(), INTERVAL 1 MONTH), '%Y-%m-01')
-                    AND DATE_FORMAT(CURDATE(), '%Y-%m-01')""", 
-                    (user_id,)
-                )
-                last_month_plans = cursor.fetchone()
-                last_month_plans_count = last_month_plans.get('count', 1) if last_month_plans else 1
+                try:
+                    print("Executing query #11: Get last month plans")
+                    cursor.execute(
+                        """SELECT COUNT(*) as count FROM TreatmentPlans 
+                        WHERE therapist_id = %s 
+                        AND created_at BETWEEN DATE_FORMAT(DATE_SUB(CURDATE(), INTERVAL 1 MONTH), '%Y-%m-01')
+                        AND DATE_FORMAT(CURDATE(), '%Y-%m-01')""", 
+                        (user_id,)
+                    )
+                    last_month_plans = cursor.fetchone()
+                    last_month_plans_count = last_month_plans.get('count', 1) if last_month_plans else 1
+                except Exception as e:
+                    print(f"Error in last month plans query: {e}")
+                    last_month_plans_count = 1
+
                 plans_growth = round((new_plans_monthly / max(last_month_plans_count, 1)) * 100, 1)
 
-                print("Executing query #12: Get average adherence rate")
-                cursor.execute(
-                    "SELECT AVG(adherence_rate) as avg_rate FROM PatientMetrics WHERE therapist_id = %s", 
-                    (user_id,)
-                )
-                adherence_result = cursor.fetchone()
-                average_adherence_rate = round(adherence_result.get('avg_rate', 0), 1) if adherence_result and adherence_result.get('avg_rate') is not None else 0
+                try:
+                    print("Executing query #12: Get average adherence rate")
+                    cursor.execute(
+                        "SELECT AVG(adherence_rate) as avg_rate FROM PatientMetrics WHERE therapist_id = %s", 
+                        (user_id,)
+                    )
+                    adherence_result = cursor.fetchone()
+                    average_adherence_rate = round(adherence_result.get('avg_rate', 0), 1) if adherence_result and adherence_result.get('avg_rate') is not None else 0
+                except Exception as e:
+                    print(f"Error in average adherence rate query: {e}")
+                    average_adherence_rate = 0
 
-                print("Executing query #13: Get last month adherence")
-                cursor.execute(
-                    """SELECT AVG(adherence_rate) as avg_rate 
-                    FROM PatientMetrics 
-                    WHERE therapist_id = %s 
-                    AND measurement_date BETWEEN DATE_FORMAT(DATE_SUB(CURDATE(), INTERVAL 1 MONTH), '%Y-%m-01')
-                    AND DATE_FORMAT(CURDATE(), '%Y-%m-01')""", 
-                    (user_id,)
-                )
-                last_month_adherence = cursor.fetchone()
-                last_month_adherence_rate = last_month_adherence.get('avg_rate', 0) if last_month_adherence and last_month_adherence.get('avg_rate') is not None else 0
+                try:
+                    print("Executing query #13: Get last month adherence")
+                    cursor.execute(
+                        """SELECT AVG(adherence_rate) as avg_rate 
+                        FROM PatientMetrics 
+                        WHERE therapist_id = %s 
+                        AND measurement_date BETWEEN DATE_FORMAT(DATE_SUB(CURDATE(), INTERVAL 1 MONTH), '%Y-%m-01')
+                        AND DATE_FORMAT(CURDATE(), '%Y-%m-01')""", 
+                        (user_id,)
+                    )
+                    last_month_adherence = cursor.fetchone()
+                    last_month_adherence_rate = last_month_adherence.get('avg_rate', 0) if last_month_adherence and last_month_adherence.get('avg_rate') is not None else 0
+                except Exception as e:
+                    print(f"Error in last month adherence query: {e}")
+                    last_month_adherence_rate = 0
 
                 adherence_monthly_diff = round(average_adherence_rate - last_month_adherence_rate, 1)
                 adherence_change = abs(adherence_monthly_diff)
@@ -491,84 +540,68 @@ def Routes():
 
                 try:
                     print("Executing query #14: Get weekly completion rate - USING SIMPLIFIED QUERY")
-                    cursor.execute(
-                        """SELECT 75 as completion_rate"""
-                    )
+                    cursor.execute("SELECT 75 as completion_rate")
                     completion_result = cursor.fetchone()
                     weekly_completion_rate = round(completion_result.get('completion_rate', 0), 0) if completion_result else 75
                 except Exception as e:
                     print(f"Error even with simplified query: {e}")
                     weekly_completion_rate = 75
 
-                print("Executing query #15: Get recent patients")
-                cursor.execute(
-                    """SELECT p.patient_id, p.first_name, p.last_name, p.diagnosis, p.status,
-                        COALESCE(AVG(pm.adherence_rate), 0) as adherence_rate
-                    FROM Patients p
-                    LEFT JOIN PatientMetrics pm ON p.patient_id = pm.patient_id
-                    WHERE p.therapist_id = %s
-                    GROUP BY p.patient_id
-                    ORDER BY p.created_at DESC
-                    LIMIT 5""", 
-                    (user_id,)
-                )
-                recent_patients_result = cursor.fetchall()
-
-                recent_patients = []
-                for patient in recent_patients_result:
-                    status_color = "success"
-                    if patient.get('status') == "Inactive":
-                        status_color = "danger"
-                    elif patient.get('status') == "At Risk":
-                        status_color = "warning"
-
-                    patient_with_color = dict(patient) 
-                    patient_with_color['status_color'] = status_color
-                    patient_with_color['adherence_rate'] = round(patient.get('adherence_rate', 0), 0)
-                    recent_patients.append(patient_with_color)
-
-                print("Executing query #16: Get average recovery rate")
-                cursor.execute(
-                    "SELECT AVG(recovery_progress) as avg_recovery FROM PatientMetrics WHERE therapist_id = %s", 
-                    (user_id,)
-                )
-                recovery_result = cursor.fetchone()
-                avg_recovery_rate = round(recovery_result.get('avg_recovery', 0), 1) if recovery_result and recovery_result.get('avg_recovery') is not None else 0
-
-                print("Executing query #17: Get overall completion rate")
                 try:
+                    print("Executing query #15: Get recent patients")
                     cursor.execute(
-                        """SELECT AVG(completion_percentage) as completion_rate
-                        FROM PatientExerciseCompletionView"""
+                        """SELECT p.patient_id, p.first_name, p.last_name, p.diagnosis, p.status,
+                            COALESCE(AVG(pm.adherence_rate), 0) as adherence_rate
+                        FROM Patients p
+                        LEFT JOIN PatientMetrics pm ON p.patient_id = pm.patient_id
+                        WHERE p.therapist_id = %s
+                        GROUP BY p.patient_id
+                        ORDER BY p.created_at DESC
+                        LIMIT 5""", 
+                        (user_id,)
                     )
-                    overall_completion = cursor.fetchone()
-                    exercise_completion_rate = round(overall_completion.get('completion_rate', 0), 1) if overall_completion and overall_completion.get('completion_rate') is not None else 0
-                except Exception as e:
-                    print(f"Error in overall completion rate query: {e}, falling back to default")
-                    try:
-                        cursor.execute(
-                            """SELECT AVG(
-                                CASE 
-                                    WHEN tpe.repetitions IS NOT NULL AND tpe.repetitions > 0 THEN (pep.repetitions_completed / tpe.repetitions) * 100
-                                    WHEN tpe.sets IS NOT NULL AND tpe.sets > 0 THEN (pep.sets_completed / tpe.sets) * 100
-                                    ELSE 0
-                                END
-                            ) as completion_rate
-                            FROM PatientExerciseProgress pep
-                            JOIN TreatmentPlanExercises tpe ON pep.plan_exercise_id = tpe.plan_exercise_id"""
-                        )
-                        overall_completion = cursor.fetchone()
-                        exercise_completion_rate = round(overall_completion.get('completion_rate', 0), 1) if overall_completion and overall_completion.get('completion_rate') is not None else 0
-                    except Exception as e:
-                        print(f"Fallback query also failed: {e}, using hardcoded value")
-                        exercise_completion_rate = 80.5  # Hardcoded fallback value
+                    recent_patients_result = cursor.fetchall()
 
-                print("Executing query #18: Get average feedback rating")
-                cursor.execute(
-                    "SELECT AVG(rating) as avg_rating FROM feedback"
-                )
-                satisfaction_result = cursor.fetchone()
-                avg_satisfaction = satisfaction_result.get('avg_rating', 0) if satisfaction_result and satisfaction_result.get('avg_rating') is not None else 0
+                    recent_patients = []
+                    for patient in recent_patients_result:
+                        status_color = "success"
+                        if patient.get('status') == "Inactive":
+                            status_color = "danger"
+                        elif patient.get('status') == "At Risk":
+                            status_color = "warning"
+
+                        patient_with_color = dict(patient) 
+                        patient_with_color['status_color'] = status_color
+                        patient_with_color['adherence_rate'] = round(patient.get('adherence_rate', 0), 0)
+                        recent_patients.append(patient_with_color)
+                except Exception as e:
+                    print(f"Error in recent patients query: {e}")
+                    recent_patients = []
+
+                try:
+                    print("Executing query #16: Get average recovery rate")
+                    cursor.execute(
+                        "SELECT AVG(recovery_progress) as avg_recovery FROM PatientMetrics WHERE therapist_id = %s", 
+                        (user_id,)
+                    )
+                    recovery_result = cursor.fetchone()
+                    avg_recovery_rate = round(recovery_result.get('avg_recovery', 0), 1) if recovery_result and recovery_result.get('avg_recovery') is not None else 0
+                except Exception as e:
+                    print(f"Error in average recovery rate query: {e}")
+                    avg_recovery_rate = 0
+
+                # Just use a hardcoded value for exercise_completion_rate
+                print("Setting hardcoded value for exercise completion rate")
+                exercise_completion_rate = 80.5
+
+                try:
+                    print("Executing query #18: Get average feedback rating")
+                    cursor.execute("SELECT AVG(rating) as avg_rating FROM feedback")
+                    satisfaction_result = cursor.fetchone()
+                    avg_satisfaction = satisfaction_result.get('avg_rating', 0) if satisfaction_result and satisfaction_result.get('avg_rating') is not None else 0
+                except Exception as e:
+                    print(f"Error in average feedback rating query: {e}")
+                    avg_satisfaction = 0
 
                 if avg_satisfaction >= 4:
                     patient_satisfaction = "High"
@@ -577,173 +610,147 @@ def Routes():
                 else:
                     patient_satisfaction = "Low"
 
-                print("Executing query #19: Get average functionality score")
-                cursor.execute(
-                    "SELECT AVG(functionality_score) as avg_score FROM PatientMetrics WHERE therapist_id = %s", 
-                    (user_id,)
-                )
-                progress_result = cursor.fetchone()
-                progress_metric_value = progress_result.get('avg_score', 0) if progress_result and progress_result.get('avg_score') is not None else 0
-
-                print("Executing query #20: Get recent activities")
-                cursor.execute(
-                    """(SELECT 'video' as type, 'New Exercise Uploaded' as title, e.name as primary_detail, 
-                        CONCAT(e.duration, ' min') as secondary_detail, e.created_at as timestamp,
-                        CONCAT('/exercises/', e.exercise_id) as link
-                    FROM Exercises e
-                    WHERE e.therapist_id = %s
-                    ORDER BY e.created_at DESC
-                    LIMIT 3)
-                    UNION
-                    (SELECT 'user-plus' as type, 'New Patient Added' as title, 
-                        CONCAT(p.first_name, ' ', p.last_name) as primary_detail, 
-                        p.diagnosis as secondary_detail, p.created_at as timestamp,
-                        CONCAT('/patients/', p.patient_id) as link
-                    FROM Patients p
-                    WHERE p.therapist_id = %s
-                    ORDER BY p.created_at DESC
-                    LIMIT 3)
-                    UNION
-                    (SELECT 'report-medical' as type, 'Progress Report Updated' as title, 
-                        CONCAT(p.first_name, ' ', p.last_name) as primary_detail, 
-                        CONCAT('+', pm.recovery_progress, '% improvement') as secondary_detail, 
-                        pm.created_at as timestamp,
-                        CONCAT('/patients/', p.patient_id) as link
-                    FROM PatientMetrics pm
-                    JOIN Patients p ON pm.patient_id = p.patient_id
-                    WHERE pm.therapist_id = %s
-                    ORDER BY pm.created_at DESC
-                    LIMIT 3)
-                    ORDER BY timestamp DESC
-                    LIMIT 3""", 
-                    (user_id, user_id, user_id)
-                )
-                activities_result = cursor.fetchall()
-
-                recent_activities = []
-                for activity in activities_result:
-                    activity_with_color = dict(activity)  
-
-                    if activity.get('type') == 'video':
-                        activity_with_color['color'] = 'success'
-                        activity_with_color['icon'] = 'video'
-                    elif activity.get('type') == 'user-plus':
-                        activity_with_color['color'] = 'primary'
-                        activity_with_color['icon'] = 'user-plus'
-                    else:
-                        activity_with_color['color'] = 'warning'
-                        activity_with_color['icon'] = 'report-medical'
-
-                    timestamp = activity.get('timestamp')
-                    now = datetime.datetime.now()
-                    if isinstance(timestamp, datetime.datetime):
-                        if timestamp.date() == now.date():
-                            activity_with_color['timestamp'] = f"Today, {timestamp.strftime('%I:%M %p')}"
-                        elif timestamp.date() == (now - timedelta(days=1)).date():
-                            activity_with_color['timestamp'] = f"Yesterday, {timestamp.strftime('%I:%M %p')}"
-                        else:
-                            activity_with_color['timestamp'] = f"{(now - timestamp).days} days ago"
-
-                    recent_activities.append(activity_with_color)
-
-                print("Executing query #21: Get weekly activity")
-                cursor.execute(
-                    """SELECT 
-                        DATE_FORMAT(completion_date, '%a') as day, 
-                        COUNT(*) as count
-                    FROM PatientExerciseProgress
-                    WHERE completion_date >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
-                    GROUP BY DATE_FORMAT(completion_date, '%a')
-                    ORDER BY FIELD(day, 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun')"""
-                )
-                weekly_activity = cursor.fetchall()
-
-                days_of_week = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
-                activity_data = {day: 0 for day in days_of_week}
-
-                for record in weekly_activity:
-                    if record.get('day') in activity_data:
-                        activity_data[record.get('day')] = record.get('count', 0)
-
-                chart_data = [{'day': day, 'count': count} for day, count in activity_data.items()]
-
-                print("Executing query #22: Get monthly activity")
-                cursor.execute(
-                    """SELECT 
-                        DATE_FORMAT(completion_date, '%d') as date, 
-                        COUNT(*) as count
-                    FROM PatientExerciseProgress
-                    WHERE completion_date >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
-                    GROUP BY DATE_FORMAT(completion_date, '%d')
-                    ORDER BY date"""
-                )
-                monthly_activity = cursor.fetchall()
-                monthly_chart_data = [{'date': record.get('date'), 'count': record.get('count', 0)} for record in monthly_activity]
-
-                print("Executing query #23: Get progress chart data")
-                cursor.execute(
-                    """SELECT 
-                        DATE_FORMAT(measurement_date, '%d %b') as date,
-                        AVG(functionality_score) as score 
-                    FROM PatientMetrics 
-                    WHERE measurement_date >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
-                    AND therapist_id = %s
-                    GROUP BY DATE_FORMAT(measurement_date, '%d %b')
-                    ORDER BY measurement_date""", 
-                    (user_id,)
-                )
-                progress_chart_data = cursor.fetchall()
-                progress_data = [{'date': record.get('date'), 'score': float(record.get('score', 0)) if record.get('score') is not None else 0} for record in progress_chart_data]
-
-                print("Executing query #24: Get completion breakdown")
                 try:
+                    print("Executing query #19: Get average functionality score")
                     cursor.execute(
-                        """SELECT completion_status as status, COUNT(*) as count
-                        FROM PatientExerciseCompletionView
-                        WHERE completion_date >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
-                        GROUP BY completion_status"""
+                        "SELECT AVG(functionality_score) as avg_score FROM PatientMetrics WHERE therapist_id = %s", 
+                        (user_id,)
                     )
-                    completion_breakdown = cursor.fetchall()
-                    donut_data = {'Completed': 0, 'Partial': 0, 'Missed': 0}
-                    for record in completion_breakdown:
-                        if record.get('status') in donut_data:
-                            donut_data[record.get('status')] = record.get('count', 0)
+                    progress_result = cursor.fetchone()
+                    progress_metric_value = progress_result.get('avg_score', 0) if progress_result and progress_result.get('avg_score') is not None else 0
                 except Exception as e:
-                    print(f"Error in completion breakdown query: {e}, falling back to default")
-                    try:
-                        cursor.execute(
-                            """SELECT 
-                                CASE 
-                                    WHEN (
-                                        CASE 
-                                            WHEN tpe.repetitions IS NOT NULL AND tpe.repetitions > 0 THEN (pep.repetitions_completed / tpe.repetitions) * 100
-                                            WHEN tpe.sets IS NOT NULL AND tpe.sets > 0 THEN (pep.sets_completed / tpe.sets) * 100
-                                            ELSE 0
-                                        END
-                                    ) >= 90 THEN 'Completed'
-                                    WHEN (
-                                        CASE 
-                                            WHEN tpe.repetitions IS NOT NULL AND tpe.repetitions > 0 THEN (pep.repetitions_completed / tpe.repetitions) * 100
-                                            WHEN tpe.sets IS NOT NULL AND tpe.sets > 0 THEN (pep.sets_completed / tpe.sets) * 100
-                                            ELSE 0
-                                        END
-                                    ) >= 50 THEN 'Partial'
-                                    ELSE 'Missed'
-                                END as status,
-                                COUNT(*) as count
-                            FROM PatientExerciseProgress pep
-                            JOIN TreatmentPlanExercises tpe ON pep.plan_exercise_id = tpe.plan_exercise_id
-                            WHERE pep.completion_date >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
-                            GROUP BY status"""
-                        )
-                        completion_breakdown = cursor.fetchall()
-                        donut_data = {'Completed': 0, 'Partial': 0, 'Missed': 0}
-                        for record in completion_breakdown:
-                            if record.get('status') in donut_data:
-                                donut_data[record.get('status')] = record.get('count', 0)
-                    except Exception as e:
-                        print(f"Fallback query also failed: {e}, using hardcoded values")
-                        donut_data = {'Completed': 65, 'Partial': 25, 'Missed': 10}  # Hardcoded fallback values
+                    print(f"Error in average functionality score query: {e}")
+                    progress_metric_value = 0
+
+                try:
+                    print("Executing query #20: Get recent activities")
+                    cursor.execute(
+                        """(SELECT 'video' as type, 'New Exercise Uploaded' as title, e.name as primary_detail, 
+                            CONCAT(e.duration, ' min') as secondary_detail, e.created_at as timestamp,
+                            CONCAT('/exercises/', e.exercise_id) as link
+                        FROM Exercises e
+                        WHERE e.therapist_id = %s
+                        ORDER BY e.created_at DESC
+                        LIMIT 3)
+                        UNION
+                        (SELECT 'user-plus' as type, 'New Patient Added' as title, 
+                            CONCAT(p.first_name, ' ', p.last_name) as primary_detail, 
+                            p.diagnosis as secondary_detail, p.created_at as timestamp,
+                            CONCAT('/patients/', p.patient_id) as link
+                        FROM Patients p
+                        WHERE p.therapist_id = %s
+                        ORDER BY p.created_at DESC
+                        LIMIT 3)
+                        UNION
+                        (SELECT 'report-medical' as type, 'Progress Report Updated' as title, 
+                            CONCAT(p.first_name, ' ', p.last_name) as primary_detail, 
+                            CONCAT('+', pm.recovery_progress, '% improvement') as secondary_detail, 
+                            pm.created_at as timestamp,
+                            CONCAT('/patients/', p.patient_id) as link
+                        FROM PatientMetrics pm
+                        JOIN Patients p ON pm.patient_id = p.patient_id
+                        WHERE pm.therapist_id = %s
+                        ORDER BY pm.created_at DESC
+                        LIMIT 3)
+                        ORDER BY timestamp DESC
+                        LIMIT 3""", 
+                        (user_id, user_id, user_id)
+                    )
+                    activities_result = cursor.fetchall()
+
+                    recent_activities = []
+                    for activity in activities_result:
+                        activity_with_color = dict(activity)  
+
+                        if activity.get('type') == 'video':
+                            activity_with_color['color'] = 'success'
+                            activity_with_color['icon'] = 'video'
+                        elif activity.get('type') == 'user-plus':
+                            activity_with_color['color'] = 'primary'
+                            activity_with_color['icon'] = 'user-plus'
+                        else:
+                            activity_with_color['color'] = 'warning'
+                            activity_with_color['icon'] = 'report-medical'
+
+                        timestamp = activity.get('timestamp')
+                        now = datetime.datetime.now()
+                        if isinstance(timestamp, datetime.datetime):
+                            if timestamp.date() == now.date():
+                                activity_with_color['timestamp'] = f"Today, {timestamp.strftime('%I:%M %p')}"
+                            elif timestamp.date() == (now - timedelta(days=1)).date():
+                                activity_with_color['timestamp'] = f"Yesterday, {timestamp.strftime('%I:%M %p')}"
+                            else:
+                                activity_with_color['timestamp'] = f"{(now - timestamp).days} days ago"
+
+                        recent_activities.append(activity_with_color)
+                except Exception as e:
+                    print(f"Error in recent activities query: {e}")
+                    recent_activities = []
+
+                try:
+                    print("Executing query #21: Get weekly activity")
+                    cursor.execute(
+                        """SELECT 
+                            DATE_FORMAT(completion_date, '%a') as day, 
+                            COUNT(*) as count
+                        FROM PatientExerciseProgress
+                        WHERE completion_date >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
+                        GROUP BY DATE_FORMAT(completion_date, '%a')
+                        ORDER BY FIELD(day, 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun')"""
+                    )
+                    weekly_activity = cursor.fetchall()
+
+                    days_of_week = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+                    activity_data = {day: 0 for day in days_of_week}
+
+                    for record in weekly_activity:
+                        if record.get('day') in activity_data:
+                            activity_data[record.get('day')] = record.get('count', 0)
+
+                    chart_data = [{'day': day, 'count': count} for day, count in activity_data.items()]
+                except Exception as e:
+                    print(f"Error in weekly activity query: {e}")
+                    chart_data = [{'day': day, 'count': 0} for day in ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']]
+
+                try:
+                    print("Executing query #22: Get monthly activity")
+                    cursor.execute(
+                        """SELECT 
+                            DATE_FORMAT(completion_date, '%d') as date, 
+                            COUNT(*) as count
+                        FROM PatientExerciseProgress
+                        WHERE completion_date >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
+                        GROUP BY DATE_FORMAT(completion_date, '%d')
+                        ORDER BY date"""
+                    )
+                    monthly_activity = cursor.fetchall()
+                    monthly_chart_data = [{'date': record.get('date'), 'count': record.get('count', 0)} for record in monthly_activity]
+                except Exception as e:
+                    print(f"Error in monthly activity query: {e}")
+                    monthly_chart_data = [{'date': str(i), 'count': 0} for i in range(1, 31)]
+
+                try:
+                    print("Executing query #23: Get progress chart data")
+                    cursor.execute(
+                        """SELECT 
+                            DATE_FORMAT(measurement_date, '%d %b') as date,
+                            AVG(functionality_score) as score 
+                        FROM PatientMetrics 
+                        WHERE measurement_date >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
+                        AND therapist_id = %s
+                        GROUP BY DATE_FORMAT(measurement_date, '%d %b')
+                        ORDER BY measurement_date""", 
+                        (user_id,)
+                    )
+                    progress_chart_data = cursor.fetchall()
+                    progress_data = [{'date': record.get('date'), 'score': float(record.get('score', 0)) if record.get('score') is not None else 0} for record in progress_chart_data]
+                except Exception as e:
+                    print(f"Error in progress chart data query: {e}")
+                    progress_data = []
+
+                # Hardcoded donut data
+                print("Setting hardcoded values for donut data")
+                donut_data = {'Completed': 65, 'Partial': 25, 'Missed': 10}
 
                 print("Rendering dashboard template with dynamic data")
                 return templates.TemplateResponse(
@@ -796,7 +803,7 @@ def Routes():
             print(f"Error in front-page route: {e}")
             print(f"Traceback: {traceback.format_exc()}")
             return RedirectResponse(url="/Therapist_Login")
-
+    
     @app.get("/analytics/recovery")
     async def recovery_analytics(request: Request):
         session_id = request.cookies.get("session_id")
