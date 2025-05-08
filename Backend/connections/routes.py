@@ -7051,7 +7051,7 @@ def Routes():
                         COUNT(DISTINCT plan_exercise_id) as exercises_completed
                     FROM PatientExerciseProgress
                     WHERE patient_id = %s AND completion_date >= DATE_SUB(CURRENT_DATE(), INTERVAL 7 DAY)
-                    GROUP BY DAYNAME(completion_date)
+                    GROUP BY DAYNAME(completion_date), completion_date
                     ORDER BY FIELD(DAYNAME(completion_date), 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday')
                     """,
                     (patient_id,)
@@ -7069,6 +7069,25 @@ def Routes():
                     'Saturday': 'Sat', 
                     'Sunday': 'Sun'
                 }
+                
+                try_alternative = False
+                if try_alternative:
+                    cursor.execute(
+                        """
+                        SELECT 
+                            DAYNAME(completion_date) as day_of_week,
+                            COUNT(DISTINCT plan_exercise_id) as exercises_completed
+                        FROM PatientExerciseProgress
+                        WHERE patient_id = %s AND completion_date >= DATE_SUB(CURRENT_DATE(), INTERVAL 7 DAY)
+                        GROUP BY DAYNAME(completion_date)
+                        """,
+                        (patient_id,)
+                    )
+                    weekly_data = cursor.fetchall()
+                    
+                    day_order = {'Monday': 1, 'Tuesday': 2, 'Wednesday': 3, 'Thursday': 4, 
+                            'Friday': 5, 'Saturday': 6, 'Sunday': 7}
+                    weekly_data = sorted(weekly_data, key=lambda x: day_order.get(x.get('day_of_week', ''), 8))
                 
                 for day in weekly_data:
                     day_name = day.get("day_of_week", "")
@@ -7573,6 +7592,8 @@ def Routes():
         completed: bool
     ):
         """API endpoint to update the completion status of an exercise in a treatment plan"""
+        import traceback
+        
         print(f"Received update request for exercise {plan_exercise_id}, completed={completed}")
         
         session_id = request.cookies.get("session_id")
@@ -7595,9 +7616,8 @@ def Routes():
             cursor = None
             
             try:
-                cursor = db.cursor()
+                cursor = db.cursor(pymysql.cursors.DictCursor)
                 
-
                 cursor.execute(
                     "SELECT patient_id FROM Patients WHERE user_id = %s",
                     (user_id,)
@@ -7608,10 +7628,9 @@ def Routes():
                     print(f"Patient not found for user_id: {user_id}")
                     return JSONResponse(status_code=404, content={"detail": "Patient profile not found"})
                 
-                patient_id = patient["patient_id"]
+                patient_id = patient.get("patient_id")
                 print(f"Found patient_id: {patient_id}")
                 
-
                 cursor.execute(
                     """
                     SELECT tpe.*, tp.patient_id, tp.plan_id, e.name as exercise_name
@@ -7631,20 +7650,17 @@ def Routes():
                         content={"detail": "Exercise not found"}
                     )
                 
-                if exercise["patient_id"] != patient_id:
-                    print(f"Permission denied: Exercise belongs to patient {exercise['patient_id']}, not {patient_id}")
+                if exercise.get("patient_id") != patient_id:
+                    print(f"Permission denied: Exercise belongs to patient {exercise.get('patient_id')}, not {patient_id}")
                     return JSONResponse(
                         status_code=403, 
                         content={"detail": "You don't have permission to update this exercise"}
                     )
                 
-                plan_id = exercise["plan_id"]
-                print(f"Found exercise: {exercise['exercise_name']}, plan_id: {plan_id}, exercise_id: {exercise['exercise_id']}")
+                plan_id = exercise.get("plan_id")
+                print(f"Found exercise: {exercise.get('exercise_name')}, plan_id: {plan_id}, exercise_id: {exercise.get('exercise_id')}")
                 
-
-
                 if completed:
-
                     cursor.execute(
                         """
                         SELECT progress_id FROM PatientExerciseProgress
@@ -7657,11 +7673,9 @@ def Routes():
                     print(f"Existing progress for today: {existing_progress}")
                     
                     if not existing_progress:
-
                         sets = exercise.get("sets") or 3
                         repetitions = exercise.get("repetitions") or 10
                         
-
                         print(f"Inserting progress entry with sets={sets}, reps={repetitions}")
                         cursor.execute(
                             """
@@ -7674,9 +7688,8 @@ def Routes():
                         )
                         print(f"Inserted progress entry, row count: {cursor.rowcount}, last row ID: {cursor.lastrowid}")
                     else:
-                        print(f"Progress entry already exists for today: {existing_progress['progress_id']}")
+                        print(f"Progress entry already exists for today: {existing_progress.get('progress_id')}")
                 else:
-
                     print(f"Deleting progress entries for today")
                     cursor.execute(
                         """
@@ -7690,7 +7703,6 @@ def Routes():
                 db.commit()
                 print(f"Database transaction committed")
                 
-
                 if completed:
                     cursor.execute(
                         """
@@ -7700,10 +7712,8 @@ def Routes():
                         (patient_id, plan_exercise_id)
                     )
                     verify = cursor.fetchone()
-                    print(f"Verification after commit: {verify['count']} progress entries found")
+                    print(f"Verification after commit: {verify.get('count')} progress entries found")
                 
-
-
                 cursor.execute(
                     """
                     SELECT 
@@ -7720,14 +7730,12 @@ def Routes():
                 )
                 
                 plan_progress = cursor.fetchone()
-                total = plan_progress['total_exercises'] or 0
-                completed_count = plan_progress['completed_exercises'] or 0
+                total = plan_progress.get('total_exercises', 0) or 0
+                completed_count = plan_progress.get('completed_exercises', 0) or 0
                 
-
                 completion_percentage = completed_count / total if total > 0 else 0
                 print(f"Plan completion: {completed_count}/{total} = {completion_percentage:.2f}")
                 
-
                 if total > 0 and completed_count == total:
                     cursor.execute(
                         """
@@ -7742,7 +7750,6 @@ def Routes():
                         print(f"Updated plan {plan_id} status to Completed")
                         db.commit()
                 elif completed_count < total:
-
                     cursor.execute(
                         """
                         UPDATE TreatmentPlans 
@@ -7759,7 +7766,7 @@ def Routes():
                 return {
                     "status": "success",
                     "message": f"Exercise marked as {'completed' if completed else 'pending'}",
-                    "exercise_name": exercise['exercise_name'],
+                    "exercise_name": exercise.get('exercise_name', ''),
                     "plan_id": plan_id,
                     "plan_completion": {
                         "total": total,
@@ -10112,6 +10119,8 @@ def Routes():
         video: UploadFile = File(...)
     ):
         """API endpoint to upload an exercise video for therapist review with enhanced progress handling"""
+        import traceback
+        
         print(f"Received video upload request: exercise_id={exercise_id}, treatment_plan_id={treatment_plan_id}")
         print(f"File name: {video.filename}")
         
@@ -10160,163 +10169,185 @@ def Routes():
                     status_code=400,
                     content={"detail": f"Invalid ID format: {str(e)}"}
                 )
+            
             db = get_Mysql_db()
-            cursor = db.cursor()
-            cursor.execute(
-                "SELECT patient_id FROM Patients WHERE user_id = %s",
-                (user_id,)
-            )
-            patient = cursor.fetchone()
+            cursor = None
             
-            if not patient:
-                cursor.close()
-                db.close()
-                print(f"⛔ Patient profile not found for user_id: {user_id}")
-                return JSONResponse(status_code=404, content={"detail": "Patient profile not found"})
-            
-            patient_id = patient["patient_id"]
-            print(f"✅ Found patient_id: {patient_id}")
-            cursor.execute(
-                """
-                SELECT tpe.plan_exercise_id, tpe.plan_id, tp.patient_id, e.name as exercise_name
-                FROM TreatmentPlanExercises tpe
-                JOIN TreatmentPlans tp ON tpe.plan_id = tp.plan_id
-                JOIN Exercises e ON tpe.exercise_id = e.exercise_id
-                WHERE tpe.exercise_id = %s AND tp.patient_id = %s
-                """,
-                (exercise_id_int, patient_id)
-            )
-            
-            exercise_plans = cursor.fetchall()
-            if not exercise_plans:
-                cursor.close()
-                db.close()
-                print(f"⛔ Exercise not found in any treatment plans for patient: exercise_id={exercise_id_int}, patient_id={patient_id}")
-                return JSONResponse(
-                    status_code=403,
-                    content={"detail": "This exercise is not part of any of your treatment plans"}
+            try:
+                cursor = db.cursor(pymysql.cursors.DictCursor)
+                
+                cursor.execute(
+                    "SELECT patient_id FROM Patients WHERE user_id = %s",
+                    (user_id,)
                 )
+                patient = cursor.fetchone()
                 
-            print(f"✅ Found {len(exercise_plans)} treatment plans containing this exercise")
-            plan_id_to_use = treatment_plan_id_int
-            use_provided_plan = False
-            
-            for plan in exercise_plans:
-                if plan["plan_id"] == treatment_plan_id_int:
-                    use_provided_plan = True
-                    break
-            
-            if not use_provided_plan:
-                plan_id_to_use = exercise_plans[0]["plan_id"]
-                print(f"ℹ️ Provided plan_id={treatment_plan_id_int} not found for this exercise. Using plan_id={plan_id_to_use} instead")
-            else:
-                print(f"✅ Using provided plan_id={plan_id_to_use}")
-            filename = f"{uuid.uuid4()}.mp4"
-            file_path = os.path.join(UPLOAD_DIR, filename)
-            
-            os.makedirs(UPLOAD_DIR, exist_ok=True)
-            
-            print(f"📤 Starting video upload to {file_path}")
-            print("📊 Upload progress:")
-            
-            temp_file_path = f"{file_path}.tmp"
-            file_size = 0
-            chunk_count = 0
-            start_time = time.time()
-            last_progress_time = start_time
-            
-            try:
-                with open(temp_file_path, "wb") as buffer:
-                    while True:
-                        chunk = await video.read(CHUNK_SIZE)
-                        if not chunk:
-                            break
-                        
-                        file_size += len(chunk)
-                        chunk_count += 1
-                        current_time = time.time()
-                        if chunk_count % 10 == 0 or current_time - last_progress_time >= 5:
-                            mb_size = file_size / (1024 * 1024)
-                            elapsed = current_time - start_time
-                            speed = mb_size / elapsed if elapsed > 0 else 0
-                            
-                            if content_length:
-                                percent = min(100, int((file_size / int(content_length)) * 100))
-                                progress_bar = "=" * (percent // 2) + ">" + " " * (50 - (percent // 2))
-                                print(f"[{progress_bar}] {percent}% ({mb_size:.2f}MB / {int(content_length) / (1024 * 1024):.2f}MB) at {speed:.2f}MB/s")
-                            else:
-                                print(f"Downloaded {mb_size:.2f}MB at {speed:.2f}MB/s")
-                            
-                            last_progress_time = current_time
-                        
-                        if file_size > MAX_CONTENT_LENGTH:
-                            os.remove(temp_file_path)
-                            cursor.close()
-                            db.close()
-                            print(f"⛔ File too large during processing: {file_size // (1024 * 1024)}MB")
-                            return JSONResponse(
-                                status_code=413,
-                                content={"detail": f"File too large. Maximum allowed size is {MAX_CONTENT_LENGTH // (1024 * 1024)}MB"}
-                            )
-                        
-                        buffer.write(chunk)
-                os.rename(temp_file_path, file_path)
+                if not patient:
+                    cursor.close()
+                    db.close()
+                    print(f"⛔ Patient profile not found for user_id: {user_id}")
+                    return JSONResponse(status_code=404, content={"detail": "Patient profile not found"})
                 
-                total_time = time.time() - start_time
-                mb_size = file_size / (1024 * 1024)
-                avg_speed = mb_size / total_time if total_time > 0 else 0
+                patient_id = patient.get("patient_id")
+                print(f"✅ Found patient_id: {patient_id}")
                 
-                print(f"✅ Video saved successfully:")
-                print(f"   - File size: {mb_size:.2f}MB")
-                print(f"   - Upload time: {total_time:.2f} seconds")
-                print(f"   - Average speed: {avg_speed:.2f}MB/s")
-                
-            except Exception as e:
-                if os.path.exists(temp_file_path):
-                    os.remove(temp_file_path)
-                print(f"⛔ Error saving video file: {e}")
-                cursor.close()
-                db.close()
-                raise
-            video_url = f"/api/uploads/exercise_videos/{filename}"
-            
-            print("💾 Saving submission to database...")
-            
-            try:
                 cursor.execute(
                     """
-                    INSERT INTO ExerciseVideoSubmissions 
-                    (patient_id, exercise_id, treatment_plan_id, video_url, notes, status, file_size)
-                    VALUES (%s, %s, %s, %s, %s, %s, %s)
+                    SELECT tpe.plan_exercise_id, tpe.plan_id, tp.patient_id, e.name as exercise_name
+                    FROM TreatmentPlanExercises tpe
+                    JOIN TreatmentPlans tp ON tpe.plan_id = tp.plan_id
+                    JOIN Exercises e ON tpe.exercise_id = e.exercise_id
+                    WHERE tpe.exercise_id = %s AND tp.patient_id = %s
                     """,
-                    (patient_id, exercise_id_int, plan_id_to_use, video_url, notes, "Pending", file_size)
+                    (exercise_id_int, patient_id)
                 )
                 
-                db.commit()
-                submission_id = cursor.lastrowid
-                print(f"✅ Video submission created successfully: submission_id={submission_id}")
+                exercise_plans = cursor.fetchall()
+                if not exercise_plans:
+                    cursor.close()
+                    db.close()
+                    print(f"⛔ Exercise not found in any treatment plans for patient: exercise_id={exercise_id_int}, patient_id={patient_id}")
+                    return JSONResponse(
+                        status_code=403,
+                        content={"detail": "This exercise is not part of any of your treatment plans"}
+                    )
+                    
+                print(f"✅ Found {len(exercise_plans)} treatment plans containing this exercise")
                 
-                cursor.close()
-                db.close()
+                plan_id_to_use = treatment_plan_id_int
+                use_provided_plan = False
                 
-                return {
-                    "submission_id": submission_id,
-                    "status": "success", 
-                    "message": "Video uploaded successfully for review",
-                    "file_size_mb": file_size // (1024 * 1024)
-                }
+                for plan in exercise_plans:
+                    if plan.get("plan_id") == treatment_plan_id_int:
+                        use_provided_plan = True
+                        break
                 
+                if not use_provided_plan:
+                    plan_id_to_use = exercise_plans[0].get("plan_id")
+                    print(f"ℹ️ Provided plan_id={treatment_plan_id_int} not found for this exercise. Using plan_id={plan_id_to_use} instead")
+                else:
+                    print(f"✅ Using provided plan_id={plan_id_to_use}")
+                    
+                filename = f"{uuid.uuid4()}.mp4"
+                file_path = os.path.join(UPLOAD_DIR, filename)
+                
+                os.makedirs(UPLOAD_DIR, exist_ok=True)
+                
+                print(f"📤 Starting video upload to {file_path}")
+                print("📊 Upload progress:")
+                
+                temp_file_path = f"{file_path}.tmp"
+                file_size = 0
+                chunk_count = 0
+                start_time = time.time()
+                last_progress_time = start_time
+                
+                try:
+                    with open(temp_file_path, "wb") as buffer:
+                        while True:
+                            chunk = await video.read(CHUNK_SIZE)
+                            if not chunk:
+                                break
+                            
+                            file_size += len(chunk)
+                            chunk_count += 1
+                            current_time = time.time()
+                            if chunk_count % 10 == 0 or current_time - last_progress_time >= 5:
+                                mb_size = file_size / (1024 * 1024)
+                                elapsed = current_time - start_time
+                                speed = mb_size / elapsed if elapsed > 0 else 0
+                                
+                                if content_length:
+                                    percent = min(100, int((file_size / int(content_length)) * 100))
+                                    progress_bar = "=" * (percent // 2) + ">" + " " * (50 - (percent // 2))
+                                    print(f"[{progress_bar}] {percent}% ({mb_size:.2f}MB / {int(content_length) / (1024 * 1024):.2f}MB) at {speed:.2f}MB/s")
+                                else:
+                                    print(f"Downloaded {mb_size:.2f}MB at {speed:.2f}MB/s")
+                                
+                                last_progress_time = current_time
+                            
+                            if file_size > MAX_CONTENT_LENGTH:
+                                os.remove(temp_file_path)
+                                cursor.close()
+                                db.close()
+                                print(f"⛔ File too large during processing: {file_size // (1024 * 1024)}MB")
+                                return JSONResponse(
+                                    status_code=413,
+                                    content={"detail": f"File too large. Maximum allowed size is {MAX_CONTENT_LENGTH // (1024 * 1024)}MB"}
+                                )
+                            
+                            buffer.write(chunk)
+                            
+                    os.rename(temp_file_path, file_path)
+                    
+                    total_time = time.time() - start_time
+                    mb_size = file_size / (1024 * 1024)
+                    avg_speed = mb_size / total_time if total_time > 0 else 0
+                    
+                    print(f"✅ Video saved successfully:")
+                    print(f"   - File size: {mb_size:.2f}MB")
+                    print(f"   - Upload time: {total_time:.2f} seconds")
+                    print(f"   - Average speed: {avg_speed:.2f}MB/s")
+                    
+                except Exception as e:
+                    if os.path.exists(temp_file_path):
+                        os.remove(temp_file_path)
+                    print(f"⛔ Error saving video file: {e}")
+                    cursor.close()
+                    db.close()
+                    raise
+                    
+                video_url = f"/api/uploads/exercise_videos/{filename}"
+                
+                print("💾 Saving submission to database...")
+                
+                try:
+                    cursor.execute(
+                        """
+                        INSERT INTO ExerciseVideoSubmissions 
+                        (patient_id, exercise_id, treatment_plan_id, video_url, notes, status, file_size)
+                        VALUES (%s, %s, %s, %s, %s, %s, %s)
+                        """,
+                        (patient_id, exercise_id_int, plan_id_to_use, video_url, notes, "Pending", file_size)
+                    )
+                    
+                    db.commit()
+                    submission_id = cursor.lastrowid
+                    print(f"✅ Video submission created successfully: submission_id={submission_id}")
+                    
+                    cursor.close()
+                    db.close()
+                    
+                    return {
+                        "submission_id": submission_id,
+                        "status": "success", 
+                        "message": "Video uploaded successfully for review",
+                        "file_size_mb": file_size // (1024 * 1024)
+                    }
+                    
+                except Exception as e:
+                    cursor.close()
+                    db.close()
+                    if os.path.exists(file_path):
+                        os.remove(file_path)
+                    print(f"⛔ Database error: {e}")
+                    return JSONResponse(
+                        status_code=500,
+                        content={"detail": f"Database error: {str(e)}"}
+                    )
+                    
             except Exception as e:
-                cursor.close()
-                db.close()
-                if os.path.exists(file_path):
-                    os.remove(file_path)
-                print(f"⛔ Database error: {e}")
+                if cursor:
+                    cursor.close()
+                if db:
+                    db.close()
+                print(f"⛔ Database operation error: {e}")
+                print(f"Traceback: {traceback.format_exc()}")
                 return JSONResponse(
                     status_code=500,
                     content={"detail": f"Database error: {str(e)}"}
                 )
-                
+                    
         except Exception as e:
             print(f"⛔ Unhandled error: {e}")
             print(f"Traceback: {traceback.format_exc()}")
@@ -10324,6 +10355,7 @@ def Routes():
                 status_code=500,
                 content={"detail": f"Server error: {str(e)}"}
             )
+            
     @app.get("/api/user/video-submissions")
     async def get_user_video_submissions(request: Request):
         """API endpoint to get all video submissions for the current user"""
