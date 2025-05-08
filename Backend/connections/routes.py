@@ -590,7 +590,6 @@ def Routes():
                     print(f"Error in average recovery rate query: {e}")
                     avg_recovery_rate = 0
 
-                # Just use a hardcoded value for exercise_completion_rate
                 print("Setting hardcoded value for exercise completion rate")
                 exercise_completion_rate = 80.5
 
@@ -1244,7 +1243,7 @@ def Routes():
                 return {"success": False, "message": "Recipient and message content are required"}
 
             db = get_Mysql_db()
-            cursor = db.cursor(pymysql.cursors.DictCursor)  # Use DictCursor here
+            cursor = db.cursor(pymysql.cursors.DictCursor) 
 
             try:
                 recipient_exists = False
@@ -2220,7 +2219,6 @@ def Routes():
                 if not therapist:
                     return RedirectResponse(url="/Therapist_Login")
                 
-                # Clean up therapist data
                 clean_therapist = {}
                 for key, value in therapist.items():
                     if isinstance(value, bytes):
@@ -2241,7 +2239,6 @@ def Routes():
                 )
                 reviews_results = cursor.fetchall()
                 
-                # Clean up reviews data
                 reviews = []
                 for review in reviews_results:
                     clean_review = {}
@@ -2483,7 +2480,6 @@ def Routes():
             if not row:
                 raise HTTPException(status_code=404, detail="User not found")
                 
-            # With PyMySQL's default cursor, row is a tuple
             username, email, created_at = row
             
             return {
@@ -6009,7 +6005,7 @@ def Routes():
         user=Depends(get_current_user)
     ):
         db = get_Mysql_db()
-        cursor = db.cursor(pymysql.cursors.DictCursor)  # Use DictCursor
+        cursor = db.cursor(pymysql.cursors.DictCursor) 
 
         try:
             cursor.execute(
@@ -6031,7 +6027,7 @@ def Routes():
     @app.get("/treatment-plans")
     async def treatment_plans_page(request: Request, user=Depends(get_current_user)):
         db = get_Mysql_db()
-        cursor = db.cursor(pymysql.cursors.DictCursor)  # Use DictCursor
+        cursor = db.cursor(pymysql.cursors.DictCursor) 
 
         try:
             cursor.execute(
@@ -6044,7 +6040,6 @@ def Routes():
             )
             treatment_plans_result = cursor.fetchall()
             
-            # Clean up treatment plans data
             treatment_plans = []
             for plan in treatment_plans_result:
                 clean_plan = {}
@@ -6057,7 +6052,6 @@ def Routes():
 
             therapist_data = await get_therapist_data(user["user_id"])
             
-            # Handle the case where therapist_data might be a tuple
             if isinstance(therapist_data, tuple):
                 therapist_dict = {
                     "first_name": therapist_data[0] if len(therapist_data) > 0 else "",
@@ -8968,7 +8962,6 @@ def Routes():
                 )
                 progress_entries = cursor.fetchall()
                 
-                # Get statistics
                 cursor.execute(
                     f"""
                     SELECT 
@@ -9554,10 +9547,6 @@ def Routes():
             db = get_Mysql_db()
             
             try:
-                # PyMySQL doesn't support autocommit property directly
-                # Instead, we'll commit explicitly
-                
-                # Use DictCursor for PyMySQL
                 cursor = db.cursor(pymysql.cursors.DictCursor)
                 
                 sender_id = int(user_id)
@@ -9575,7 +9564,6 @@ def Routes():
                     (sender_id, sender_type, recipient_id, recipient_type, subject, content)
                 )
                 
-                # Explicitly commit
                 db.commit()
                 
                 message_id = cursor.lastrowid
@@ -11387,8 +11375,9 @@ def Routes():
             print(f"Session data: {session_data}")
             
             db = get_Mysql_db()
-            cursor = db.cursor()
+            cursor = None
             try:
+                cursor = db.cursor(pymysql.cursors.DictCursor)
                 cursor.execute(
                     """SELECT evs.video_url
                     FROM ExerciseVideoSubmissions evs
@@ -11401,32 +11390,26 @@ def Routes():
                     print(f"No submission found for ID {submission_id} and therapist {session_data['user_id']}")
                     return JSONResponse(status_code=404, content={"error": "Submission not found"})
                 
-
-                filename = os.path.basename(result["video_url"])
+                filename = os.path.basename(result.get("video_url", ""))
                 original_video_path = f"uploads/exercise_videos/{filename}"
                 
-
                 if not os.path.exists(original_video_path):
                     print(f"Original video not found: {original_video_path}")
                     return JSONResponse(status_code=404, content={"error": "Original video file not found"})
                 
                 print(f"Original video path: {original_video_path}")
                 
-
                 original_filename = os.path.splitext(filename)[0]
                 processed_filename = f"{original_filename}_processed.mp4"
                 processed_video_path = f"uploads/exercise_videos/processed_videos/{processed_filename}"
                 
-
                 file_exists = os.path.exists(processed_video_path)
                 file_size = os.path.getsize(processed_video_path) if file_exists else 0
                 
                 print(f"Checking for processed video at: {processed_video_path}")
                 print(f"File exists: {file_exists}, File size: {file_size} bytes")
                 
-
                 if file_exists and file_size > 0:
-
                     is_processing = (hasattr(app, "video_processing_threads") and 
                                 submission_id in app.video_processing_threads and 
                                 app.video_processing_threads[submission_id].is_alive())
@@ -11437,20 +11420,17 @@ def Routes():
                             "message": "Video is already being processed"
                         })
                     
-
                     return JSONResponse(content={
                         "status": "already_processed",
                         "filename": processed_filename,
                         "download_url": f"/api/download_video/{processed_filename}?submission_id={submission_id}"
                     })
                 
-
                 if not hasattr(app, "video_processing_threads"):
                     app.video_processing_threads = {}
                 if not hasattr(app, "video_stop_events"):
                     app.video_stop_events = {}
                     
-
                 if submission_id in app.video_processing_threads and app.video_processing_threads[submission_id].is_alive():
                     print(f"Submission {submission_id} is already being processed")
                     return JSONResponse(content={
@@ -11458,7 +11438,6 @@ def Routes():
                         "message": "Video is already being processed"
                     })
                 
-
                 if file_exists and file_size == 0:
                     try:
                         os.remove(processed_video_path)
@@ -11466,16 +11445,13 @@ def Routes():
                     except Exception as e:
                         print(f"Error removing invalid file: {e}")
                 
-
                 app.video_stop_events[submission_id] = Event()
                 
-
                 if hasattr(app, "processing_progress"):
                     app.processing_progress[submission_id] = 0
                 else:
                     app.processing_progress = {submission_id: 0}
                 
-
                 def process_in_background():
                     try:
                         print(f"Starting background processing for submission {submission_id}")
@@ -11486,12 +11462,10 @@ def Routes():
                         import traceback
                         traceback.print_exc()
                 
-
                 thread = threading.Thread(target=process_in_background)
                 thread.daemon = True
                 thread.start()
                 
-
                 app.video_processing_threads[submission_id] = thread
                 
                 print(f"Processing started for submission {submission_id}")
@@ -11499,9 +11473,16 @@ def Routes():
                     "status": "processing",
                     "message": "Video processing started"
                 })
+            except Exception as e:
+                print(f"Database error in process_exercise_video: {e}")
+                import traceback
+                traceback.print_exc()
+                return JSONResponse(status_code=500, content={"error": f"Database error: {str(e)}"})
             finally:
-                cursor.close()
-                db.close()
+                if cursor:
+                    cursor.close()
+                if db:
+                    db.close()
         except Exception as e:
             print(f"Error processing video: {e}")
             import traceback
@@ -11520,17 +11501,16 @@ def Routes():
             if not session_data:
                 return JSONResponse(status_code=401, content={"error": "Unauthorized"})
             
-
             is_processing = (hasattr(app, "video_processing_threads") and 
                             submission_id in app.video_processing_threads and 
                             app.video_processing_threads[submission_id].is_alive())
             
             print(f"Is submission {submission_id} being processed? {is_processing}")
             
-
             db = get_Mysql_db()
-            cursor = db.cursor()
+            cursor = None
             try:
+                cursor = db.cursor(pymysql.cursors.DictCursor)
                 cursor.execute(
                     """SELECT evs.video_url
                     FROM ExerciseVideoSubmissions evs
@@ -11542,23 +11522,20 @@ def Routes():
                 if not result:
                     return JSONResponse(status_code=404, content={"error": "Submission not found"})
                 
-                filename = os.path.basename(result["video_url"])
+                filename = os.path.basename(result.get("video_url", ""))
                 original_filename = os.path.splitext(filename)[0]
                 processed_filename = f"{original_filename}_processed.mp4"
                 processed_video_path = f"uploads/exercise_videos/processed_videos/{processed_filename}"
                 
-
                 file_exists = os.path.exists(processed_video_path)
                 file_size = os.path.getsize(processed_video_path) if file_exists else 0
                 
                 print(f"Processed video exists? {file_exists}, File size: {file_size} bytes")
                 
-
                 percent_complete = 0
                 if hasattr(app, "processing_progress") and submission_id in app.processing_progress:
                     percent_complete = app.processing_progress[submission_id]
                 
-
                 if file_exists and file_size > 0 and not is_processing:
                     return JSONResponse(content={
                         "ready": True,
@@ -11572,15 +11549,21 @@ def Routes():
                         "is_processing": is_processing,
                         "percent_complete": percent_complete
                     })
+            except Exception as e:
+                print(f"Database error in processed_video_status: {e}")
+                import traceback
+                traceback.print_exc()
+                return JSONResponse(status_code=500, content={"error": f"Database error: {str(e)}"})
             finally:
-                cursor.close()
-                db.close()
+                if cursor:
+                    cursor.close()
+                if db:
+                    db.close()
         except Exception as e:
             print(f"Error checking processed video status: {e}")
             import traceback
             traceback.print_exc()
             return JSONResponse(status_code=500, content={"error": f"Server error: {str(e)}"})
-
 
     def get_processing_percent(submission_id):
         """Get an estimated percentage of video processing completion."""
@@ -11599,14 +11582,12 @@ def Routes():
             if not session_data:
                 return JSONResponse(status_code=401, content={"error": "Unauthorized"})
             
-
             stopped = False
             if hasattr(app, "video_stop_events") and submission_id in app.video_stop_events:
                 app.video_stop_events[submission_id].set()
                 stopped = True
                 print(f"Stop event set for submission {submission_id}")
                 
-
                 for i in range(3): 
                     time.sleep(1)
 
@@ -11616,10 +11597,10 @@ def Routes():
                         print(f"Processing thread has stopped after {i+1} seconds")
                         break
             
-
             db = get_Mysql_db()
-            cursor = db.cursor()
+            cursor = None
             try:
+                cursor = db.cursor(pymysql.cursors.DictCursor)
                 cursor.execute(
                     """SELECT evs.video_url
                     FROM ExerciseVideoSubmissions evs
@@ -11631,30 +11612,25 @@ def Routes():
                 if not result:
                     return JSONResponse(status_code=404, content={"error": "Submission not found"})
                 
-
-                filename = os.path.basename(result["video_url"])
+                filename = os.path.basename(result.get("video_url", ""))
                 original_filename = os.path.splitext(filename)[0]
                 processed_filename = f"{original_filename}_processed.mp4"
                 processed_video_path = f"uploads/exercise_videos/processed_videos/{processed_filename}"
                 
-
                 processed_exists = os.path.exists(processed_video_path) and os.path.getsize(processed_video_path) > 0
                 print(f"Processed video exists after stop? {processed_exists}")
                 
-
                 processed_video_url = None
                 if processed_exists:
                     processed_token = await generate_video_token(session_data["user_id"], processed_filename)
                     processed_query_params = urlencode({"token": processed_token})
                     processed_video_url = f"/api/uploads/exercise_videos/processed_videos/{processed_filename}?{processed_query_params}"
                 
-
                 if hasattr(app, "video_processing_threads") and submission_id in app.video_processing_threads:
                     del app.video_processing_threads[submission_id]
                 if hasattr(app, "video_stop_events") and submission_id in app.video_stop_events:
                     del app.video_stop_events[submission_id]
                 
-
                 if stopped and processed_exists:
                     return JSONResponse(content={
                         "status": "stopped",
@@ -11677,9 +11653,16 @@ def Routes():
                         "status": "no_processing",
                         "message": "No active processing found for this submission"
                     })
+            except Exception as e:
+                print(f"Database error in stop_exercise_video_processing: {e}")
+                import traceback
+                traceback.print_exc()
+                return JSONResponse(status_code=500, content={"error": f"Database error: {str(e)}"})
             finally:
-                cursor.close()
-                db.close()
+                if cursor:
+                    cursor.close()
+                if db:
+                    db.close()
         except Exception as e:
             print(f"Error stopping video processing: {e}")
             import traceback
@@ -11689,7 +11672,6 @@ def Routes():
     def process_video_with_pose_detection(video_path, submission_id=None):
         try:
             print(f"Starting video processing for path: {video_path}, submission_id: {submission_id}")
-            
 
             if hasattr(app, "processing_progress"):
                 app.processing_progress[submission_id] = 0
@@ -11850,26 +11832,21 @@ def Routes():
             if not session_data:
                 return JSONResponse(status_code=401, content={"error": "Unauthorized"})
             
-
             token = request.query_params.get("token")
             if not token:
                 return JSONResponse(status_code=401, content={"error": "Missing token"})
             
-
             filename = os.path.basename(file_path)
             valid_token = await verify_video_token(token, session_data["user_id"], filename)
             if not valid_token:
                 return JSONResponse(status_code=401, content={"error": "Invalid token"})
             
-
             full_path = f"uploads/{file_path}"
             
-
             if not os.path.exists(full_path) or os.path.getsize(full_path) == 0:
                 print(f"File not found or empty: {full_path}")
                 return JSONResponse(status_code=404, content={"error": "File not found or empty"})
             
-
             return FileResponse(
                 path=full_path,
                 filename=filename,
@@ -11895,12 +11872,12 @@ def Routes():
             if not session_data:
                 return JSONResponse(status_code=401, content={"error": "Unauthorized"})
             
-
             db = get_Mysql_db()
-            cursor = db.cursor()
+            cursor = None
             try:
+                cursor = db.cursor(pymysql.cursors.DictCursor)
                 cursor.execute(
-                    """SELECT 1
+                    """SELECT 1 as exists_flag
                     FROM ExerciseVideoSubmissions evs
                     JOIN Patients p ON evs.patient_id = p.patient_id
                     WHERE evs.submission_id = %s AND p.therapist_id = %s""",
@@ -11910,10 +11887,8 @@ def Routes():
                 if not result:
                     return JSONResponse(status_code=404, content={"error": "Submission not found"})
                 
-
                 processed_video_path = f"uploads/exercise_videos/processed_videos/{filename}"
                 
-
                 if not os.path.exists(processed_video_path):
                     print(f"Processed video file not found: {processed_video_path}")
                     return JSONResponse(status_code=404, content={"error": "File not found"})
@@ -11923,16 +11898,22 @@ def Routes():
                     print(f"Processed video file is empty: {processed_video_path}")
                     return JSONResponse(status_code=500, content={"error": "File exists but is empty"})
                 
-
                 return FileResponse(
                     path=processed_video_path,
                     filename=filename,
                     media_type="application/octet-stream",
                     headers={"Content-Disposition": f"attachment; filename={filename}"}
                 )
+            except Exception as e:
+                print(f"Database error in download_video: {e}")
+                import traceback
+                traceback.print_exc()
+                return JSONResponse(status_code=500, content={"error": f"Database error: {str(e)}"})
             finally:
-                cursor.close()
-                db.close()
+                if cursor:
+                    cursor.close()
+                if db:
+                    db.close()
         except Exception as e:
             print(f"Error downloading video: {e}")
             import traceback
@@ -11951,10 +11932,10 @@ def Routes():
             if not session_data:
                 return JSONResponse(status_code=401, content={"error": "Unauthorized"})
             
-
             db = get_Mysql_db()
-            cursor = db.cursor()
+            cursor = None
             try:
+                cursor = db.cursor(pymysql.cursors.DictCursor)
                 cursor.execute(
                     """SELECT evs.video_url
                     FROM ExerciseVideoSubmissions evs
@@ -11966,11 +11947,9 @@ def Routes():
                 if not result:
                     return JSONResponse(status_code=404, content={"error": "Submission not found"})
                 
-
-                filename = os.path.basename(result["video_url"])
+                filename = os.path.basename(result.get("video_url", ""))
                 original_video_path = f"uploads/exercise_videos/{filename}"
                 
-
                 original_filename = os.path.splitext(filename)[0]
                 processed_filename = f"{original_filename}_processed.mp4"
                 processed_video_path = f"uploads/exercise_videos/processed_videos/{processed_filename}"
@@ -11982,32 +11961,25 @@ def Routes():
                     except Exception as e:
                         print(f"Error removing existing file: {e}")
                 
-
                 if hasattr(app, "video_stop_events") and submission_id in app.video_stop_events:
                     app.video_stop_events[submission_id].set()
-
                     time.sleep(1)
                 
-
                 if hasattr(app, "video_processing_threads") and submission_id in app.video_processing_threads:
                     del app.video_processing_threads[submission_id]
                 
-
                 if not hasattr(app, "video_processing_threads"):
                     app.video_processing_threads = {}
                 if not hasattr(app, "video_stop_events"):
                     app.video_stop_events = {}
                 
-
                 app.video_stop_events[submission_id] = Event()
                 
-
                 if hasattr(app, "processing_progress"):
                     app.processing_progress[submission_id] = 0
                 else:
                     app.processing_progress = {submission_id: 0}
                 
-
                 def process_in_background():
                     try:
                         print(f"Starting background processing for submission {submission_id}")
@@ -12029,9 +12001,16 @@ def Routes():
                     "status": "processing",
                     "message": "Video regeneration started"
                 })
+            except Exception as e:
+                print(f"Database error in regenerate_exercise_video: {e}")
+                import traceback
+                traceback.print_exc()
+                return JSONResponse(status_code=500, content={"error": f"Database error: {str(e)}"})
             finally:
-                cursor.close()
-                db.close()
+                if cursor:
+                    cursor.close()
+                if db:
+                    db.close()
         except Exception as e:
             print(f"Error regenerating video: {e}")
             import traceback
