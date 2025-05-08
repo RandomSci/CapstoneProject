@@ -308,6 +308,7 @@ def Routes():
             try:
                 cursor = db.cursor(pymysql.cursors.DictCursor)
                 
+                print("Executing query #1: Get therapist info")
                 cursor.execute(
                     "SELECT first_name, last_name, profile_image FROM Therapists WHERE id = %s", 
                     (user_id,)
@@ -318,6 +319,7 @@ def Routes():
                     print(f"No therapist found for ID: {user_id}")
                     return RedirectResponse(url="/Therapist_Login")
 
+                print("Executing query #2: Get recent messages")
                 cursor.execute(
                     """SELECT m.message_id, m.subject, m.content, m.created_at,
                             CASE 
@@ -372,6 +374,7 @@ def Routes():
 
                     recent_messages.append(message_with_time)
 
+                print("Executing query #3: Get unread messages count")
                 cursor.execute(
                     "SELECT COUNT(*) as count FROM Messages WHERE recipient_id = %s AND is_read = FALSE",
                     (user_id,)
@@ -379,6 +382,7 @@ def Routes():
                 unread_count_result = cursor.fetchone()
                 unread_messages_count = unread_count_result.get('count', 0) if unread_count_result else 0
 
+                print("Executing query #4: Get appointments count")
                 cursor.execute(
                     "SELECT COUNT(*) as count FROM Appointments WHERE therapist_id = %s", 
                     (user_id,)
@@ -386,10 +390,11 @@ def Routes():
                 appointments_result = cursor.fetchone()
                 appointments_count = appointments_result.get('count', 0) if appointments_result else 0
 
-                last_month = (datetime.datetime.now() - timedelta(days=30))
+                last_month_str = (datetime.datetime.now() - timedelta(days=30)).strftime('%Y-%m-%d %H:%M:%S')
+                print("Executing query #5: Get last month appointments")
                 cursor.execute(
                     "SELECT COUNT(*) as count FROM Appointments WHERE therapist_id = %s AND created_at < %s", 
-                    (user_id, last_month)
+                    (user_id, last_month_str)
                 )
                 last_month_appointments = cursor.fetchone()
                 last_month_count = last_month_appointments.get('count', 0) if last_month_appointments else 0
@@ -397,6 +402,7 @@ def Routes():
                 appointments_monthly_diff = appointments_count - last_month_count
                 appointments_growth = round((appointments_monthly_diff / max(last_month_count, 1)) * 100, 1)
 
+                print("Executing query #6: Get active patients count")
                 cursor.execute(
                     "SELECT COUNT(*) as count FROM Patients WHERE therapist_id = %s AND status = 'Active'", 
                     (user_id,)
@@ -405,22 +411,27 @@ def Routes():
                 active_patients_count = active_patients_result.get('count', 0) if active_patients_result else 0
 
                 this_month_start = datetime.datetime.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+                this_month_start_str = this_month_start.strftime('%Y-%m-%d %H:%M:%S')
+                print("Executing query #7: Get new patients this month")
                 cursor.execute(
                     "SELECT COUNT(*) as count FROM Patients WHERE therapist_id = %s AND created_at >= %s", 
-                    (user_id, this_month_start)
+                    (user_id, this_month_start_str)
                 )
                 new_patients_result = cursor.fetchone()
                 new_patients_monthly = new_patients_result.get('count', 0) if new_patients_result else 0
 
                 last_month_start = (this_month_start - timedelta(days=1)).replace(day=1)
+                last_month_start_str = last_month_start.strftime('%Y-%m-%d %H:%M:%S')
+                print("Executing query #8: Get last month new patients")
                 cursor.execute(
                     "SELECT COUNT(*) as count FROM Patients WHERE therapist_id = %s AND created_at BETWEEN %s AND %s", 
-                    (user_id, last_month_start, this_month_start)
+                    (user_id, last_month_start_str, this_month_start_str)
                 )
                 last_month_new_patients = cursor.fetchone()
                 last_month_new_count = last_month_new_patients.get('count', 1) if last_month_new_patients else 1
                 patient_growth = round((new_patients_monthly / max(last_month_new_count, 1)) * 100, 1)
 
+                print("Executing query #9: Get treatment plans count")
                 cursor.execute(
                     "SELECT COUNT(*) as count FROM TreatmentPlans WHERE therapist_id = %s", 
                     (user_id,)
@@ -428,21 +439,24 @@ def Routes():
                 treatment_plans_result = cursor.fetchone()
                 treatment_plans_count = treatment_plans_result.get('count', 0) if treatment_plans_result else 0
 
+                print("Executing query #10: Get new plans this month")
                 cursor.execute(
                     "SELECT COUNT(*) as count FROM TreatmentPlans WHERE therapist_id = %s AND created_at >= %s", 
-                    (user_id, this_month_start)
+                    (user_id, this_month_start_str)
                 )
                 new_plans_result = cursor.fetchone()
                 new_plans_monthly = new_plans_result.get('count', 0) if new_plans_result else 0
 
+                print("Executing query #11: Get last month plans")
                 cursor.execute(
                     "SELECT COUNT(*) as count FROM TreatmentPlans WHERE therapist_id = %s AND created_at BETWEEN %s AND %s", 
-                    (user_id, last_month_start, this_month_start)
+                    (user_id, last_month_start_str, this_month_start_str)
                 )
                 last_month_plans = cursor.fetchone()
                 last_month_plans_count = last_month_plans.get('count', 1) if last_month_plans else 1
                 plans_growth = round((new_plans_monthly / max(last_month_plans_count, 1)) * 100, 1)
 
+                print("Executing query #12: Get average adherence rate")
                 cursor.execute(
                     "SELECT AVG(adherence_rate) as avg_rate FROM PatientMetrics WHERE therapist_id = %s", 
                     (user_id,)
@@ -450,11 +464,14 @@ def Routes():
                 adherence_result = cursor.fetchone()
                 average_adherence_rate = round(adherence_result.get('avg_rate', 0), 1) if adherence_result and adherence_result.get('avg_rate') is not None else 0
 
+                last_month_start_date_str = last_month_start.strftime('%Y-%m-%d')
+                this_month_start_date_str = this_month_start.strftime('%Y-%m-%d')
+                print("Executing query #13: Get last month adherence")
                 cursor.execute(
                     """SELECT AVG(adherence_rate) as avg_rate 
                     FROM PatientMetrics 
                     WHERE therapist_id = %s AND measurement_date BETWEEN %s AND %s""", 
-                    (user_id, last_month_start.date(), this_month_start.date())  
+                    (user_id, last_month_start_date_str, this_month_start_date_str)
                 )
                 last_month_adherence = cursor.fetchone()
                 last_month_adherence_rate = last_month_adherence.get('avg_rate', 0) if last_month_adherence and last_month_adherence.get('avg_rate') is not None else 0
@@ -471,7 +488,8 @@ def Routes():
                     adherence_trend_color = "warning"
                     adherence_direction = "Down"
 
-                week_ago_date = (datetime.datetime.now() - timedelta(days=7)).date()
+                week_ago_date_str = (datetime.datetime.now() - timedelta(days=7)).strftime('%Y-%m-%d')
+                print("Executing query #14: Get weekly completion rate - THIS IS THE PROBLEMATIC QUERY")
                 cursor.execute(
                     """SELECT AVG(
                         CASE 
@@ -483,11 +501,12 @@ def Routes():
                     FROM PatientExerciseProgress pep
                     JOIN TreatmentPlanExercises tpe ON pep.plan_exercise_id = tpe.plan_exercise_id
                     WHERE pep.completion_date >= %s""", 
-                    (week_ago_date,)  
+                    (week_ago_date_str,)
                 )
                 completion_result = cursor.fetchone()
                 weekly_completion_rate = round(completion_result.get('completion_rate', 0), 0) if completion_result and completion_result.get('completion_rate') is not None else 0
 
+                print("Executing query #15: Get recent patients")
                 cursor.execute(
                     """SELECT p.patient_id, p.first_name, p.last_name, p.diagnosis, p.status,
                         COALESCE(AVG(pm.adherence_rate), 0) as adherence_rate
@@ -514,6 +533,7 @@ def Routes():
                     patient_with_color['adherence_rate'] = round(patient.get('adherence_rate', 0), 0)
                     recent_patients.append(patient_with_color)
 
+                print("Executing query #16: Get average recovery rate")
                 cursor.execute(
                     "SELECT AVG(recovery_progress) as avg_recovery FROM PatientMetrics WHERE therapist_id = %s", 
                     (user_id,)
@@ -521,6 +541,7 @@ def Routes():
                 recovery_result = cursor.fetchone()
                 avg_recovery_rate = round(recovery_result.get('avg_recovery', 0), 1) if recovery_result and recovery_result.get('avg_recovery') is not None else 0
 
+                print("Executing query #17: Get overall completion rate")
                 cursor.execute(
                     """SELECT AVG(
                         CASE 
@@ -535,6 +556,7 @@ def Routes():
                 overall_completion = cursor.fetchone()
                 exercise_completion_rate = round(overall_completion.get('completion_rate', 0), 1) if overall_completion and overall_completion.get('completion_rate') is not None else 0
 
+                print("Executing query #18: Get average feedback rating")
                 cursor.execute(
                     "SELECT AVG(rating) as avg_rating FROM feedback"
                 )
@@ -548,6 +570,7 @@ def Routes():
                 else:
                     patient_satisfaction = "Low"
 
+                print("Executing query #19: Get average functionality score")
                 cursor.execute(
                     "SELECT AVG(functionality_score) as avg_score FROM PatientMetrics WHERE therapist_id = %s", 
                     (user_id,)
@@ -555,6 +578,7 @@ def Routes():
                 progress_result = cursor.fetchone()
                 progress_metric_value = progress_result.get('avg_score', 0) if progress_result and progress_result.get('avg_score') is not None else 0
 
+                print("Executing query #20: Get recent activities")
                 cursor.execute(
                     """(SELECT 'video' as type, 'New Exercise Uploaded' as title, e.name as primary_detail, 
                         CONCAT(e.duration, ' min') as secondary_detail, e.created_at as timestamp,
@@ -615,6 +639,7 @@ def Routes():
 
                     recent_activities.append(activity_with_color)
 
+                print("Executing query #21: Get weekly activity")
                 cursor.execute(
                     """SELECT 
                         DATE_FORMAT(completion_date, '%a') as day, 
@@ -635,6 +660,7 @@ def Routes():
 
                 chart_data = [{'day': day, 'count': count} for day, count in activity_data.items()]
 
+                print("Executing query #22: Get monthly activity")
                 cursor.execute(
                     """SELECT 
                         DATE_FORMAT(completion_date, '%d') as date, 
@@ -647,6 +673,7 @@ def Routes():
                 monthly_activity = cursor.fetchall()
                 monthly_chart_data = [{'date': record.get('date'), 'count': record.get('count', 0)} for record in monthly_activity]
 
+                print("Executing query #23: Get progress chart data")
                 cursor.execute(
                     """SELECT 
                         DATE_FORMAT(measurement_date, '%d %b') as date,
@@ -661,6 +688,7 @@ def Routes():
                 progress_chart_data = cursor.fetchall()
                 progress_data = [{'date': record.get('date'), 'score': float(record.get('score', 0)) if record.get('score') is not None else 0} for record in progress_chart_data]
 
+                print("Executing query #24: Get completion breakdown")
                 cursor.execute(
                     """SELECT 
                         CASE 
@@ -683,7 +711,7 @@ def Routes():
                         COUNT(*) as count
                     FROM PatientExerciseProgress pep
                     JOIN TreatmentPlanExercises tpe ON pep.plan_exercise_id = tpe.plan_exercise_id
-                    WHERE pep.completion_date >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
+                    WHERE completion_date >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
                     GROUP BY status"""
                 )
                 completion_breakdown = cursor.fetchall()
