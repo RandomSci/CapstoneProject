@@ -2603,7 +2603,7 @@ def Routes():
                 return RedirectResponse(url="/Therapist_Login")
             
             db = get_Mysql_db()
-            cursor = db.cursor(pymysql.cursors.DictCursor)  
+            cursor = db.cursor(pymysql.cursors.DictCursor) 
             try:
                 cursor.execute(
                     """SELECT id, first_name, last_name, profile_image
